@@ -1,0 +1,216 @@
+
+import { useState } from "react";
+import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Save, Users, MapPin, BookOpen } from "lucide-react";
+import { CreateTurmaPairData, salas, gruposCursos } from "@/types/turma";
+import { courseNames } from "@/types/schedule";
+
+interface TurmaPairFormProps {
+  onSave: (data: CreateTurmaPairData) => boolean;
+  onClose: () => void;
+}
+
+export const TurmaPairForm = ({ onSave, onClose }: TurmaPairFormProps) => {
+  const [formData, setFormData] = useState<CreateTurmaPairData>({
+    periodo: "manha",
+    grupoCursos: "engenharias",
+    cursos: [],
+    salaA: "",
+    capacidadeA: 30,
+    salaB: "",
+    capacidadeB: 30
+  });
+
+  const handleInputChange = (field: keyof CreateTurmaPairData, value: string | number) => {
+    setFormData(prev => ({ ...prev, [field]: value }));
+  };
+
+  const handleCursoChange = (cursoId: string, checked: boolean) => {
+    setFormData(prev => ({
+      ...prev,
+      cursos: checked 
+        ? [...prev.cursos, cursoId]
+        : prev.cursos.filter(c => c !== cursoId)
+    }));
+  };
+
+  const handleSubmit = () => {
+    if (!formData.salaA || !formData.salaB || formData.cursos.length === 0) {
+      alert("Preencha todos os campos obrigatórios");
+      return;
+    }
+
+    if (formData.salaA === formData.salaB) {
+      alert("As turmas A e B devem ter salas diferentes");
+      return;
+    }
+
+    const success = onSave(formData);
+    if (success) {
+      onClose();
+    }
+  };
+
+  const cursosDisponiveis = gruposCursos[formData.grupoCursos]?.cursos || [];
+
+  return (
+    <div className="space-y-6">
+      <div>
+        <Label>Período</Label>
+        <Select 
+          value={formData.periodo} 
+          onValueChange={(value: 'manha' | 'tarde') => handleInputChange('periodo', value)}
+        >
+          <SelectTrigger>
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="manha">🌅 Manhã (08h00 - 12h00)</SelectItem>
+            <SelectItem value="tarde">🌇 Tarde (13h00 - 17h00)</SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
+
+      <div>
+        <Label>Grupo de Cursos</Label>
+        <Select 
+          value={formData.grupoCursos} 
+          onValueChange={(value: "engenharias" | "saude" | "ciencias-sociais-humanas") => 
+            setFormData(prev => ({ ...prev, grupoCursos: value, cursos: [] }))
+          }
+        >
+          <SelectTrigger>
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="engenharias">🔧 Cursos de Engenharia</SelectItem>
+            <SelectItem value="saude">🏥 Cursos da Área da Saúde</SelectItem>
+            <SelectItem value="ciencias-sociais-humanas">📚 Cursos das Ciências Sociais e Humanas</SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
+
+      <div>
+        <Label className="flex items-center gap-2">
+          <BookOpen className="w-4 h-4" />
+          Cursos do Par de Turmas
+        </Label>
+        <div className="grid grid-cols-1 gap-2 max-h-40 overflow-y-auto border rounded p-3 bg-gray-50">
+          {cursosDisponiveis.map((cursoId) => (
+            <div key={cursoId} className="flex items-center space-x-2">
+              <Checkbox
+                id={cursoId}
+                checked={formData.cursos.includes(cursoId)}
+                onCheckedChange={(checked) => handleCursoChange(cursoId, !!checked)}
+              />
+              <label htmlFor={cursoId} className="text-sm font-medium cursor-pointer">
+                {courseNames[cursoId]}
+              </label>
+            </div>
+          ))}
+        </div>
+        <p className="text-xs text-gray-600 mt-1">
+          Selecione os cursos que terão disciplinas em comum neste par de turmas
+        </p>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        {/* Turma A */}
+        <div className="space-y-4 p-4 border rounded-lg bg-blue-50 border-blue-200">
+          <div className="flex items-center gap-2">
+            <Users className="w-4 h-4 text-blue-600" />
+            <h3 className="font-semibold text-blue-800">Turma A</h3>
+          </div>
+          
+          <div>
+            <Label>Sala da Turma A</Label>
+            <Select 
+              value={formData.salaA} 
+              onValueChange={(value) => handleInputChange('salaA', value)}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Selecione a sala" />
+              </SelectTrigger>
+              <SelectContent>
+                {salas.map((sala) => (
+                  <SelectItem key={sala} value={sala}>
+                    <div className="flex items-center gap-2">
+                      <MapPin className="w-3 h-3" />
+                      {sala}
+                    </div>
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div>
+            <Label>Capacidade da Turma A</Label>
+            <Input
+              type="number"
+              min="1"
+              max="50"
+              value={formData.capacidadeA}
+              onChange={(e) => handleInputChange('capacidadeA', parseInt(e.target.value) || 30)}
+            />
+          </div>
+        </div>
+
+        {/* Turma B */}
+        <div className="space-y-4 p-4 border rounded-lg bg-red-50 border-red-200">
+          <div className="flex items-center gap-2">
+            <Users className="w-4 h-4 text-red-600" />
+            <h3 className="font-semibold text-red-800">Turma B</h3>
+          </div>
+          
+          <div>
+            <Label>Sala da Turma B</Label>
+            <Select 
+              value={formData.salaB} 
+              onValueChange={(value) => handleInputChange('salaB', value)}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Selecione a sala" />
+              </SelectTrigger>
+              <SelectContent>
+                {salas.map((sala) => (
+                  <SelectItem key={sala} value={sala}>
+                    <div className="flex items-center gap-2">
+                      <MapPin className="w-3 h-3" />
+                      {sala}
+                    </div>
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div>
+            <Label>Capacidade da Turma B</Label>
+            <Input
+              type="number"
+              min="1"
+              max="50"
+              value={formData.capacidadeB}
+              onChange={(e) => handleInputChange('capacidadeB', parseInt(e.target.value) || 30)}
+            />
+          </div>
+        </div>
+      </div>
+
+      <div className="flex gap-3">
+        <Button onClick={handleSubmit} className="flex-1 bg-aauma-navy hover:bg-aauma-navy/90">
+          <Save className="w-4 h-4 mr-2" />
+          Criar Par de Turmas
+        </Button>
+        <Button variant="outline" onClick={onClose}>
+          Cancelar
+        </Button>
+      </div>
+    </div>
+  );
+};
