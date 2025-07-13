@@ -30,12 +30,14 @@ import {
   XCircle,
   MapPin,
   Clock,
-  CreditCard
+  CreditCard,
+  RefreshCw
 } from "lucide-react";
 import { TurmaPair, Aluno } from "@/types/turma";
 import { useToast } from "@/hooks/use-toast";
 import { AlunosStatistics } from "./AlunosStatistics";
 import { alunosService } from "@/services/supabaseService";
+import AlunoEditDialog from "./AlunoEditDialog";
 
 interface TurmaIndividualManagementProps {
   turmaPairs: TurmaPair[];
@@ -429,293 +431,28 @@ export const TurmaIndividualManagement = ({
                                  </div>
                                </div>
                              </TableCell>
-                            <TableCell>
-                              <div className="flex gap-2">
-                                <Dialog>
-                                  <DialogTrigger asChild>
-                                    <Button variant="outline" size="sm" onClick={() => setEditingAluno(aluno)}>
-                                      <Edit className="w-3 h-3" />
-                                    </Button>
-                                  </DialogTrigger>
-                                  <DialogContent>
-                                    <DialogHeader>
-                                      <DialogTitle>Editar Aluno</DialogTitle>
-                                    </DialogHeader>
-                                     {editingAluno && (
-                                       <div className="space-y-4 max-h-96 overflow-y-auto">
-                                         <Tabs defaultValue="pessoais" className="w-full">
-                                           <TabsList className="grid w-full grid-cols-3">
-                                             <TabsTrigger value="pessoais">Dados Pessoais</TabsTrigger>
-                                             <TabsTrigger value="academicos">Dados Acadêmicos</TabsTrigger>
-                                             <TabsTrigger value="pagamento">Pagamento</TabsTrigger>
-                                           </TabsList>
-                                           
-                                           <TabsContent value="pessoais" className="space-y-4">
-                                             <div className="grid grid-cols-2 gap-4">
-                                               <div>
-                                                 <Label>Nome Completo</Label>
-                                                 <Input
-                                                   value={editingAluno.nome}
-                                                   onChange={(e) => setEditingAluno({...editingAluno, nome: e.target.value})}
-                                                 />
-                                               </div>
-                                               <div>
-                                                 <Label>Número do BI</Label>
-                                                 <Input
-                                                   value={editingAluno.numeroBI || ''}
-                                                   onChange={(e) => setEditingAluno({...editingAluno, numeroBI: e.target.value})}
-                                                   placeholder="000000000LA000"
-                                                 />
-                                               </div>
-                                             </div>
-
-                                             <div className="grid grid-cols-2 gap-4">
-                                               <div>
-                                                 <Label>E-mail</Label>
-                                                 <Input
-                                                   type="email"
-                                                   value={editingAluno.email}
-                                                   onChange={(e) => setEditingAluno({...editingAluno, email: e.target.value})}
-                                                 />
-                                               </div>
-                                               <div>
-                                                 <Label>Telefone</Label>
-                                                 <Input
-                                                   value={editingAluno.telefone}
-                                                   onChange={(e) => setEditingAluno({...editingAluno, telefone: e.target.value})}
-                                                 />
-                                               </div>
-                                             </div>
-
-                                             <div className="grid grid-cols-2 gap-4">
-                                               <div>
-                                                 <Label>Data de Nascimento</Label>
-                                                 <Input
-                                                   type="date"
-                                                   value={editingAluno.dataNascimento || ''}
-                                                   onChange={(e) => setEditingAluno({...editingAluno, dataNascimento: e.target.value})}
-                                                 />
-                                               </div>
-                                               <div>
-                                                 <Label>Endereço</Label>
-                                                 <Input
-                                                   value={editingAluno.endereco || ''}
-                                                   onChange={(e) => setEditingAluno({...editingAluno, endereco: e.target.value})}
-                                                   placeholder="Endereço completo"
-                                                 />
-                                               </div>
-                                             </div>
-                                           </TabsContent>
-
-                                           <TabsContent value="academicos" className="space-y-4">
-                                             <div className="grid grid-cols-2 gap-4">
-                                               <div>
-                                                 <Label>Curso</Label>
-                                                 <Select
-                                                   value={editingAluno.curso}
-                                                   onValueChange={(value) => setEditingAluno({...editingAluno, curso: value})}
-                                                 >
-                                                   <SelectTrigger>
-                                                     <SelectValue />
-                                                   </SelectTrigger>
-                                                   <SelectContent>
-                                                     {selectedPair?.cursos.map(curso => (
-                                                       <SelectItem key={curso} value={curso}>
-                                                         {curso.replace(/[-_]/g, ' ').toUpperCase()}
-                                                       </SelectItem>
-                                                     ))}
-                                                   </SelectContent>
-                                                 </Select>
-                                               </div>
-                                               <div>
-                                                 <Label>Número do Estudante</Label>
-                                                 <Input
-                                                   value={editingAluno.numeroEstudante || ''}
-                                                   onChange={(e) => setEditingAluno({...editingAluno, numeroEstudante: e.target.value})}
-                                                   placeholder="EST00000000"
-                                                 />
-                                               </div>
-                                             </div>
-
-                                             <div className="grid grid-cols-2 gap-4">
-                                               <div>
-                                                 <Label>Status</Label>
-                                                 <Select
-                                                   value={editingAluno.status}
-                                                   onValueChange={(value) => setEditingAluno({...editingAluno, status: value as any})}
-                                                 >
-                                                   <SelectTrigger>
-                                                     <SelectValue />
-                                                   </SelectTrigger>
-                                                   <SelectContent>
-                                                     <SelectItem value="inscrito">Inscrito</SelectItem>
-                                                     <SelectItem value="confirmado">Confirmado</SelectItem>
-                                                     <SelectItem value="cancelado">Cancelado</SelectItem>
-                                                   </SelectContent>
-                                                 </Select>
-                                               </div>
-                                               <div>
-                                                 <Label>Data de Inscrição</Label>
-                                                 <Input
-                                                   type="date"
-                                                   value={editingAluno.dataInscricao}
-                                                   onChange={(e) => setEditingAluno({...editingAluno, dataInscricao: e.target.value})}
-                                                 />
-                                               </div>
-                                             </div>
-
-                                             <div className="grid grid-cols-2 gap-4">
-                                               <div>
-                                                 <Label>Duração do Curso</Label>
-                                                 <Input
-                                                   value={editingAluno.duracao || '3 Meses'}
-                                                   onChange={(e) => setEditingAluno({...editingAluno, duracao: e.target.value})}
-                                                 />
-                                               </div>
-                                               <div>
-                                                 <Label>Data de Início</Label>
-                                                 <Input
-                                                   type="date"
-                                                   value={editingAluno.dataInicio || '2025-02-15'}
-                                                   onChange={(e) => setEditingAluno({...editingAluno, dataInicio: e.target.value})}
-                                                 />
-                                               </div>
-                                             </div>
-                                           </TabsContent>
-
-                                            <TabsContent value="pagamento" className="space-y-4">
-                                              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
-                                                <div className="flex items-center gap-2 text-blue-800 mb-2">
-                                                  <CreditCard className="w-5 h-5" />
-                                                  <span className="font-semibold">Valor do Preparatório</span>
-                                                </div>
-                                                <div className="text-2xl font-bold text-blue-900">
-                                                  40.000,00 Kz
-                                                </div>
-                                                <p className="text-sm text-blue-700 mt-1">
-                                                  Pagamento único do curso preparatório
-                                                </p>
-                                              </div>
-
-                                              <div className="grid grid-cols-2 gap-4">
-                                                <div>
-                                                  <Label>Forma de Pagamento</Label>
-                                                  <Select
-                                                    value={editingAluno.formaPagamento || 'Cash'}
-                                                    onValueChange={(value) => setEditingAluno({...editingAluno, formaPagamento: value as any})}
-                                                  >
-                                                    <SelectTrigger>
-                                                      <SelectValue />
-                                                    </SelectTrigger>
-                                                    <SelectContent>
-                                                      <SelectItem value="Cash">
-                                                        <div className="flex items-center gap-2">
-                                                          <span>💵</span>
-                                                          <span>Dinheiro (Cash)</span>
-                                                        </div>
-                                                      </SelectItem>
-                                                      <SelectItem value="Transferencia">
-                                                        <div className="flex items-center gap-2">
-                                                          <span>🏦</span>
-                                                          <span>Transferência Bancária</span>
-                                                        </div>
-                                                      </SelectItem>
-                                                      <SelectItem value="Cartao">
-                                                        <div className="flex items-center gap-2">
-                                                          <span>💳</span>
-                                                          <span>Cartão</span>
-                                                        </div>
-                                                      </SelectItem>
-                                                    </SelectContent>
-                                                  </Select>
-                                                </div>
-                                                <div>
-                                                  <Label>Status do Pagamento</Label>
-                                                  <Select
-                                                    value={editingAluno.status}
-                                                    onValueChange={(value) => setEditingAluno({...editingAluno, status: value as any})}
-                                                  >
-                                                    <SelectTrigger>
-                                                      <SelectValue />
-                                                    </SelectTrigger>
-                                                    <SelectContent>
-                                                      <SelectItem value="inscrito">
-                                                        <div className="flex items-center gap-2">
-                                                          <AlertCircle className="w-4 h-4 text-yellow-600" />
-                                                          <span>Inscrito (Pendente)</span>
-                                                        </div>
-                                                      </SelectItem>
-                                                      <SelectItem value="confirmado">
-                                                        <div className="flex items-center gap-2">
-                                                          <CheckCircle className="w-4 h-4 text-green-600" />
-                                                          <span>Confirmado (Pago)</span>
-                                                        </div>
-                                                      </SelectItem>
-                                                      <SelectItem value="cancelado">
-                                                        <div className="flex items-center gap-2">
-                                                          <XCircle className="w-4 h-4 text-red-600" />
-                                                          <span>Cancelado</span>
-                                                        </div>
-                                                      </SelectItem>
-                                                    </SelectContent>
-                                                  </Select>
-                                                </div>
-                                              </div>
-
-                                              <div className="grid grid-cols-2 gap-4">
-                                                <div>
-                                                  <Label>Turno</Label>
-                                                  <Input
-                                                    value={editingAluno.turno || ''}
-                                                    onChange={(e) => setEditingAluno({...editingAluno, turno: e.target.value})}
-                                                    placeholder="Ex: 08h00 - 12h00"
-                                                  />
-                                                </div>
-                                                <div>
-                                                  <Label>Valor Pago</Label>
-                                                  <Input
-                                                    value={editingAluno.status === 'confirmado' ? '40.000,00 Kz' : '0,00 Kz'}
-                                                    readOnly
-                                                    className="bg-gray-100"
-                                                  />
-                                                </div>
-                                              </div>
-
-                                              <div>
-                                                <Label>Observações</Label>
-                                                <Textarea
-                                                  value={editingAluno.observacoes || ''}
-                                                  onChange={(e) => setEditingAluno({...editingAluno, observacoes: e.target.value})}
-                                                  placeholder="Observações adicionais sobre o aluno ou pagamento"
-                                                  rows={3}
-                                                />
-                                              </div>
-                                            </TabsContent>
-                                         </Tabs>
-
-                                         <div className="flex justify-end gap-2 pt-4 border-t">
-                                           <Button variant="outline" onClick={() => setEditingAluno(null)}>
-                                             Cancelar
-                                           </Button>
-                                           <Button onClick={() => handleEditAluno(editingAluno)}>
-                                             Salvar Alterações
-                                           </Button>
-                                         </div>
-                                       </div>
-                                     )}
-                                  </DialogContent>
-                                </Dialog>
-                                
-                                <Button 
-                                  variant="outline" 
-                                  size="sm" 
-                                  onClick={() => handleDeleteAlunoLocal(aluno.id)}
-                                  className="text-red-600 hover:text-red-700"
-                                >
-                                  <Trash2 className="w-3 h-3" />
-                                </Button>
-                              </div>
-                            </TableCell>
+                             <TableCell>
+                               <div className="flex gap-2">
+                                 <Button 
+                                   variant="outline" 
+                                   size="sm" 
+                                   onClick={() => setEditingAluno(aluno)}
+                                   className="flex items-center gap-1"
+                                 >
+                                   <Edit className="w-3 h-3" />
+                                   <span className="hidden sm:inline">Editar</span>
+                                 </Button>
+                                 
+                                 <Button 
+                                   variant="outline" 
+                                   size="sm" 
+                                   onClick={() => handleDeleteAlunoLocal(aluno.id)}
+                                   className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                                 >
+                                   <Trash2 className="w-3 h-3" />
+                                 </Button>
+                               </div>
+                             </TableCell>
                           </TableRow>
                         ))}
                       </TableBody>
@@ -929,6 +666,23 @@ export const TurmaIndividualManagement = ({
           </div>
         </DialogContent>
       </Dialog>
+
+      {/* Componente de Edição CRUD Completo */}
+      <AlunoEditDialog
+        aluno={editingAluno}
+        isOpen={!!editingAluno}
+        onClose={() => setEditingAluno(null)}
+        onUpdate={() => {
+          // Force re-render dos dados - atualiza automaticamente através do hook
+          setEditingAluno(null);
+          // Recarregar página para garantir dados consistentes
+          window.location.reload();
+        }}
+        onDelete={(alunoId) => {
+          handleDeleteAlunoLocal(alunoId);
+        }}
+        availableCursos={selectedPair?.cursos || []}
+      />
     </div>
   );
 };
