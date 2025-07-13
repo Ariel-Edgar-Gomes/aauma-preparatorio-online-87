@@ -63,7 +63,7 @@ function AdminSidebar() {
     if (path === "/admin") {
       return currentPath === "/admin" || currentPath === "/admin/dashboard";
     }
-    return currentPath === path;
+    return currentPath.startsWith(path);
   };
 
   return (
@@ -72,8 +72,7 @@ function AdminSidebar() {
       collapsible="icon"
       variant="sidebar"
     >
-      <SidebarContent className="bg-sidebar border-r border-sidebar-border">
-        {/* Header */}
+      <SidebarContent className="bg-sidebar border-r border-sidebar-border">{/* Header */}
         <div className="p-4 border-b border-sidebar-border">
           <div className="flex items-center gap-3">
             <img 
@@ -96,9 +95,9 @@ function AdminSidebar() {
                   <SidebarMenuButton asChild>
                     <NavLink 
                       to={item.url} 
-                      className={({ isActive }) => `
+                      className={`
                         flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all
-                        ${isActive 
+                        ${isActive(item.url) 
                           ? "bg-sidebar-primary text-sidebar-primary-foreground shadow-sm" 
                           : "text-sidebar-foreground hover:text-sidebar-primary hover:bg-sidebar-accent"
                         }

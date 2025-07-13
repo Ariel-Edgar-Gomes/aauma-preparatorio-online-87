@@ -256,37 +256,31 @@ const FinanceiroPage = () => {
   }
 
   return (
-    <div className="container mx-auto p-6 space-y-6">
-      <div className="flex justify-between items-center">
+    <div className="p-6">
+      <div className="flex justify-between items-center mb-6">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Relatório Financeiro Completo</h1>
-          <p className="text-gray-600 mt-2">Dados financeiros detalhados do preparatório - Pagamento único de {formatCurrency(VALOR_MENSALIDADE)}</p>
+          <h2 className="text-2xl font-bold text-foreground">Relatório Financeiro</h2>
+          <p className="text-muted-foreground mt-1">Dados financeiros do preparatório - Pagamento único de {formatCurrency(VALOR_MENSALIDADE)}</p>
         </div>
         <div className="flex gap-2">
           <Button variant="outline" size="sm">
             <Download className="w-4 h-4 mr-2" />
-            Exportar Relatório
+            Exportar
           </Button>
-          <Link to="/admin/turmas">
-            <Button variant="outline" size="sm">
-              <Users className="w-4 h-4 mr-2" />
-              Ver Turmas
-            </Button>
-          </Link>
         </div>
       </div>
 
       {/* Estatísticas Gerais */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Receita Total Arrecadada</CardTitle>
+            <CardTitle className="text-sm font-medium">Receita Arrecadada</CardTitle>
             <DollarSign className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-green-600">{formatCurrency(totalRecebido)}</div>
             <p className="text-xs text-muted-foreground">
-              Taxa de cobrança: {taxaPagamento}%
+              Taxa: {taxaPagamento}%
             </p>
           </CardContent>
         </Card>
@@ -299,7 +293,7 @@ const FinanceiroPage = () => {
           <CardContent>
             <div className="text-2xl font-bold text-red-600">{formatCurrency(totalPendente)}</div>
             <p className="text-xs text-muted-foreground">
-              {alunosPendentes + alunosAtrasados} alunos pendentes
+              {alunosPendentes + alunosAtrasados} pendentes
             </p>
           </CardContent>
         </Card>
@@ -312,20 +306,20 @@ const FinanceiroPage = () => {
           <CardContent>
             <div className="text-2xl font-bold">{todosAlunosFinanceiros.length}</div>
             <p className="text-xs text-muted-foreground">
-              {alunosPagos} pagos • {alunosPendentes} pendentes • {alunosAtrasados} atrasados
+              {alunosPagos} pagos • {alunosPendentes} pendentes
             </p>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Receita Potencial Total</CardTitle>
+            <CardTitle className="text-sm font-medium">Receita Potencial</CardTitle>
             <TrendingUp className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-blue-600">{formatCurrency(totalPotencial)}</div>
             <p className="text-xs text-muted-foreground">
-              Se todos os alunos pagarem
+              Se todos pagarem
             </p>
           </CardContent>
         </Card>
