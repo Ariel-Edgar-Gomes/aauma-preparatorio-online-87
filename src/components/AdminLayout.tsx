@@ -5,8 +5,12 @@ import {
   Clock, 
   DollarSign, 
   GraduationCap,
-  ArrowLeft
+  ArrowLeft,
+  LogOut,
+  User
 } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { useAuth } from "./AuthProvider";
 import {
   Sidebar,
   SidebarContent,
@@ -124,6 +128,12 @@ function AdminSidebar() {
 }
 
 export function AdminLayout() {
+  const { user, signOut } = useAuth();
+
+  const handleSignOut = async () => {
+    await signOut();
+  };
+
   return (
     <SidebarProvider>
       <div className="min-h-screen flex w-full bg-background">
@@ -131,9 +141,26 @@ export function AdminLayout() {
         
         <main className="flex-1 flex flex-col">
           {/* Header */}
-          <header className="h-14 border-b border-border bg-background flex items-center px-4 gap-4">
-            <SidebarTrigger className="text-sidebar-foreground hover:text-sidebar-primary" />
-            <h1 className="font-semibold text-lg text-foreground">Painel Administrativo</h1>
+          <header className="h-14 border-b border-border bg-background flex items-center justify-between px-4 gap-4">
+            <div className="flex items-center gap-4">
+              <SidebarTrigger className="text-sidebar-foreground hover:text-sidebar-primary" />
+              <h1 className="font-semibold text-lg text-foreground">Painel Administrativo</h1>
+            </div>
+            <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                <User className="h-4 w-4" />
+                <span>{user?.email}</span>
+              </div>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={handleSignOut}
+                className="gap-2"
+              >
+                <LogOut className="h-4 w-4" />
+                Sair
+              </Button>
+            </div>
           </header>
 
           {/* Conteúdo */}

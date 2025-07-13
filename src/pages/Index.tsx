@@ -1,11 +1,14 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Calendar, Clock, Users, FileText, CreditCard, BookOpen } from "lucide-react";
+import { Calendar, Clock, Users, FileText, CreditCard, BookOpen, LogIn } from "lucide-react";
 import { Link } from "react-router-dom";
 import { MobileNav } from "@/components/MobileNav";
+import { useAuth } from "@/components/AuthProvider";
 
 const Index = () => {
+  const { user } = useAuth();
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted">
       {/* Header Moderno e Acessível */}
@@ -34,12 +37,21 @@ const Index = () => {
                   Fazer Inscrição
                 </Button>
               </Link>
-              <Link to="/admin">
-                <Button variant="outline">
-                  <Users className="w-4 h-4 mr-2" />
-                  Admin
-                </Button>
-              </Link>
+              {user ? (
+                <Link to="/admin">
+                  <Button variant="outline">
+                    <Users className="w-4 h-4 mr-2" />
+                    Admin
+                  </Button>
+                </Link>
+              ) : (
+                <Link to="/auth">
+                  <Button variant="outline">
+                    <LogIn className="w-4 h-4 mr-2" />
+                    Entrar
+                  </Button>
+                </Link>
+              )}
             </nav>
 
             {/* Navegação Mobile */}
@@ -49,6 +61,13 @@ const Index = () => {
                   Inscrever
                 </Button>
               </Link>
+              {!user && (
+                <Link to="/auth">
+                  <Button variant="outline" size="sm">
+                    <LogIn className="w-4 h-4" />
+                  </Button>
+                </Link>
+              )}
               <MobileNav />
             </div>
           </div>
