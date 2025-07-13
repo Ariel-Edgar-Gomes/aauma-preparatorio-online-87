@@ -438,6 +438,161 @@ export const useSupabaseTurmaData = () => {
     }
   };
 
+  // Criar novo aluno
+  const handleCreateAluno = async (aluno: Omit<Aluno, 'id' | 'numeroEstudante' | 'dataInscricao'>, turmaPairId: string, turmaType: 'A' | 'B'): Promise<boolean> => {
+    try {
+      console.log('[useSupabaseTurmaData] Criando novo aluno:', aluno);
+      
+      // Buscar a turma específica
+      const turmas = await turmasService.getByTurmaPairId(turmaPairId);
+      const turma = turmas.find(t => t.tipo === turmaType);
+      
+      if (!turma) {
+        throw new Error('Turma não encontrada');
+      }
+      
+      // Verificar se há vaga
+      if (turma.alunos_inscritos >= turma.capacidade) {
+        throw new Error('Turma está lotada');
+      }
+      
+      // Criar aluno na base de dados
+      const novoAluno = await alunosService.create({
+        nome: aluno.nome,
+        email: aluno.email || undefined,
+        telefone: aluno.telefone,
+        numero_bi: aluno.numeroBI || '',
+        data_nascimento: aluno.dataNascimento || undefined,
+        endereco: aluno.endereco || undefined,
+        curso_codigo: aluno.curso,
+        turma_pair_id: turmaPairId,
+        turma_id: turma.id,
+        turno: aluno.turno,
+        duracao: aluno.duracao || '3 Meses',
+        data_inicio: aluno.dataInicio || new Date().toISOString().split('T')[0],
+        forma_pagamento: aluno.formaPagamento as 'Cash' | 'Transferencia' | 'Cartao',
+        valor_pago: 40000.00,
+        status: aluno.status as 'inscrito' | 'confirmado' | 'cancelado',
+        observacoes: aluno.observacoes || undefined
+      });
+      
+      // Recarregar dados
+      await loadTurmaPairs();
+      
+      toast({
+        title: "Aluno adicionado",
+        description: `${novoAluno.nome} foi adicionado com sucesso.`,
+      });
+      
+      return true;
+    } catch (error) {
+      console.error('[useSupabaseTurmaData] Erro ao criar aluno:', error);
+      toast({
+        title: "Erro ao adicionar aluno",
+        description: error instanceof Error ? error.message : "Erro desconhecido",
+        variant: "destructive"
+      });
+      return false;
+    }
+  };
+
+  // Atualizar aluno
+  const handleUpdateAluno = async (alunoId: string, updates: Partial<Aluno>): Promise<boolean> => {
+    try {
+      console.log('[useSupabaseTurmaData] Atualizando aluno:', alunoId, updates);
+      
+      // Converter updates para formato da DB
+      const dbUpdates: any = {};
+      if (updates.nome) dbUpdates.nome = updates.nome;
+      if (updates.email !== undefined) dbUpdates.email = updates.email || null;
+      if (updates.telefone) dbUpdates.telefone = updates.telefone;
+      if (updates.numeroBI) dbUpdates.numero_bi = updates.numeroBI;
+      if (updates.dataNascimento !== undefined) dbUpdates.data_nascimento = updates.dataNascimento || null;
+      if (updates.endereco !== undefined) dbUpdates.endereco = updates.endereco || null;
+      if (updates.curso) dbUpdates.curso_codigo = updates.curso;
+      if (updates.turno) dbUpdates.turno = updates.turno;
+      if (updates.duracao) dbUpdates.duracao = updates.duracao;
+      if (updates.dataInicio) dbUpdates.data_inicio = updates.dataInicio;
+      if (updates.formaPagamento) dbUpdates.forma_pagamento = updates.formaPagamento;
+      if (updates.status) dbUpdates.status = updates.status;
+      if (updates.observacoes !== undefined) dbUpdates.observacoes = updates.observacoes || null;
+      
+      await alunosService.update(alunoId, dbUpdates);
+      
+      // Recarregar dados
+      await loadTurmaPairs();
+      
+      toast({
+        title: "Aluno atualizado",
+        description: "As informações do aluno foram salvas com sucesso.",
+      });
+      
+      return true;
+    } catch (error) {
+      console.error('[useSupabaseTurmaData] Erro ao atualizar aluno:', error);
+      toast({
+        title: "Erro ao atualizar aluno",
+        description: error instanceof Error ? error.message : "Erro desconhecido",
+        variant: "destructive"
+      });
+      return false;
+    }
+  };
+
+  // Deletar aluno
+  const handleDeleteAluno = async (alunoId: string): Promise<boolean> => {
+    try {
+      console.log('[useSupabaseTurmaData] Deletando aluno:', alunoId);
+      
+      await alunosService.delete(alunoId);
+      
+      // Recarregar dados
+      await loadTurmaPairs();
+      
+      toast({
+        title: "Aluno removido",
+        description: "O aluno foi removido da turma com sucesso.",
+      });
+      
+      return true;
+    } catch (error) {
+      console.error('[useSupabaseTurmaData] Erro ao deletar aluno:', error);
+      toast({
+        title: "Erro ao remover aluno",
+        description: error instanceof Error ? error.message : "Erro desconhecido",
+        variant: "destructive"
+      });
+      return false;
+    }
+  };
+
+  // Atualizar status do aluno
+  const handleUpdateAlunoStatus = async (alunoId: string, status: 'inscrito' | 'confirmado' | 'cancelado'): Promise<boolean> => {
+    try {
+      console.log('[useSupabaseTurmaData] Atualizando status do aluno:', alunoId, status);
+      
+      await alunosService.updateStatus(alunoId, status);
+      
+      // Recarregar dados
+      await loadTurmaPairs();
+      
+      toast({
+        title: "Status atualizado",
+        description: `Status do aluno alterado para ${status}.`,
+      });
+      
+      return true;
+    } catch (error) {
+      console.error('[useSupabaseTurmaData] Erro ao atualizar status:', error);
+      toast({
+        title: "Erro ao atualizar status",
+        description: error instanceof Error ? error.message : "Erro desconhecido",
+        variant: "destructive"
+      });
+      return false;
+    }
+  };
+
   return {
     turmaPairs,
     loading,
@@ -446,6 +601,10 @@ export const useSupabaseTurmaData = () => {
     handleDeleteTurmaPair,
     handleToggleStatus,
     handleDuplicatePair,
-    loadTurmaPairs
+    loadTurmaPairs,
+    handleCreateAluno,
+    handleUpdateAluno,
+    handleDeleteAluno,
+    handleUpdateAlunoStatus
   };
 };

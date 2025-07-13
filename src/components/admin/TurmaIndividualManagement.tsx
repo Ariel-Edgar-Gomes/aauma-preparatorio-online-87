@@ -39,11 +39,19 @@ import { alunosService } from "@/services/supabaseService";
 interface TurmaIndividualManagementProps {
   turmaPairs: TurmaPair[];
   onUpdateTurmaPair: (id: string, updates: Partial<TurmaPair>) => void;
+  onCreateAluno: (aluno: Omit<Aluno, 'id' | 'numeroEstudante' | 'dataInscricao'>, turmaPairId: string, turmaType: 'A' | 'B') => Promise<boolean>;
+  onUpdateAluno: (alunoId: string, updates: Partial<Aluno>) => Promise<boolean>;
+  onDeleteAluno: (alunoId: string) => Promise<boolean>;
+  onUpdateAlunoStatus: (alunoId: string, status: 'inscrito' | 'confirmado' | 'cancelado') => Promise<boolean>;
 }
 
 export const TurmaIndividualManagement = ({ 
   turmaPairs, 
-  onUpdateTurmaPair 
+  onUpdateTurmaPair,
+  onCreateAluno,
+  onUpdateAluno,
+  onDeleteAluno,
+  onUpdateAlunoStatus
 }: TurmaIndividualManagementProps) => {
   const { toast } = useToast();
   const [selectedPair, setSelectedPair] = useState<TurmaPair | null>(null);
@@ -79,81 +87,26 @@ export const TurmaIndividualManagement = ({
 
   const [newAluno, setNewAluno] = useState<Aluno>(novoAlunoTemplate);
 
-  const handleAddAluno = () => {
+  const handleAddAluno = async () => {
     if (!selectedPair || !selectedTurma) return;
 
-    const alunoComId = {
-      ...newAluno,
-      id: `aluno-${Date.now()}`,
-      numeroEstudante: `EST${String(20250000 + Math.floor(Math.random() * 9999)).padStart(8, '0')}`
-    };
-
-    const updatedPair = {
-      ...selectedPair,
-      [selectedTurma === 'A' ? 'turmaA' : 'turmaB']: {
-        ...selectedPair[selectedTurma === 'A' ? 'turmaA' : 'turmaB'],
-        alunos: [...selectedPair[selectedTurma === 'A' ? 'turmaA' : 'turmaB'].alunos, alunoComId],
-        alunosInscritos: selectedPair[selectedTurma === 'A' ? 'turmaA' : 'turmaB'].alunosInscritos + 1
-      }
-    };
-
-    onUpdateTurmaPair(selectedPair.id, updatedPair);
-    setSelectedPair(updatedPair);
-    setNewAluno(novoAlunoTemplate);
-    setAddingAluno(false);
-
-    toast({
-      title: "Aluno adicionado",
-      description: `${alunoComId.nome} foi adicionado à Turma ${selectedTurma}`,
-    });
+    const success = await onCreateAluno(newAluno, selectedPair.id, selectedTurma);
+    if (success) {
+      setNewAluno(novoAlunoTemplate);
+      setAddingAluno(false);
+    }
   };
 
-  const handleEditAluno = (aluno: Aluno) => {
-    if (!selectedPair || !selectedTurma) return;
-
-    const turmaData = selectedPair[selectedTurma === 'A' ? 'turmaA' : 'turmaB'];
-    const alunosAtualizados = turmaData.alunos.map(a => a.id === aluno.id ? aluno : a);
-
-    const updatedPair = {
-      ...selectedPair,
-      [selectedTurma === 'A' ? 'turmaA' : 'turmaB']: {
-        ...turmaData,
-        alunos: alunosAtualizados
-      }
-    };
-
-    onUpdateTurmaPair(selectedPair.id, updatedPair);
-    setSelectedPair(updatedPair);
-    setEditingAluno(null);
-
-    toast({
-      title: "Aluno atualizado",
-      description: "As informações do aluno foram salvas com sucesso.",
-    });
+  const handleEditAluno = async (aluno: Aluno) => {
+    const success = await onUpdateAluno(aluno.id, aluno);
+    if (success) {
+      setEditingAluno(null);
+    }
   };
 
-  const handleDeleteAluno = (alunoId: string) => {
-    if (!selectedPair || !selectedTurma) return;
-
-    const turmaData = selectedPair[selectedTurma === 'A' ? 'turmaA' : 'turmaB'];
-    const alunosAtualizados = turmaData.alunos.filter(a => a.id !== alunoId);
-
-    const updatedPair = {
-      ...selectedPair,
-      [selectedTurma === 'A' ? 'turmaA' : 'turmaB']: {
-        ...turmaData,
-        alunos: alunosAtualizados,
-        alunosInscritos: Math.max(0, turmaData.alunosInscritos - 1)
-      }
-    };
-
-    onUpdateTurmaPair(selectedPair.id, updatedPair);
-    setSelectedPair(updatedPair);
-
-    toast({
-      title: "Aluno removido",
-      description: "O aluno foi removido da turma com sucesso.",
-    });
+  const handleDeleteAlunoLocal = async (alunoId: string) => {
+    const success = await onDeleteAluno(alunoId);
+    // Os dados serão atualizados automaticamente através do hook
   };
 
   const getTurmaData = () => {
@@ -672,7 +625,7 @@ export const TurmaIndividualManagement = ({
                                 <Button 
                                   variant="outline" 
                                   size="sm" 
-                                  onClick={() => handleDeleteAluno(aluno.id)}
+                                  onClick={() => handleDeleteAlunoLocal(aluno.id)}
                                   className="text-red-600 hover:text-red-700"
                                 >
                                   <Trash2 className="w-3 h-3" />

@@ -15,7 +15,11 @@ const AdminTurmas = () => {
     handleUpdateTurmaPair,
     handleDeleteTurmaPair,
     handleToggleStatus,
-    handleDuplicatePair
+    handleDuplicatePair,
+    handleCreateAluno,
+    handleUpdateAluno,
+    handleDeleteAluno,
+    handleUpdateAlunoStatus
   } = useTurmaData();
 
   if (loading) {
@@ -153,6 +157,10 @@ const AdminTurmas = () => {
               <TurmaIndividualManagement
                 turmaPairs={turmaPairs}
                 onUpdateTurmaPair={handleUpdateTurmaPair}
+                onCreateAluno={handleCreateAluno}
+                onUpdateAluno={handleUpdateAluno}
+                onDeleteAluno={handleDeleteAluno}
+                onUpdateAlunoStatus={handleUpdateAlunoStatus}
               />
             </TabsContent>
           </Tabs>

@@ -11,7 +11,11 @@ export const useTurmaData = () => {
     handleUpdateTurmaPair: updateSupabaseTurmaPair, 
     handleDeleteTurmaPair: deleteSupabaseTurmaPair,
     handleToggleStatus: toggleSupabaseStatus,
-    handleDuplicatePair: duplicateSupabasePair
+    handleDuplicatePair: duplicateSupabasePair,
+    handleCreateAluno: createAluno,
+    handleUpdateAluno: updateAluno,
+    handleDeleteAluno: deleteAluno,
+    handleUpdateAlunoStatus: updateAlunoStatus
   } = useSupabaseTurmaData();
   
   const [turmaPairs, setTurmaPairs] = useState<TurmaPair[]>([]);
@@ -149,6 +153,10 @@ export const useTurmaData = () => {
     handleUpdateTurmaPair,
     handleDeleteTurmaPair,
     handleToggleStatus,
-    handleDuplicatePair
+    handleDuplicatePair,
+    handleCreateAluno: createAluno,
+    handleUpdateAluno: updateAluno,
+    handleDeleteAluno: deleteAluno,
+    handleUpdateAlunoStatus: updateAlunoStatus
   };
 };
