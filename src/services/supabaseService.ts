@@ -6,7 +6,6 @@ export interface DBTurmaPair {
   nome: string;
   periodo: 'manha' | 'tarde';
   horario_periodo: string;
-  grupo_cursos: 'engenharias' | 'saude' | 'ciencias-sociais-humanas';
   cursos: string[];
   disciplinas_comuns: string[];
   horario_semanal: Record<string, string>;

@@ -224,7 +224,6 @@ export type Database = {
           created_at: string
           cursos: string[]
           disciplinas_comuns: string[]
-          grupo_cursos: Database["public"]["Enums"]["grupo_cursos_type"]
           horario_periodo: string
           horario_semanal: Json
           id: string
@@ -237,7 +236,6 @@ export type Database = {
           created_at?: string
           cursos?: string[]
           disciplinas_comuns?: string[]
-          grupo_cursos: Database["public"]["Enums"]["grupo_cursos_type"]
           horario_periodo: string
           horario_semanal?: Json
           id?: string
@@ -250,7 +248,6 @@ export type Database = {
           created_at?: string
           cursos?: string[]
           disciplinas_comuns?: string[]
-          grupo_cursos?: Database["public"]["Enums"]["grupo_cursos_type"]
           horario_periodo?: string
           horario_semanal?: Json
           id?: string

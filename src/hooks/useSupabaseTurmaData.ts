@@ -71,7 +71,7 @@ const convertDBTurmaPairToInterface = async (dbPair: any): Promise<TurmaPair> =>
     nome: dbPair.nome,
     periodo: dbPair.periodo,
     horarioPeriodo: dbPair.horario_periodo,
-    grupoCursos: dbPair.grupo_cursos,
+    
     cursos: dbPair.cursos,
     disciplinasComuns: dbPair.disciplinas_comuns,
     horarioSemanal: dbPair.horario_semanal,
@@ -153,7 +153,7 @@ export const useSupabaseTurmaData = () => {
         nome: `Par ${proximoNumero} - ${nomePeriodo}`,
         periodo: data.periodo,
         horario_periodo: horarioPeriodo,
-        grupo_cursos: data.grupoCursos,
+        
         cursos: data.cursos,
         disciplinas_comuns: disciplinasComuns,
         horario_semanal: horarioSemanal,
@@ -234,7 +234,7 @@ export const useSupabaseTurmaData = () => {
       if (updates.nome) dbUpdates.nome = updates.nome;
       if (updates.periodo) dbUpdates.periodo = updates.periodo;
       if (updates.horarioPeriodo) dbUpdates.horario_periodo = updates.horarioPeriodo;
-      if (updates.grupoCursos) dbUpdates.grupo_cursos = updates.grupoCursos;
+      
       if (updates.cursos) dbUpdates.cursos = updates.cursos;
       if (updates.disciplinasComuns) dbUpdates.disciplinas_comuns = updates.disciplinasComuns;
       if (updates.horarioSemanal) dbUpdates.horario_semanal = updates.horarioSemanal;
@@ -406,7 +406,6 @@ export const useSupabaseTurmaData = () => {
       const horarioPeriodo = periodo === 'manha' ? '08h00 - 12h00' : '13h00 - 17h00';
       
       // Usar configuração padrão baseada no período
-      const grupoDefault = periodo === 'manha' ? 'engenharias' : 'saude';
       const cursosDefault = periodo === 'manha' 
         ? ['engenharia-informatica'] 
         : ['medicina'];
@@ -415,7 +414,7 @@ export const useSupabaseTurmaData = () => {
         nome: `Par ${proximoNumero} - ${nomePeriodo}`,
         periodo,
         horario_periodo: horarioPeriodo,
-        grupo_cursos: grupoDefault,
+        
         cursos: cursosDefault,
         disciplinas_comuns: [],
         horario_semanal: {},

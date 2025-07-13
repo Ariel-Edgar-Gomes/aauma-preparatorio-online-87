@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Trash2, Users, MapPin, Clock, ChevronDown, ChevronUp } from "lucide-react";
 import { TurmaPair } from "@/types/turma";
-import { gruposCursos } from "@/types/turma";
+
 
 interface TurmaPairGridProps {
   turmaPairs: TurmaPair[];
@@ -98,7 +98,7 @@ export const TurmaPairGrid = ({
   return (
     <div className="space-y-2">
       {turmaPairs.map((turmaPair) => {
-        console.log('[TurmaPairGrid] Renderizando par:', turmaPair.nome, 'Grupo:', turmaPair.grupoCursos);
+        console.log('[TurmaPairGrid] Renderizando par:', turmaPair.nome);
         const isExpanded = expandedTurma === turmaPair.id;
         
         return (

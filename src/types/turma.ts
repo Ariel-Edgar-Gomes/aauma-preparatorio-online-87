@@ -34,7 +34,6 @@ export interface TurmaPair {
   nome: string;
   periodo: 'manha' | 'tarde';
   horarioPeriodo: string;
-  grupoCursos: 'engenharias' | 'saude' | 'ciencias-sociais-humanas';
   cursos: string[];
   disciplinasComuns: string[];
   horarioSemanal: Record<string, string>; // horário base (ainda mantido para compatibilidade)
@@ -46,7 +45,6 @@ export interface TurmaPair {
 
 export interface CreateTurmaPairData {
   periodo: 'manha' | 'tarde';
-  grupoCursos: 'engenharias' | 'saude' | 'ciencias-sociais-humanas';
   cursos: string[];
   salaA: string;
   capacidadeA: number;
@@ -60,37 +58,3 @@ export const salas = [
   "Auditório", "Sala A1", "Sala A2", "Sala A3"
 ];
 
-export const gruposCursos = {
-  'engenharias': {
-    nome: 'Cursos de Engenharia',
-    cursos: [
-      'engenharia-informatica',
-      'engenharia-civil', 
-      'engenharia-mecatronica',
-      'engenharia-industrial-sistemas-electricos',
-      'engenharia-agropecuaria',
-      'arquitectura-urbanismo'
-    ]
-  },
-  'saude': {
-    nome: 'Cursos da Área da Saúde',
-    cursos: [
-      'medicina',
-      'analises-clinicas',
-      'enfermagem',
-      'cardiopneumologia',
-      'fisioterapia',
-      'psicologia'
-    ]
-  },
-  'ciencias-sociais-humanas': {
-    nome: 'Cursos das Ciências Sociais e Humanas',
-    cursos: [
-      'direito',
-      'gestao-administracao',
-      'lingua-portuguesa',
-      'economia',
-      'turismo-gestao-hoteleira'
-    ]
-  }
-};

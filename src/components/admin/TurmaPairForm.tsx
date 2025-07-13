@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Save, Users, MapPin, BookOpen } from "lucide-react";
-import { CreateTurmaPairData, gruposCursos } from "@/types/turma";
+import { CreateTurmaPairData } from "@/types/turma";
 import { courseNames } from "@/types/schedule";
 
 interface TurmaPairFormProps {
@@ -17,7 +17,6 @@ interface TurmaPairFormProps {
 export const TurmaPairForm = ({ onSave, onClose }: TurmaPairFormProps) => {
   const [formData, setFormData] = useState<CreateTurmaPairData>({
     periodo: "manha",
-    grupoCursos: "engenharias",
     cursos: [],
     salaA: "",
     capacidadeA: 30,
@@ -55,7 +54,14 @@ export const TurmaPairForm = ({ onSave, onClose }: TurmaPairFormProps) => {
     }
   };
 
-  const cursosDisponiveis = gruposCursos[formData.grupoCursos]?.cursos || [];
+  const cursosDisponiveis = [
+    'engenharia-informatica', 'engenharia-civil', 'engenharia-mecatronica',
+    'engenharia-industrial-sistemas-electricos', 'engenharia-agropecuaria',
+    'arquitectura-urbanismo', 'medicina', 'analises-clinicas', 'enfermagem',
+    'cardiopneumologia', 'fisioterapia', 'psicologia', 'direito',
+    'gestao-administracao', 'lingua-portuguesa', 'economia',
+    'turismo-gestao-hoteleira'
+  ];
 
   return (
     <div className="space-y-6">
@@ -75,24 +81,6 @@ export const TurmaPairForm = ({ onSave, onClose }: TurmaPairFormProps) => {
         </Select>
       </div>
 
-      <div>
-        <Label>Grupo de Cursos</Label>
-        <Select 
-          value={formData.grupoCursos} 
-          onValueChange={(value: "engenharias" | "saude" | "ciencias-sociais-humanas") => 
-            setFormData(prev => ({ ...prev, grupoCursos: value, cursos: [] }))
-          }
-        >
-          <SelectTrigger>
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="engenharias">🔧 Cursos de Engenharia</SelectItem>
-            <SelectItem value="saude">🏥 Cursos da Área da Saúde</SelectItem>
-            <SelectItem value="ciencias-sociais-humanas">📚 Cursos das Ciências Sociais e Humanas</SelectItem>
-          </SelectContent>
-        </Select>
-      </div>
 
       <div>
         <Label className="flex items-center gap-2">

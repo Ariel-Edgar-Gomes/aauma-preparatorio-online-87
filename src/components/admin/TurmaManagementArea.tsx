@@ -21,7 +21,7 @@ import {
   ToggleLeft,
   ToggleRight
 } from "lucide-react";
-import { TurmaPair, gruposCursos } from "@/types/turma";
+import { TurmaPair } from "@/types/turma";
 import { useToast } from "@/hooks/use-toast";
 
 interface TurmaManagementAreaProps {
@@ -108,7 +108,7 @@ export const TurmaManagementArea = ({
           <div className="space-y-2">
             <h4 className="font-semibold text-sm">Informações Gerais</h4>
             <div className="space-y-1 text-sm">
-              <p><strong>Grupo:</strong> {gruposCursos[pair.grupoCursos].nome}</p>
+              
               <p><strong>Total Cursos:</strong> {pair.cursos.length}</p>
               <p><strong>Disciplinas Comuns:</strong> {pair.disciplinasComuns.length}</p>
               <p><strong>Criado em:</strong> {new Date(pair.criadoEm).toLocaleDateString('pt-PT')}</p>
@@ -353,7 +353,7 @@ const TurmaDetailManagement = ({ pair }: { pair: TurmaPair }) => {
               <p><strong>Nome:</strong> {pair.nome}</p>
               <p><strong>Período:</strong> {pair.periodo === 'manha' ? 'Manhã' : 'Tarde'}</p>
               <p><strong>Horário:</strong> {pair.horarioPeriodo}</p>
-              <p><strong>Grupo de Cursos:</strong> {gruposCursos[pair.grupoCursos].nome}</p>
+              
               <p><strong>Status:</strong> {pair.ativo ? 'Ativo' : 'Inativo'}</p>
               <p><strong>Criado em:</strong> {new Date(pair.criadoEm).toLocaleDateString('pt-PT')}</p>
             </CardContent>

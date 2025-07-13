@@ -13,7 +13,7 @@ import { useToast } from "@/hooks/use-toast";
 import { courseNames, disciplinesByDayAndCourse } from "@/types/schedule";
 import { useTurmaData } from "@/hooks/useTurmaData";
 import { useSupabaseInscricao } from "@/hooks/useSupabaseInscricao";
-import { gruposCursos } from "@/types/turma";
+
 
 const Inscricao = () => {
   const { toast } = useToast();

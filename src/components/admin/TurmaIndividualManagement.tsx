@@ -31,7 +31,7 @@ import {
   MapPin,
   Clock
 } from "lucide-react";
-import { TurmaPair, Aluno, gruposCursos } from "@/types/turma";
+import { TurmaPair, Aluno } from "@/types/turma";
 import { useToast } from "@/hooks/use-toast";
 import { AlunosStatistics } from "./AlunosStatistics";
 import { alunosService } from "@/services/supabaseService";

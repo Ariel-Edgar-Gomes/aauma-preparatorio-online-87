@@ -118,7 +118,6 @@ export const useTurmaData = () => {
       // Cria dados para novo par baseado no existente
       const duplicateData: CreateTurmaPairData = {
         periodo,
-        grupoCursos: basePair.grupoCursos,
         cursos: basePair.cursos,
         salaA: `${basePair.turmaA.sala}-${periodo.charAt(0).toUpperCase()}`,
         capacidadeA: basePair.turmaA.capacidade,

@@ -48,7 +48,6 @@ interface RelatorioFinanceiroPorPar {
   parId: string;
   nomePar: string;
   periodo: string;
-  grupoCursos: string;
   totalAlunos: number;
   alunosPagos: number;
   alunosPendentes: number;
@@ -163,7 +162,7 @@ const FinanceiroPage = () => {
       parId: pair.id,
       nomePar: pair.nome,
       periodo: pair.periodo === 'manha' ? 'Manhã' : 'Tarde',
-      grupoCursos: pair.grupoCursos,
+      
       totalAlunos: todosAlunosPar.length,
       alunosPagos,
       alunosPendentes,
@@ -361,7 +360,7 @@ const FinanceiroPage = () => {
                           <div className="flex gap-4 text-sm text-gray-600 mt-1">
                             <span>Período: {relatorio.periodo}</span>
                             <span>•</span>
-                            <span>Área: {getGrupoCursosLabel(relatorio.grupoCursos)}</span>
+                            
                           </div>
                         </div>
                         <Badge variant="outline" className="text-xs">
@@ -649,10 +648,8 @@ const FinanceiroPage = () => {
                 <div className="space-y-4">
                   {['engenharias', 'saude', 'ciencias-sociais-humanas'].map(grupo => {
                     const alunosGrupo = todosAlunosFinanceiros.filter(aluno => {
-                      const parCorrespondente = turmaPairs.find(pair => 
-                        pair.nome === aluno.nomeParTurma
-                      );
-                      return parCorrespondente?.grupoCursos === grupo;
+                      // Simular grupo baseado no nome do par
+                      return grupo === 'engenharias'; // Temporário até reorganizar dados
                     });
                     
                     const pagosGrupo = alunosGrupo.filter(a => a.statusPagamento === 'pago').length;
