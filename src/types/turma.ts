@@ -1,4 +1,6 @@
 
+// Types for Turma management system
+
 export interface Aluno {
   id: string;
   nome: string;
