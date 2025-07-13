@@ -14,7 +14,303 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      alunos: {
+        Row: {
+          comprovativo_pagamento_url: string | null
+          copia_bi_url: string | null
+          created_at: string
+          curso_codigo: string
+          data_inicio: string
+          data_inscricao: string
+          data_nascimento: string | null
+          declaracao_certificado_url: string | null
+          duracao: string
+          email: string | null
+          endereco: string | null
+          forma_pagamento: Database["public"]["Enums"]["forma_pagamento_type"]
+          foto_url: string | null
+          id: string
+          nome: string
+          numero_bi: string
+          numero_estudante: string | null
+          observacoes: string | null
+          status: Database["public"]["Enums"]["status_aluno_type"]
+          telefone: string
+          turma_id: string
+          turma_pair_id: string
+          turno: string
+          updated_at: string
+          valor_pago: number
+        }
+        Insert: {
+          comprovativo_pagamento_url?: string | null
+          copia_bi_url?: string | null
+          created_at?: string
+          curso_codigo: string
+          data_inicio: string
+          data_inscricao?: string
+          data_nascimento?: string | null
+          declaracao_certificado_url?: string | null
+          duracao?: string
+          email?: string | null
+          endereco?: string | null
+          forma_pagamento?: Database["public"]["Enums"]["forma_pagamento_type"]
+          foto_url?: string | null
+          id?: string
+          nome: string
+          numero_bi: string
+          numero_estudante?: string | null
+          observacoes?: string | null
+          status?: Database["public"]["Enums"]["status_aluno_type"]
+          telefone: string
+          turma_id: string
+          turma_pair_id: string
+          turno: string
+          updated_at?: string
+          valor_pago?: number
+        }
+        Update: {
+          comprovativo_pagamento_url?: string | null
+          copia_bi_url?: string | null
+          created_at?: string
+          curso_codigo?: string
+          data_inicio?: string
+          data_inscricao?: string
+          data_nascimento?: string | null
+          declaracao_certificado_url?: string | null
+          duracao?: string
+          email?: string | null
+          endereco?: string | null
+          forma_pagamento?: Database["public"]["Enums"]["forma_pagamento_type"]
+          foto_url?: string | null
+          id?: string
+          nome?: string
+          numero_bi?: string
+          numero_estudante?: string | null
+          observacoes?: string | null
+          status?: Database["public"]["Enums"]["status_aluno_type"]
+          telefone?: string
+          turma_id?: string
+          turma_pair_id?: string
+          turno?: string
+          updated_at?: string
+          valor_pago?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "alunos_turma_id_fkey"
+            columns: ["turma_id"]
+            isOneToOne: false
+            referencedRelation: "turmas"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "alunos_turma_pair_id_fkey"
+            columns: ["turma_pair_id"]
+            isOneToOne: false
+            referencedRelation: "turma_pairs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      cursos: {
+        Row: {
+          ativo: boolean
+          codigo: string
+          created_at: string
+          disciplinas: string[]
+          grupo_cursos: Database["public"]["Enums"]["grupo_cursos_type"]
+          horario_semanal: Json
+          id: string
+          nome: string
+          updated_at: string
+        }
+        Insert: {
+          ativo?: boolean
+          codigo: string
+          created_at?: string
+          disciplinas?: string[]
+          grupo_cursos: Database["public"]["Enums"]["grupo_cursos_type"]
+          horario_semanal?: Json
+          id?: string
+          nome: string
+          updated_at?: string
+        }
+        Update: {
+          ativo?: boolean
+          codigo?: string
+          created_at?: string
+          disciplinas?: string[]
+          grupo_cursos?: Database["public"]["Enums"]["grupo_cursos_type"]
+          horario_semanal?: Json
+          id?: string
+          nome?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      horarios: {
+        Row: {
+          created_at: string
+          curso_codigo: string
+          dia_semana: string
+          disciplina: string
+          horario_fim: string
+          horario_inicio: string
+          id: string
+          periodo: Database["public"]["Enums"]["periodo_type"]
+          professor: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          curso_codigo: string
+          dia_semana: string
+          disciplina: string
+          horario_fim: string
+          horario_inicio: string
+          id?: string
+          periodo: Database["public"]["Enums"]["periodo_type"]
+          professor?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          curso_codigo?: string
+          dia_semana?: string
+          disciplina?: string
+          horario_fim?: string
+          horario_inicio?: string
+          id?: string
+          periodo?: Database["public"]["Enums"]["periodo_type"]
+          professor?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      salas: {
+        Row: {
+          ativo: boolean
+          capacidade: number
+          codigo: string
+          created_at: string
+          id: string
+          tipo: string | null
+          updated_at: string
+        }
+        Insert: {
+          ativo?: boolean
+          capacidade?: number
+          codigo: string
+          created_at?: string
+          id?: string
+          tipo?: string | null
+          updated_at?: string
+        }
+        Update: {
+          ativo?: boolean
+          capacidade?: number
+          codigo?: string
+          created_at?: string
+          id?: string
+          tipo?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      turma_pairs: {
+        Row: {
+          ativo: boolean
+          created_at: string
+          cursos: string[]
+          disciplinas_comuns: string[]
+          grupo_cursos: Database["public"]["Enums"]["grupo_cursos_type"]
+          horario_periodo: string
+          horario_semanal: Json
+          id: string
+          nome: string
+          periodo: Database["public"]["Enums"]["periodo_type"]
+          updated_at: string
+        }
+        Insert: {
+          ativo?: boolean
+          created_at?: string
+          cursos?: string[]
+          disciplinas_comuns?: string[]
+          grupo_cursos: Database["public"]["Enums"]["grupo_cursos_type"]
+          horario_periodo: string
+          horario_semanal?: Json
+          id?: string
+          nome: string
+          periodo: Database["public"]["Enums"]["periodo_type"]
+          updated_at?: string
+        }
+        Update: {
+          ativo?: boolean
+          created_at?: string
+          cursos?: string[]
+          disciplinas_comuns?: string[]
+          grupo_cursos?: Database["public"]["Enums"]["grupo_cursos_type"]
+          horario_periodo?: string
+          horario_semanal?: Json
+          id?: string
+          nome?: string
+          periodo?: Database["public"]["Enums"]["periodo_type"]
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      turmas: {
+        Row: {
+          alunos_inscritos: number
+          capacidade: number
+          created_at: string
+          horario_semanal: Json
+          id: string
+          sala_id: string
+          tipo: string
+          turma_pair_id: string
+          updated_at: string
+        }
+        Insert: {
+          alunos_inscritos?: number
+          capacidade?: number
+          created_at?: string
+          horario_semanal?: Json
+          id?: string
+          sala_id: string
+          tipo: string
+          turma_pair_id: string
+          updated_at?: string
+        }
+        Update: {
+          alunos_inscritos?: number
+          capacidade?: number
+          created_at?: string
+          horario_semanal?: Json
+          id?: string
+          sala_id?: string
+          tipo?: string
+          turma_pair_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "turmas_sala_id_fkey"
+            columns: ["sala_id"]
+            isOneToOne: false
+            referencedRelation: "salas"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "turmas_turma_pair_id_fkey"
+            columns: ["turma_pair_id"]
+            isOneToOne: false
+            referencedRelation: "turma_pairs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
@@ -23,7 +319,10 @@ export type Database = {
       [_ in never]: never
     }
     Enums: {
-      [_ in never]: never
+      forma_pagamento_type: "Cash" | "Transferencia" | "Cartao"
+      grupo_cursos_type: "engenharias" | "saude" | "ciencias-sociais-humanas"
+      periodo_type: "manha" | "tarde"
+      status_aluno_type: "inscrito" | "confirmado" | "cancelado"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -150,6 +449,11 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      forma_pagamento_type: ["Cash", "Transferencia", "Cartao"],
+      grupo_cursos_type: ["engenharias", "saude", "ciencias-sociais-humanas"],
+      periodo_type: ["manha", "tarde"],
+      status_aluno_type: ["inscrito", "confirmado", "cancelado"],
+    },
   },
 } as const
