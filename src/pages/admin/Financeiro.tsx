@@ -25,11 +25,13 @@ import {
   AlertCircle,
   XCircle,
   FileText,
-  Calculator
+  Calculator,
+  Edit
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useTurmaData } from "@/hooks/useTurmaData";
 import { Aluno, TurmaPair } from "@/types/turma";
+import EditPaymentDialog from "@/components/admin/EditPaymentDialog";
 
 interface AlunoFinanceiro extends Aluno {
   valorMensalidade: number;
@@ -78,6 +80,26 @@ const FinanceiroPage = () => {
   const [statusFilter, setStatusFilter] = useState<string>("todos");
   const [formaPagamentoFilter, setFormaPagamentoFilter] = useState<string>("todos");
   const [selectedPair, setSelectedPair] = useState<string>("todos");
+  const [editingAluno, setEditingAluno] = useState<AlunoFinanceiro | null>(null);
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const [updateTrigger, setUpdateTrigger] = useState(0);
+
+  const handleEditPayment = (aluno: AlunoFinanceiro) => {
+    setEditingAluno(aluno);
+    setIsEditDialogOpen(true);
+  };
+
+  const handleCloseEditDialog = () => {
+    setEditingAluno(null);
+    setIsEditDialogOpen(false);
+  };
+
+  const handleUpdatePayment = () => {
+    setUpdateTrigger(prev => prev + 1);
+    handleCloseEditDialog();
+    // Força re-render dos dados
+    window.location.reload();
+  };
 
   // Valor fixo da mensalidade única do preparatório
   const VALOR_MENSALIDADE = 40000; // 400.00 AOA
@@ -212,7 +234,7 @@ const FinanceiroPage = () => {
       style: 'currency',
       currency: 'AOA',
       minimumFractionDigits: 2
-    }).format(value / 100);
+    }).format(value);
   };
 
   const getStatusIcon = (status: string) => {
@@ -540,6 +562,7 @@ const FinanceiroPage = () => {
                       <TableHead>Forma Pagamento</TableHead>
                       <TableHead>Data do Pagamento</TableHead>
                       <TableHead>Dias desde Inscrição</TableHead>
+                      <TableHead>Ações</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -610,6 +633,17 @@ const FinanceiroPage = () => {
                               <div className="text-xs text-red-600">⚠️ Atraso</div>
                             )}
                           </div>
+                        </TableCell>
+                        <TableCell>
+                          <Button 
+                            variant="outline" 
+                            size="sm"
+                            onClick={() => handleEditPayment(aluno)}
+                            className="h-8"
+                          >
+                            <Edit className="w-3 h-3 mr-1" />
+                            Editar
+                          </Button>
                         </TableCell>
                       </TableRow>
                     ))}
@@ -755,6 +789,14 @@ const FinanceiroPage = () => {
           </Card>
         </TabsContent>
       </Tabs>
+
+      {/* Diálogo de Edição de Pagamento */}
+      <EditPaymentDialog
+        aluno={editingAluno}
+        isOpen={isEditDialogOpen}
+        onClose={handleCloseEditDialog}
+        onUpdate={handleUpdatePayment}
+      />
     </div>
   );
 };
