@@ -222,6 +222,13 @@ export const useSupabaseTurmaData = () => {
     try {
       console.log('[useSupabaseTurmaData] Atualizando par de turmas:', id, updates);
       
+      // Atualizar estado local imediatamente para resposta rápida
+      setTurmaPairs(current => 
+        current.map(pair => 
+          pair.id === id ? { ...pair, ...updates } : pair
+        )
+      );
+      
       // Converter updates para formato da DB se necessário
       const dbUpdates: any = {};
       if (updates.nome) dbUpdates.nome = updates.nome;
@@ -233,9 +240,32 @@ export const useSupabaseTurmaData = () => {
       if (updates.horarioSemanal) dbUpdates.horario_semanal = updates.horarioSemanal;
       if (updates.ativo !== undefined) dbUpdates.ativo = updates.ativo;
       
+      // Atualizar dados das turmas se necessário
+      if (updates.turmaA) {
+        const turmas = await turmasService.getByTurmaPairId(id);
+        const turmaA = turmas.find(t => t.tipo === 'A');
+        if (turmaA) {
+          await turmasService.update(turmaA.id, {
+            capacidade: updates.turmaA.capacidade !== undefined ? updates.turmaA.capacidade : turmaA.capacidade,
+            alunos_inscritos: updates.turmaA.alunosInscritos !== undefined ? updates.turmaA.alunosInscritos : turmaA.alunos_inscritos
+          });
+        }
+      }
+      
+      if (updates.turmaB) {
+        const turmas = await turmasService.getByTurmaPairId(id);
+        const turmaB = turmas.find(t => t.tipo === 'B');
+        if (turmaB) {
+          await turmasService.update(turmaB.id, {
+            capacidade: updates.turmaB.capacidade !== undefined ? updates.turmaB.capacidade : turmaB.capacidade,
+            alunos_inscritos: updates.turmaB.alunosInscritos !== undefined ? updates.turmaB.alunosInscritos : turmaB.alunos_inscritos
+          });
+        }
+      }
+      
       await turmaPairsService.update(id, dbUpdates);
       
-      // Recarregar dados
+      // Recarregar dados para garantir sincronização
       await loadTurmaPairs();
       
       toast({
@@ -244,6 +274,8 @@ export const useSupabaseTurmaData = () => {
       });
     } catch (error) {
       console.error('[useSupabaseTurmaData] Erro ao atualizar par de turmas:', error);
+      // Reverter mudanças locais em caso de erro
+      await loadTurmaPairs();
       toast({
         title: "Erro ao atualizar",
         description: "Erro ao salvar alterações.",
@@ -257,9 +289,12 @@ export const useSupabaseTurmaData = () => {
     try {
       console.log('[useSupabaseTurmaData] Excluindo par de turmas:', id);
       
+      // Atualizar estado local imediatamente
+      setTurmaPairs(current => current.filter(pair => pair.id !== id));
+      
       await turmaPairsService.delete(id);
       
-      // Recarregar dados
+      // Recarregar dados para garantir sincronização
       await loadTurmaPairs();
       
       toast({
@@ -268,6 +303,8 @@ export const useSupabaseTurmaData = () => {
       });
     } catch (error) {
       console.error('[useSupabaseTurmaData] Erro ao excluir par de turmas:', error);
+      // Reverter mudanças locais em caso de erro
+      await loadTurmaPairs();
       toast({
         title: "Erro ao excluir",
         description: "Erro ao remover o par de turmas.",
@@ -281,18 +318,31 @@ export const useSupabaseTurmaData = () => {
     try {
       console.log('[useSupabaseTurmaData] Alternando status do par:', id);
       
-      await turmaPairsService.toggleStatus(id);
+      const pair = turmaPairs.find(p => p.id === id);
+      if (!pair) return;
       
-      // Recarregar dados
+      const newStatus = !pair.ativo;
+      
+      // Atualizar estado local imediatamente
+      setTurmaPairs(current => 
+        current.map(p => 
+          p.id === id ? { ...p, ativo: newStatus } : p
+        )
+      );
+      
+      await turmaPairsService.update(id, { ativo: newStatus });
+      
+      // Recarregar dados para garantir sincronização
       await loadTurmaPairs();
       
-      const turma = turmaPairs.find(t => t.id === id);
       toast({
-        title: turma?.ativo ? "Par de turmas desativado" : "Par de turmas ativado",
+        title: newStatus ? "Par de turmas ativado" : "Par de turmas desativado",
         description: "Status alterado com sucesso.",
       });
     } catch (error) {
       console.error('[useSupabaseTurmaData] Erro ao alterar status:', error);
+      // Reverter mudanças locais em caso de erro
+      await loadTurmaPairs();
       toast({
         title: "Erro ao alterar status",
         description: "Erro ao alterar o status do par de turmas.",
