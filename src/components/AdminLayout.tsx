@@ -32,6 +32,11 @@ const navigationItems = [
     icon: Users
   },
   {
+    title: "Gestão Individual",
+    url: "/admin/gestao-individual",
+    icon: Users
+  },
+  {
     title: "Horários",
     url: "/admin/horarios",
     icon: Clock

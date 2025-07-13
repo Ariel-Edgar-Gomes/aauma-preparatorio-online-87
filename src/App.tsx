@@ -11,6 +11,7 @@ import AdminDashboard from "./pages/admin/Dashboard";
 import AdminFinanceiro from "./pages/admin/Financeiro";
 import AdminHorarios from "./pages/admin/Horarios";
 import AdminTurmas from "./pages/admin/Turmas";
+import GestaoIndividual from "./pages/admin/GestaoIndividual";
 import NotFound from "./pages/NotFound";
 import { AdminLayout } from "./components/AdminLayout";
 
@@ -34,6 +35,7 @@ const App = () => (
             <Route path="financeiro" element={<AdminFinanceiro />} />
             <Route path="horarios" element={<AdminHorarios />} />
             <Route path="turmas" element={<AdminTurmas />} />
+            <Route path="gestao-individual" element={<GestaoIndividual />} />
           </Route>
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />

@@ -7,7 +7,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
-import { Upload, FileText, User, Phone, Mail, GraduationCap, Clock, CreditCard, Calendar, AlertCircle, CheckCircle, Banknote } from "lucide-react";
+import { Upload, FileText, User, Phone, Mail, GraduationCap, Clock, CreditCard, Calendar, AlertCircle, CheckCircle, Banknote, Download, Printer } from "lucide-react";
+import jsPDF from "jspdf";
 import { Link, useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
 import { courseNames, disciplinesByDayAndCourse } from "@/types/schedule";
@@ -31,9 +32,9 @@ const Inscricao = () => {
     par: "",
     turma: "",
     turno: "",
-    duracao: "3 Meses",
+    duracao: "1 Mes",
     dataInicio: "2025-02-15",
-    formaPagamento: "Cash",
+    formaPagamento: "Transferencia",
     statusPagamento: "inscrito",
     foto: null as File | null,
     copiaBI: null as File | null,
@@ -226,6 +227,75 @@ const Inscricao = () => {
     setFormData(prev => ({ ...prev, [field]: file }));
   };
 
+  const handleExportPDF = () => {
+    const pdf = new jsPDF();
+    
+    // Cabeçalho
+    pdf.setFontSize(16);
+    pdf.text('Formulário de Inscrição - Preparatório AAUMA', 20, 20);
+    
+    // Data
+    pdf.setFontSize(10);
+    pdf.text(`Data: ${new Date().toLocaleDateString('pt-AO')}`, 20, 30);
+    
+    // Dados pessoais
+    pdf.setFontSize(12);
+    let yPos = 50;
+    pdf.text('=== DADOS PESSOAIS ===', 20, yPos);
+    yPos += 15;
+    
+    pdf.setFontSize(10);
+    pdf.text(`Nome Completo: ${formData.nomeCompleto}`, 20, yPos);
+    yPos += 10;
+    pdf.text(`Número BI: ${formData.numeroBI}`, 20, yPos);
+    yPos += 10;
+    pdf.text(`Email: ${formData.email || 'Não informado'}`, 20, yPos);
+    yPos += 10;
+    pdf.text(`Contacto: ${formData.contacto}`, 20, yPos);
+    yPos += 10;
+    pdf.text(`Data Nascimento: ${formData.dataNascimento || 'Não informado'}`, 20, yPos);
+    yPos += 10;
+    pdf.text(`Endereço: ${formData.endereco || 'Não informado'}`, 20, yPos);
+    yPos += 20;
+    
+    // Dados académicos
+    pdf.setFontSize(12);
+    pdf.text('=== DADOS ACADÉMICOS ===', 20, yPos);
+    yPos += 15;
+    
+    pdf.setFontSize(10);
+    pdf.text(`Curso: ${courseNames[formData.curso] || formData.curso}`, 20, yPos);
+    yPos += 10;
+    pdf.text(`Turno: ${formData.turno}`, 20, yPos);
+    yPos += 10;
+    pdf.text(`Par de Turmas: ${formData.par}`, 20, yPos);
+    yPos += 10;
+    pdf.text(`Turma: ${formData.turma}`, 20, yPos);
+    yPos += 10;
+    pdf.text(`Duração: ${formData.duracao}`, 20, yPos);
+    yPos += 10;
+    pdf.text(`Data Início: ${formData.dataInicio}`, 20, yPos);
+    yPos += 20;
+    
+    // Dados financeiros
+    pdf.setFontSize(12);
+    pdf.text('=== DADOS FINANCEIROS ===', 20, yPos);
+    yPos += 15;
+    
+    pdf.setFontSize(10);
+    pdf.text(`Forma de Pagamento: ${formData.formaPagamento}`, 20, yPos);
+    yPos += 10;
+    pdf.text(`Status Pagamento: ${formData.statusPagamento}`, 20, yPos);
+    yPos += 10;
+    pdf.text(`Valor: ${price.toLocaleString()} Kz`, 20, yPos);
+    
+    pdf.save('formulario-inscricao-aauma.pdf');
+  };
+
+  const handlePrint = () => {
+    window.print();
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     console.log('[Inscricao] Form submission started', formData);
@@ -325,6 +395,16 @@ const Inscricao = () => {
                 <p className="text-sm text-gray-600">Formulário de Inscrição</p>
               </div>
             </Link>
+            
+            {/* Navigation */}
+            <nav className="hidden md:flex items-center gap-6">
+              <Link to="/" className="text-[#003366] hover:text-[#d32f2f] transition-colors">
+                Início
+              </Link>
+              <Link to="/admin" className="text-[#003366] hover:text-[#d32f2f] transition-colors">
+                Admin
+              </Link>
+            </nav>
             
             {/* Price Badge */}
             <div className="text-right">
@@ -899,13 +979,36 @@ const Inscricao = () => {
                   </div>
                 </div>
 
-                <Button 
-                  type="submit" 
-                  className="w-full bg-[#003366] hover:bg-[#003366]/90 text-white py-3 text-lg shadow-lg"
-                  disabled={submitting}
-                >
-                  {submitting ? "Processando..." : "Confirmar Inscrição e Gerar Fatura"}
-                </Button>
+                <div className="space-y-3">
+                  <Button 
+                    type="submit" 
+                    className="w-full bg-[#003366] hover:bg-[#003366]/90 text-white py-3 text-lg shadow-lg"
+                    disabled={submitting}
+                  >
+                    {submitting ? "Processando..." : "Confirmar Inscrição e Gerar Fatura"}
+                  </Button>
+                  
+                  <div className="flex gap-2">
+                    <Button 
+                      type="button"
+                      variant="outline" 
+                      onClick={handleExportPDF}
+                      className="flex-1"
+                    >
+                      <Download className="w-4 h-4 mr-2" />
+                      Exportar PDF
+                    </Button>
+                    <Button 
+                      type="button"
+                      variant="outline" 
+                      onClick={handlePrint}
+                      className="flex-1"
+                    >
+                      <Printer className="w-4 h-4 mr-2" />
+                      Imprimir
+                    </Button>
+                  </div>
+                </div>
                 
                 <p className="text-xs text-gray-600 text-center mt-3">
                   Ao confirmar, você aceita os termos e condições do preparatório e sua fatura será gerada automaticamente.

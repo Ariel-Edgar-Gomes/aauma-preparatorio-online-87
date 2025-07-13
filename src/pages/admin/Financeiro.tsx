@@ -26,8 +26,10 @@ import {
   XCircle,
   FileText,
   Calculator,
-  Edit
+  Edit,
+  Printer
 } from "lucide-react";
+import jsPDF from "jspdf";
 import { Link } from "react-router-dom";
 import { useTurmaData } from "@/hooks/useTurmaData";
 import { Aluno, TurmaPair } from "@/types/turma";
@@ -262,6 +264,64 @@ const FinanceiroPage = () => {
     }
   };
 
+  const handleExportFinanceiroPDF = async () => {
+    const pdf = new jsPDF();
+    
+    // Título
+    pdf.setFontSize(16);
+    pdf.text('Relatório Financeiro - Preparatório AAUMA', 20, 20);
+    
+    // Data
+    pdf.setFontSize(10);
+    pdf.text(`Gerado em: ${new Date().toLocaleDateString('pt-AO')}`, 20, 30);
+    
+    // Estatísticas gerais
+    pdf.setFontSize(12);
+    let yPos = 50;
+    pdf.text('=== RESUMO GERAL ===', 20, yPos);
+    yPos += 15;
+    
+    pdf.setFontSize(10);
+    pdf.text(`Total de Alunos: ${todosAlunosFinanceiros.length}`, 20, yPos);
+    yPos += 10;
+    pdf.text(`Receita Arrecadada: ${formatCurrency(totalRecebido)}`, 20, yPos);
+    yPos += 10;
+    pdf.text(`Valores Pendentes: ${formatCurrency(totalPendente)}`, 20, yPos);
+    yPos += 10;
+    pdf.text(`Taxa de Pagamento: ${taxaPagamento}%`, 20, yPos);
+    yPos += 20;
+    
+    // Relatórios por par
+    pdf.setFontSize(12);
+    pdf.text('=== RELATÓRIOS POR PAR DE TURMAS ===', 20, yPos);
+    yPos += 15;
+    
+    relatoriosPorPar.forEach((relatorio, index) => {
+      if (yPos > 250) {
+        pdf.addPage();
+        yPos = 20;
+      }
+      
+      pdf.setFontSize(10);
+      pdf.text(`${index + 1}. ${relatorio.nomePar} (${relatorio.periodo})`, 20, yPos);
+      yPos += 10;
+      pdf.text(`   Total Alunos: ${relatorio.totalAlunos}`, 20, yPos);
+      yPos += 8;
+      pdf.text(`   Receita Arrecadada: ${formatCurrency(relatorio.receitaArrecadada)}`, 20, yPos);
+      yPos += 8;
+      pdf.text(`   Receita Pendente: ${formatCurrency(relatorio.receitaPendente)}`, 20, yPos);
+      yPos += 8;
+      pdf.text(`   Taxa Pagamento: ${relatorio.taxaPagamento.toFixed(1)}%`, 20, yPos);
+      yPos += 15;
+    });
+    
+    pdf.save('relatorio-financeiro-aauma.pdf');
+  };
+
+  const handlePrintFinanceiro = () => {
+    window.print();
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
@@ -281,9 +341,13 @@ const FinanceiroPage = () => {
           <p className="text-muted-foreground mt-1">Dados financeiros do preparatório - Pagamento único de {formatCurrency(VALOR_MENSALIDADE)}</p>
         </div>
         <div className="flex gap-2">
-          <Button variant="outline" size="sm">
+          <Button variant="outline" size="sm" onClick={handleExportFinanceiroPDF}>
             <Download className="w-4 h-4 mr-2" />
-            Exportar
+            Exportar PDF
+          </Button>
+          <Button variant="outline" size="sm" onClick={handlePrintFinanceiro}>
+            <Printer className="w-4 h-4 mr-2" />
+            Imprimir
           </Button>
         </div>
       </div>

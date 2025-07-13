@@ -57,35 +57,6 @@ const AdminHorarios = () => {
         <p className="text-muted-foreground">Configure os horários das disciplinas do preparatório</p>
       </div>
 
-      {/* Actions */}
-      <div className="mb-6">
-        <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-          <DialogTrigger asChild>
-            <Button onClick={() => setEditingSchedule(null)}>
-              <Plus className="w-4 h-4 mr-2" />
-              Novo Horário
-            </Button>
-          </DialogTrigger>
-          <DialogContent className="max-w-md">
-            <DialogHeader>
-              <DialogTitle>
-                {editingSchedule ? 'Editar Horário' : 'Novo Horário'}
-              </DialogTitle>
-              <DialogDescription>
-                {editingSchedule 
-                  ? 'Modifique os dados do horário abaixo.'
-                  : 'Preencha os dados para criar um novo horário.'
-                }
-              </DialogDescription>
-            </DialogHeader>
-            <ScheduleForm
-              editingSchedule={editingSchedule}
-              onSave={handleSave}
-              onClose={handleCloseDialog}
-            />
-          </DialogContent>
-        </Dialog>
-      </div>
 
       {/* Content */}
       <ScheduleGrid
