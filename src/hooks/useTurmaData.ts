@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { TurmaPair, CreateTurmaPairData } from '@/types/turma';
+import { TurmaPair, CreateTurmaPairData, Aluno } from '@/types/turma';
 import { toast } from "@/hooks/use-toast";
 import { useSupabaseTurmaData } from '@/hooks/useSupabaseTurmaData';
 
