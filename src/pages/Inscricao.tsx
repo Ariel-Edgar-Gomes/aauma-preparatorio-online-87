@@ -12,13 +12,14 @@ import { Link, useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
 import { courseNames, disciplinesByDayAndCourse } from "@/types/schedule";
 import { useTurmaData } from "@/hooks/useTurmaData";
+import { useSupabaseInscricao } from "@/hooks/useSupabaseInscricao";
 import { gruposCursos } from "@/types/turma";
 
 const Inscricao = () => {
   const { toast } = useToast();
   const navigate = useNavigate();
   const { turmaPairs, loading: turmaLoading } = useTurmaData(); // Usando exatamente os mesmos dados do admin
-  const [formLoading, setFormLoading] = useState(false);
+  const { submitInscricao, submitting } = useSupabaseInscricao();
   const [formData, setFormData] = useState({
     nomeCompleto: "",
     email: "",
@@ -240,71 +241,18 @@ const Inscricao = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setFormLoading(true);
     console.log('[Inscricao] Form submission started', formData);
 
     try {
-      console.log('[AcademicInfoForm] Starting form validation...');
+      // Usar o hook do Supabase para submeter a inscrição
+      const success = await submitInscricao(formData);
       
-      // Validate required fields
-      if (!formData.nomeCompleto || !formData.contacto || !formData.curso || !formData.turno || !formData.par || !formData.turma || !formData.numeroBI) {
-        throw new Error("Todos os campos obrigatórios devem ser preenchidos.");
+      if (success) {
+        console.log('[Inscricao] Form submission successful');
+        
+        // Redirect to success page with inscription data
+        navigate("/inscricao-sucesso", { state: { inscricaoData: formData } });
       }
-
-      // Validate email format if provided
-      if (formData.email && formData.email.trim() !== "") {
-        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        if (!emailRegex.test(formData.email)) {
-          throw new Error("Formato de email inválido.");
-        }
-      }
-
-      // Validate par exists
-      const parSelecionado = turmaPairs.find(par => par.id === formData.par);
-      if (!parSelecionado) {
-        throw new Error("Par de turmas selecionado não encontrado.");
-      }
-
-      if (!parSelecionado.cursos.includes(formData.curso)) {
-        console.log('[AcademicInfoForm] Validation error - curso mismatch:', formData.curso, parSelecionado.cursos);
-        throw new Error("O par de turmas selecionado não oferece o curso escolhido.");
-      }
-
-      // Validate turno matches par
-      const periodo = formData.turno === '08h00 - 12h00' ? 'manha' : 'tarde';
-      if (parSelecionado.periodo !== periodo) {
-        console.log('[AcademicInfoForm] Validation error - turno mismatch:', formData.turno, parSelecionado.periodo);
-        throw new Error("O turno não corresponde ao período do par selecionado.");
-      }
-
-      // Validate specific turma capacity
-      const turmaEscolhida = formData.turma.endsWith('_A') ? parSelecionado.turmaA : parSelecionado.turmaB;
-      const vagasDisponiveis = turmaEscolhida.capacidade - turmaEscolhida.alunosInscritos;
-
-      if (vagasDisponiveis <= 0) {
-        console.log('[AcademicInfoForm] Validation error - no capacity:', turmaEscolhida);
-        throw new Error("A turma selecionada não possui vagas disponíveis.");
-      }
-
-      console.log('[AcademicInfoForm] Validation successful:', {
-        curso: formData.curso,
-        turma: formData.turma,
-        turno: formData.turno,
-        vagasDisponiveis
-      });
-
-      // Simulate form submission
-      await new Promise(resolve => setTimeout(resolve, 2000));
-
-      toast({
-        title: "Inscrição realizada com sucesso!",
-        description: `Sua inscrição foi registrada. Valor: ${price.toLocaleString()} Kz`,
-      });
-
-      console.log('[Inscricao] Form submission successful');
-      
-      // Redirect to success page with inscription data
-      navigate("/inscricao-sucesso", { state: { inscricaoData: formData } });
 
     } catch (error) {
       console.error('[Inscricao] Form submission error:', error);
@@ -313,8 +261,6 @@ const Inscricao = () => {
         description: error instanceof Error ? error.message : "Erro desconhecido",
         variant: "destructive"
       });
-    } finally {
-      setFormLoading(false);
     }
   };
 
@@ -928,9 +874,9 @@ const Inscricao = () => {
                 <Button 
                   type="submit" 
                   className="w-full bg-[#003366] hover:bg-[#003366]/90 text-white py-3 text-lg shadow-lg"
-                  disabled={formLoading}
+                  disabled={submitting}
                 >
-                  {formLoading ? "Processando..." : "Confirmar Inscrição e Gerar Fatura"}
+                  {submitting ? "Processando..." : "Confirmar Inscrição e Gerar Fatura"}
                 </Button>
                 
                 <p className="text-xs text-gray-600 text-center mt-3">

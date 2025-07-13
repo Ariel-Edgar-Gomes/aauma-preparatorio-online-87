@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { TurmaPair, CreateTurmaPairData, salas, Aluno } from "@/types/turma";
 import { useToast } from "@/hooks/use-toast";
 import { disciplinesByDayAndCourse } from "@/types/schedule";
+import { useSupabaseTurmaData } from "@/hooks/useSupabaseTurmaData";
 
 // Função para gerar alunos mock
 const gerarAlunosMock = (quantidade: number, cursos: string[]): Aluno[] => {
@@ -154,9 +155,18 @@ const gerarHorarioTurmaB = (cursos: string[], cursoEspecifico?: string): Record<
 };
 
 export const useTurmaData = () => {
+  // Usar dados do Supabase por padrão, com fallback para mock data
+  const USE_SUPABASE = true; // Configuração para alternar entre Supabase e mock
+  
+  const supabaseData = useSupabaseTurmaData();
   const { toast } = useToast();
   const [turmaPairs, setTurmaPairs] = useState<TurmaPair[]>([]);
   const [loading, setLoading] = useState(true);
+  
+  // Se usar Supabase, retornar os dados do Supabase
+  if (USE_SUPABASE) {
+    return supabaseData;
+  }
 
   useEffect(() => {
     // Mock data com todos os cursos organizados por grupos
