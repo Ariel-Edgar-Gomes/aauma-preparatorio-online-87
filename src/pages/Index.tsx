@@ -7,58 +7,49 @@ import { MobileNav } from "@/components/MobileNav";
 
 const Index = () => {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-aauma-light-gray via-white to-aauma-light-gray">
-      {/* Header */}
-      <header className="bg-white shadow-lg border-b-4 border-aauma-red">
-        <div className="container mx-auto px-4 py-6">
-          <div className="flex flex-col md:flex-row items-center justify-between gap-4">
-            <div className="flex items-center gap-4">
+    <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted">
+      {/* Header Moderno e Acessível */}
+      <header className="bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/90 border-b shadow-sm sticky top-0 z-50">
+        <div className="container mx-auto px-4 py-4">
+          <div className="flex items-center justify-between">
+            {/* Logo e Titulo */}
+            <div className="flex items-center gap-3">
               <img 
                 src="/lovable-uploads/9e56fb52-9dc2-4075-8e3e-8b20fd589107.png" 
                 alt="AAUMA Logo" 
-                className="w-16 h-16 md:w-20 md:h-20 object-contain"
+                className="w-12 h-12 object-contain"
               />
-              <div>
-                <h1 className="text-2xl md:text-3xl font-bold text-aauma-navy">
+              <div className="hidden sm:block">
+                <h1 className="text-xl font-bold text-foreground">
                   Preparatório AAUMA
                 </h1>
-                <p className="text-aauma-dark-gray">2025 - 2026</p>
+                <p className="text-sm text-muted-foreground">2025 - 2026</p>
               </div>
             </div>
-            <div className="flex items-center gap-2">
-              <div className="md:hidden">
-                <Link to="/inscricao">
-                  <Button className="bg-aauma-red hover:bg-aauma-red/90 text-white">
-                    Fazer Inscrição
-                  </Button>
-                </Link>
-              </div>
+
+            {/* Navegação Desktop */}
+            <nav className="hidden lg:flex items-center gap-2">
+              <Link to="/inscricao">
+                <Button className="bg-aauma-red hover:bg-aauma-red/90 text-white">
+                  Fazer Inscrição
+                </Button>
+              </Link>
+              <Link to="/admin">
+                <Button variant="outline">
+                  <Users className="w-4 h-4 mr-2" />
+                  Admin
+                </Button>
+              </Link>
+            </nav>
+
+            {/* Navegação Mobile */}
+            <div className="lg:hidden flex items-center gap-2">
+              <Link to="/inscricao">
+                <Button size="sm" className="bg-aauma-red hover:bg-aauma-red/90 text-white">
+                  Inscrever
+                </Button>
+              </Link>
               <MobileNav />
-              <div className="hidden md:flex gap-2">
-                <Link to="/inscricao">
-                  <Button className="bg-aauma-red hover:bg-aauma-red/90 text-white">
-                    Fazer Inscrição
-                  </Button>
-                </Link>
-                <Link to="/admin/turmas">
-                  <Button variant="outline" className="border-aauma-navy text-aauma-navy hover:bg-aauma-navy hover:text-white">
-                    <Users className="w-4 h-4 mr-2" />
-                    Turmas
-                  </Button>
-                </Link>
-                <Link to="/admin/horarios">
-                  <Button variant="outline" className="border-aauma-navy text-aauma-navy hover:bg-aauma-navy hover:text-white">
-                    <Calendar className="w-4 h-4 mr-2" />
-                    Horários
-                  </Button>
-                </Link>
-                <Link to="/admin/financeiro">
-                  <Button variant="outline" className="border-aauma-navy text-aauma-navy hover:bg-aauma-navy hover:text-white">
-                    <CreditCard className="w-4 h-4 mr-2" />
-                    Admin
-                  </Button>
-                </Link>
-              </div>
             </div>
           </div>
         </div>

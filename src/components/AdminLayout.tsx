@@ -72,9 +72,9 @@ function AdminSidebar() {
       collapsible="icon"
       variant="sidebar"
     >
-      <SidebarContent className="bg-background border-r">
-        {/* Header Simples */}
-        <div className="p-4 border-b">
+      <SidebarContent className="bg-sidebar border-r border-sidebar-border">
+        {/* Header */}
+        <div className="p-4 border-b border-sidebar-border">
           <div className="flex items-center gap-3">
             <img 
               src="/lovable-uploads/9e56fb52-9dc2-4075-8e3e-8b20fd589107.png" 
@@ -82,15 +82,15 @@ function AdminSidebar() {
               className="w-8 h-8 object-contain"
             />
             {!collapsed && (
-              <span className="font-semibold text-foreground">Admin AAUMA</span>
+              <span className="font-semibold text-sidebar-foreground">Admin AAUMA</span>
             )}
           </div>
         </div>
 
-        {/* Navegação Principal */}
+        {/* Navegação */}
         <SidebarGroup className="px-2 py-4">
           <SidebarGroupContent>
-            <SidebarMenu className="space-y-2">
+            <SidebarMenu className="space-y-1">
               {navigationItems.map((item) => (
                 <SidebarMenuItem key={item.title}>
                   <SidebarMenuButton asChild>
@@ -99,8 +99,8 @@ function AdminSidebar() {
                       className={({ isActive }) => `
                         flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all
                         ${isActive 
-                          ? "bg-primary text-primary-foreground shadow-sm" 
-                          : "text-muted-foreground hover:text-foreground hover:bg-muted"
+                          ? "bg-sidebar-primary text-sidebar-primary-foreground shadow-sm" 
+                          : "text-sidebar-foreground hover:text-sidebar-primary hover:bg-sidebar-accent"
                         }
                       `}
                       title={collapsed ? item.title : undefined}
@@ -122,18 +122,18 @@ function AdminSidebar() {
 export function AdminLayout() {
   return (
     <SidebarProvider>
-      <div className="min-h-screen flex w-full">
+      <div className="min-h-screen flex w-full bg-background">
         <AdminSidebar />
         
         <main className="flex-1 flex flex-col">
-          {/* Header Limpo */}
-          <header className="h-14 border-b bg-background flex items-center px-4 gap-4">
-            <SidebarTrigger />
+          {/* Header */}
+          <header className="h-14 border-b border-border bg-background flex items-center px-4 gap-4">
+            <SidebarTrigger className="text-sidebar-foreground hover:text-sidebar-primary" />
             <h1 className="font-semibold text-lg text-foreground">Painel Administrativo</h1>
           </header>
 
           {/* Conteúdo */}
-          <div className="flex-1 overflow-auto p-6">
+          <div className="flex-1 overflow-auto p-6 bg-muted/30">
             <Outlet />
           </div>
         </main>
