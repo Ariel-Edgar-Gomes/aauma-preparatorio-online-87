@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
-import { Upload, FileText, User, Phone, Mail, GraduationCap, Clock, CreditCard, Calendar } from "lucide-react";
+import { Upload, FileText, User, Phone, Mail, GraduationCap, Clock, CreditCard, Calendar, AlertCircle, CheckCircle, Banknote } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
 import { courseNames, disciplinesByDayAndCourse } from "@/types/schedule";
@@ -34,6 +34,7 @@ const Inscricao = () => {
     duracao: "3 Meses",
     dataInicio: "2025-02-15",
     formaPagamento: "Cash",
+    statusPagamento: "inscrito",
     foto: null as File | null,
     copiaBI: null as File | null,
     declaracaoCertificado: null as File | null,
@@ -744,24 +745,20 @@ const Inscricao = () => {
                   Configuração do Curso
                 </CardTitle>
                 <CardDescription>
-                  Configure a duração, data de início e forma de pagamento
+                  Configure a duração, data de início, forma de pagamento e status
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4 pt-6">
-                <div className="grid md:grid-cols-3 gap-4">
+                <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4">
                   <div>
-                    <Label htmlFor="duracao" className="text-[#003366] font-medium">Duração</Label>
+                    <Label htmlFor="duracao" className="text-[#003366] font-medium">Duração *</Label>
                     <Select value={formData.duracao} onValueChange={(value) => handleInputChange('duracao', value)}>
                       <SelectTrigger className="border-gray-300 focus:border-[#003366] focus:ring-[#003366]/20">
                         <SelectValue placeholder="Selecione a duração" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="1 Mês">1 Mês</SelectItem>
-                        <SelectItem value="1,2 Meses">1,2 Meses</SelectItem>
-                        <SelectItem value="1,5 Meses">1,5 Meses</SelectItem>
-                        <SelectItem value="2 Meses">2 Meses</SelectItem>
-                        <SelectItem value="2,5 Meses">2,5 Meses</SelectItem>
                         <SelectItem value="3 Meses">3 Meses</SelectItem>
+                        <SelectItem value="6 Meses">6 Meses</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
@@ -769,7 +766,7 @@ const Inscricao = () => {
                   <div>
                     <Label htmlFor="dataInicio" className="flex items-center gap-1 text-[#003366] font-medium">
                       <Calendar className="w-4 h-4" />
-                      Data de Início
+                      Data de Início *
                     </Label>
                     <Input
                       id="dataInicio"
@@ -777,25 +774,69 @@ const Inscricao = () => {
                       value={formData.dataInicio}
                       onChange={(e) => handleInputChange('dataInicio', e.target.value)}
                       className="border-gray-300 focus:border-[#003366] focus:ring-[#003366]/20"
+                      required
                     />
                   </div>
 
                   <div>
                     <Label htmlFor="formaPagamento" className="flex items-center gap-1 text-[#003366] font-medium">
                       <CreditCard className="w-4 h-4" />
-                      Forma de Pagamento
+                      Forma de Pagamento *
                     </Label>
                     <Select value={formData.formaPagamento} onValueChange={(value) => handleInputChange('formaPagamento', value)}>
                       <SelectTrigger className="border-gray-300 focus:border-[#003366] focus:ring-[#003366]/20">
                         <SelectValue placeholder="Selecione a forma" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="Cash">Cash</SelectItem>
-                        <SelectItem value="Transferência Bancária">Transferência Bancária</SelectItem>
-                        <SelectItem value="Multicaixa">Multicaixa</SelectItem>
-                        <SelectItem value="Cartão de Crédito">Cartão de Crédito</SelectItem>
+                        <SelectItem value="Cash">
+                          <div className="flex items-center gap-2">
+                            <Banknote className="w-4 h-4" />
+                            <span>Dinheiro (Cash)</span>
+                          </div>
+                        </SelectItem>
+                        <SelectItem value="Transferencia">
+                          <div className="flex items-center gap-2">
+                            <CreditCard className="w-4 h-4" />
+                            <span>Transferência Bancária</span>
+                          </div>
+                        </SelectItem>
+                        <SelectItem value="Cartao">
+                          <div className="flex items-center gap-2">
+                            <CreditCard className="w-4 h-4" />
+                            <span>Cartão</span>
+                          </div>
+                        </SelectItem>
                       </SelectContent>
                     </Select>
+                  </div>
+
+                  <div>
+                    <Label htmlFor="statusPagamento" className="flex items-center gap-1 text-[#003366] font-medium">
+                      <CheckCircle className="w-4 h-4" />
+                      Status do Pagamento *
+                    </Label>
+                    <Select value={formData.statusPagamento} onValueChange={(value) => handleInputChange('statusPagamento', value)}>
+                      <SelectTrigger className="border-gray-300 focus:border-[#003366] focus:ring-[#003366]/20">
+                        <SelectValue placeholder="Definir status" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="inscrito">
+                          <div className="flex items-center gap-2">
+                            <AlertCircle className="w-4 h-4 text-yellow-600" />
+                            <span>Inscrito (Pendente)</span>
+                          </div>
+                        </SelectItem>
+                        <SelectItem value="confirmado">
+                          <div className="flex items-center gap-2">
+                            <CheckCircle className="w-4 h-4 text-green-600" />
+                            <span>Confirmado (Pago)</span>
+                          </div>
+                        </SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <p className="text-xs text-gray-600 mt-1">
+                      Define o status inicial no sistema
+                    </p>
                   </div>
                 </div>
               </CardContent>
@@ -868,6 +909,7 @@ const Inscricao = () => {
                     <p>• Duração: {formData.duracao}</p>
                     <p>• Início: {new Date(formData.dataInicio).toLocaleDateString('pt-AO')}</p>
                     <p>• Forma de Pagamento: {formData.formaPagamento}</p>
+                    <p>• Status: {formData.statusPagamento === 'confirmado' ? 'Pagamento Confirmado' : 'Pagamento Pendente'}</p>
                   </div>
                 </div>
 

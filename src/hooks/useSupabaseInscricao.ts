@@ -15,7 +15,8 @@ interface InscricaoFormData {
   turno: string;
   duracao: string;
   dataInicio: string;
-  formaPagamento: string; // Accept any string value
+  formaPagamento: string;
+  statusPagamento: string;
   foto?: File | null;
   copiaBI?: File | null;
   declaracaoCertificado?: File | null;
@@ -33,7 +34,8 @@ export const useSupabaseInscricao = () => {
 
       // Validações
       if (!formData.nomeCompleto || !formData.contacto || !formData.numeroBI || 
-          !formData.curso || !formData.par || !formData.turma || !formData.turno) {
+          !formData.curso || !formData.par || !formData.turma || !formData.turno || 
+          !formData.statusPagamento) {
         throw new Error("Todos os campos obrigatórios devem ser preenchidos.");
       }
 
@@ -95,8 +97,8 @@ export const useSupabaseInscricao = () => {
         duracao: formData.duracao,
         data_inicio: formData.dataInicio,
         forma_pagamento: formData.formaPagamento as 'Cash' | 'Transferencia' | 'Cartao',
-        valor_pago: 40000.00, // Valor fixo
-        status: 'inscrito',
+        valor_pago: formData.statusPagamento === 'confirmado' ? 40000.00 : 0.00,
+        status: formData.statusPagamento as 'inscrito' | 'confirmado',
         observacoes: undefined,
         foto_url,
         copia_bi_url,

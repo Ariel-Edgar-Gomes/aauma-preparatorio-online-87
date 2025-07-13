@@ -29,7 +29,8 @@ import {
   CheckCircle,
   XCircle,
   MapPin,
-  Clock
+  Clock,
+  CreditCard
 } from "lucide-react";
 import { TurmaPair, Aluno } from "@/types/turma";
 import { useToast } from "@/hooks/use-toast";
@@ -369,8 +370,9 @@ export const TurmaIndividualManagement = ({
                           <TableHead>Nº Estudante</TableHead>
                           <TableHead>Status</TableHead>
                           <TableHead>Data Inscrição</TableHead>
-                          <TableHead>Pagamento</TableHead>
-                          <TableHead>Ações</TableHead>
+                           <TableHead>Pagamento</TableHead>
+                           <TableHead>Valor Pago</TableHead>
+                           <TableHead>Ações</TableHead>
                         </TableRow>
                       </TableHeader>
                       <TableBody>
@@ -410,11 +412,23 @@ export const TurmaIndividualManagement = ({
                               </Badge>
                             </TableCell>
                             <TableCell>{new Date(aluno.dataInscricao).toLocaleDateString('pt-PT')}</TableCell>
-                            <TableCell>
-                              <Badge variant="secondary" className="text-xs">
-                                {aluno.formaPagamento || 'Cash'}
-                              </Badge>
-                            </TableCell>
+                             <TableCell>
+                               <Badge variant="secondary" className="text-xs">
+                                 {aluno.formaPagamento || 'Cash'}
+                               </Badge>
+                             </TableCell>
+                             <TableCell>
+                               <div className="text-sm">
+                                 <div className="font-medium">
+                                   40.000,00 Kz
+                                 </div>
+                                 <div className={`text-xs ${
+                                   aluno.status === 'confirmado' ? 'text-green-600' : 'text-red-600'
+                                 }`}>
+                                   {aluno.status === 'confirmado' ? 'Pago' : 'Pendente'}
+                                 </div>
+                               </div>
+                             </TableCell>
                             <TableCell>
                               <div className="flex gap-2">
                                 <Dialog>
@@ -569,44 +583,114 @@ export const TurmaIndividualManagement = ({
                                              </div>
                                            </TabsContent>
 
-                                           <TabsContent value="pagamento" className="space-y-4">
-                                             <div className="grid grid-cols-2 gap-4">
-                                               <div>
-                                                 <Label>Forma de Pagamento</Label>
-                                                 <Select
-                                                   value={editingAluno.formaPagamento || 'Cash'}
-                                                   onValueChange={(value) => setEditingAluno({...editingAluno, formaPagamento: value as any})}
-                                                 >
-                                                   <SelectTrigger>
-                                                     <SelectValue />
-                                                   </SelectTrigger>
-                                                   <SelectContent>
-                                                     <SelectItem value="Cash">Cash</SelectItem>
-                                                     <SelectItem value="Transferencia">Transferência</SelectItem>
-                                                     <SelectItem value="Cartao">Cartão</SelectItem>
-                                                   </SelectContent>
-                                                 </Select>
-                                               </div>
-                                               <div>
-                                                 <Label>Turno</Label>
-                                                 <Input
-                                                   value={editingAluno.turno || ''}
-                                                   onChange={(e) => setEditingAluno({...editingAluno, turno: e.target.value})}
-                                                   placeholder="Ex: 08h00 - 12h00"
-                                                 />
-                                               </div>
-                                             </div>
+                                            <TabsContent value="pagamento" className="space-y-4">
+                                              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
+                                                <div className="flex items-center gap-2 text-blue-800 mb-2">
+                                                  <CreditCard className="w-5 h-5" />
+                                                  <span className="font-semibold">Valor do Preparatório</span>
+                                                </div>
+                                                <div className="text-2xl font-bold text-blue-900">
+                                                  40.000,00 Kz
+                                                </div>
+                                                <p className="text-sm text-blue-700 mt-1">
+                                                  Pagamento único do curso preparatório
+                                                </p>
+                                              </div>
 
-                                             <div>
-                                               <Label>Observações</Label>
-                                               <Textarea
-                                                 value={editingAluno.observacoes || ''}
-                                                 onChange={(e) => setEditingAluno({...editingAluno, observacoes: e.target.value})}
-                                                 placeholder="Observações adicionais sobre o aluno"
-                                                 rows={3}
-                                               />
-                                             </div>
-                                           </TabsContent>
+                                              <div className="grid grid-cols-2 gap-4">
+                                                <div>
+                                                  <Label>Forma de Pagamento</Label>
+                                                  <Select
+                                                    value={editingAluno.formaPagamento || 'Cash'}
+                                                    onValueChange={(value) => setEditingAluno({...editingAluno, formaPagamento: value as any})}
+                                                  >
+                                                    <SelectTrigger>
+                                                      <SelectValue />
+                                                    </SelectTrigger>
+                                                    <SelectContent>
+                                                      <SelectItem value="Cash">
+                                                        <div className="flex items-center gap-2">
+                                                          <span>💵</span>
+                                                          <span>Dinheiro (Cash)</span>
+                                                        </div>
+                                                      </SelectItem>
+                                                      <SelectItem value="Transferencia">
+                                                        <div className="flex items-center gap-2">
+                                                          <span>🏦</span>
+                                                          <span>Transferência Bancária</span>
+                                                        </div>
+                                                      </SelectItem>
+                                                      <SelectItem value="Cartao">
+                                                        <div className="flex items-center gap-2">
+                                                          <span>💳</span>
+                                                          <span>Cartão</span>
+                                                        </div>
+                                                      </SelectItem>
+                                                    </SelectContent>
+                                                  </Select>
+                                                </div>
+                                                <div>
+                                                  <Label>Status do Pagamento</Label>
+                                                  <Select
+                                                    value={editingAluno.status}
+                                                    onValueChange={(value) => setEditingAluno({...editingAluno, status: value as any})}
+                                                  >
+                                                    <SelectTrigger>
+                                                      <SelectValue />
+                                                    </SelectTrigger>
+                                                    <SelectContent>
+                                                      <SelectItem value="inscrito">
+                                                        <div className="flex items-center gap-2">
+                                                          <AlertCircle className="w-4 h-4 text-yellow-600" />
+                                                          <span>Inscrito (Pendente)</span>
+                                                        </div>
+                                                      </SelectItem>
+                                                      <SelectItem value="confirmado">
+                                                        <div className="flex items-center gap-2">
+                                                          <CheckCircle className="w-4 h-4 text-green-600" />
+                                                          <span>Confirmado (Pago)</span>
+                                                        </div>
+                                                      </SelectItem>
+                                                      <SelectItem value="cancelado">
+                                                        <div className="flex items-center gap-2">
+                                                          <XCircle className="w-4 h-4 text-red-600" />
+                                                          <span>Cancelado</span>
+                                                        </div>
+                                                      </SelectItem>
+                                                    </SelectContent>
+                                                  </Select>
+                                                </div>
+                                              </div>
+
+                                              <div className="grid grid-cols-2 gap-4">
+                                                <div>
+                                                  <Label>Turno</Label>
+                                                  <Input
+                                                    value={editingAluno.turno || ''}
+                                                    onChange={(e) => setEditingAluno({...editingAluno, turno: e.target.value})}
+                                                    placeholder="Ex: 08h00 - 12h00"
+                                                  />
+                                                </div>
+                                                <div>
+                                                  <Label>Valor Pago</Label>
+                                                  <Input
+                                                    value={editingAluno.status === 'confirmado' ? '40.000,00 Kz' : '0,00 Kz'}
+                                                    readOnly
+                                                    className="bg-gray-100"
+                                                  />
+                                                </div>
+                                              </div>
+
+                                              <div>
+                                                <Label>Observações</Label>
+                                                <Textarea
+                                                  value={editingAluno.observacoes || ''}
+                                                  onChange={(e) => setEditingAluno({...editingAluno, observacoes: e.target.value})}
+                                                  placeholder="Observações adicionais sobre o aluno ou pagamento"
+                                                  rows={3}
+                                                />
+                                              </div>
+                                            </TabsContent>
                                          </Tabs>
 
                                          <div className="flex justify-end gap-2 pt-4 border-t">

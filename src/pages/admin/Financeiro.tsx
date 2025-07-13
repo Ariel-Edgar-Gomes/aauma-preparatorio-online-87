@@ -95,7 +95,7 @@ const FinanceiroPage = () => {
       let statusPagamento: 'pago' | 'pendente' | 'atrasado' = 'pendente';
       let dataUltimoPagamento: string | undefined;
 
-      // Lógica baseada no status real do aluno
+      // Lógica baseada no status real do aluno (CONSISTÊNCIA TOTAL)
       if (aluno.status === 'confirmado') {
         // Alunos confirmados já pagaram
         valorPago = VALOR_MENSALIDADE;
@@ -103,18 +103,14 @@ const FinanceiroPage = () => {
         statusPagamento = 'pago';
         dataUltimoPagamento = aluno.dataInscricao;
       } else if (aluno.status === 'inscrito') {
-        // Simular alguns pagamentos para alunos inscritos
-        const probabilidadePagamento = Math.random();
-        if (probabilidadePagamento > 0.3) { // 70% pagaram
-          valorPago = VALOR_MENSALIDADE;
-          valorPendente = 0;
-          statusPagamento = 'pago';
-          dataUltimoPagamento = aluno.dataInscricao;
+        // Alunos inscritos têm pagamento pendente
+        valorPago = 0;
+        valorPendente = VALOR_MENSALIDADE;
+        // Verificar se está atrasado (mais de 5 dias da inscrição)
+        if (diasDesdeInscricao > 5) {
+          statusPagamento = 'atrasado';
         } else {
-          // Verificar se está atrasado (mais de 5 dias da inscrição)
-          if (diasDesdeInscricao > 5) {
-            statusPagamento = 'atrasado';
-          }
+          statusPagamento = 'pendente';
         }
       } else if (aluno.status === 'cancelado') {
         // Alunos cancelados não pagaram ou pediram reembolso
