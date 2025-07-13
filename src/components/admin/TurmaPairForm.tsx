@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Save, Users, MapPin, BookOpen } from "lucide-react";
-import { CreateTurmaPairData, salas, gruposCursos } from "@/types/turma";
+import { CreateTurmaPairData, gruposCursos } from "@/types/turma";
 import { courseNames } from "@/types/schedule";
 
 interface TurmaPairFormProps {
@@ -127,25 +127,13 @@ export const TurmaPairForm = ({ onSave, onClose }: TurmaPairFormProps) => {
           </div>
           
           <div>
-            <Label>Sala da Turma A</Label>
-            <Select 
-              value={formData.salaA} 
-              onValueChange={(value) => handleInputChange('salaA', value)}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="Selecione a sala" />
-              </SelectTrigger>
-              <SelectContent>
-                {salas.map((sala) => (
-                  <SelectItem key={sala} value={sala}>
-                    <div className="flex items-center gap-2">
-                      <MapPin className="w-3 h-3" />
-                      {sala}
-                    </div>
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            <Label>Número da Sala da Turma A</Label>
+            <Input
+              type="text"
+              placeholder="Digite o número da sala (ex: 101, A1, Lab1)"
+              value={formData.salaA}
+              onChange={(e) => handleInputChange('salaA', e.target.value)}
+            />
           </div>
 
           <div>
@@ -168,25 +156,13 @@ export const TurmaPairForm = ({ onSave, onClose }: TurmaPairFormProps) => {
           </div>
           
           <div>
-            <Label>Sala da Turma B</Label>
-            <Select 
-              value={formData.salaB} 
-              onValueChange={(value) => handleInputChange('salaB', value)}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="Selecione a sala" />
-              </SelectTrigger>
-              <SelectContent>
-                {salas.map((sala) => (
-                  <SelectItem key={sala} value={sala}>
-                    <div className="flex items-center gap-2">
-                      <MapPin className="w-3 h-3" />
-                      {sala}
-                    </div>
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            <Label>Número da Sala da Turma B</Label>
+            <Input
+              type="text"
+              placeholder="Digite o número da sala (ex: 102, B1, Lab2)"
+              value={formData.salaB}
+              onChange={(e) => handleInputChange('salaB', e.target.value)}
+            />
           </div>
 
           <div>

@@ -21,7 +21,7 @@ import {
   ToggleLeft,
   ToggleRight
 } from "lucide-react";
-import { TurmaPair, salas, gruposCursos } from "@/types/turma";
+import { TurmaPair, gruposCursos } from "@/types/turma";
 import { useToast } from "@/hooks/use-toast";
 
 interface TurmaManagementAreaProps {
@@ -179,37 +179,23 @@ export const TurmaManagementArea = ({
                     
                     <div className="grid grid-cols-2 gap-4">
                       <div>
-                        <Label>Sala Turma A</Label>
-                        <Select
+                        <Label>Número da Sala Turma A</Label>
+                        <Input
+                          type="text"
+                          placeholder="Digite o número da sala (ex: 101, A1)"
                           value={editingPair.turmaA.sala}
-                          onValueChange={(value) => updateTurmaData('A', 'sala', value)}
-                        >
-                          <SelectTrigger>
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {salas.map(sala => (
-                              <SelectItem key={sala} value={sala}>{sala}</SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
+                          onChange={(e) => updateTurmaData('A', 'sala', e.target.value)}
+                        />
                       </div>
                       
                       <div>
-                        <Label>Sala Turma B</Label>
-                        <Select
+                        <Label>Número da Sala Turma B</Label>
+                        <Input
+                          type="text"
+                          placeholder="Digite o número da sala (ex: 102, B1)"
                           value={editingPair.turmaB.sala}
-                          onValueChange={(value) => updateTurmaData('B', 'sala', value)}
-                        >
-                          <SelectTrigger>
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {salas.map(sala => (
-                              <SelectItem key={sala} value={sala}>{sala}</SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
+                          onChange={(e) => updateTurmaData('B', 'sala', e.target.value)}
+                        />
                       </div>
                     </div>
 
