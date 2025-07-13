@@ -8,6 +8,8 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Save, Users, MapPin, BookOpen } from "lucide-react";
 import { CreateTurmaPairData } from "@/types/turma";
 import { courseNames } from "@/types/schedule";
+import { cursosService } from "@/services/supabaseService";
+import { useEffect } from "react";
 
 interface TurmaPairFormProps {
   onSave: (data: CreateTurmaPairData) => boolean;
@@ -54,14 +56,31 @@ export const TurmaPairForm = ({ onSave, onClose }: TurmaPairFormProps) => {
     }
   };
 
-  const cursosDisponiveis = [
-    'engenharia-informatica', 'engenharia-civil', 'engenharia-mecatronica',
-    'engenharia-industrial-sistemas-electricos', 'engenharia-agropecuaria',
-    'arquitectura-urbanismo', 'medicina', 'analises-clinicas', 'enfermagem',
-    'cardiopneumologia', 'fisioterapia', 'psicologia', 'direito',
-    'gestao-administracao', 'lingua-portuguesa', 'economia',
-    'turismo-gestao-hoteleira'
-  ];
+  // Buscar todos os cursos ativos do sistema
+  const [cursosDisponiveis, setCursosDisponiveis] = useState<string[]>([]);
+
+  useEffect(() => {
+    const loadCursos = async () => {
+      try {
+        const cursos = await cursosService.getAll();
+        const cursosAtivos = cursos.filter(curso => curso.ativo).map(curso => curso.codigo);
+        setCursosDisponiveis(cursosAtivos);
+      } catch (error) {
+        console.error('Erro ao carregar cursos:', error);
+        // Fallback para lista estática
+        setCursosDisponiveis([
+          'engenharia-informatica', 'engenharia-civil', 'engenharia-mecatronica',
+          'engenharia-industrial-sistemas-electricos', 'engenharia-agropecuaria',
+          'arquitectura-urbanismo', 'medicina', 'analises-clinicas', 'enfermagem',
+          'cardiopneumologia', 'fisioterapia', 'psicologia', 'direito',
+          'gestao-administracao', 'lingua-portuguesa', 'economia',
+          'turismo-gestao-hoteleira'
+        ]);
+      }
+    };
+    
+    loadCursos();
+  }, []);
 
   return (
     <div className="space-y-6">

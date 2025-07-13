@@ -405,10 +405,11 @@ export const useSupabaseTurmaData = () => {
       const nomePeriodo = periodo === 'manha' ? 'Manhã' : 'Tarde';
       const horarioPeriodo = periodo === 'manha' ? '08h00 - 12h00' : '13h00 - 17h00';
       
-      // Usar configuração padrão baseada no período
-      const cursosDefault = periodo === 'manha' 
-        ? ['engenharia-informatica'] 
-        : ['medicina'];
+      // Buscar todos os cursos ativos para incluir no novo par
+      const cursosAtivos = await cursosService.getAll();
+      const cursosDefault = cursosAtivos
+        .filter(curso => curso.ativo)
+        .map(curso => curso.codigo);
       
       const novoPar = await turmaPairsService.create({
         nome: `Par ${proximoNumero} - ${nomePeriodo}`,
