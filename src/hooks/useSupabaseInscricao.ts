@@ -53,10 +53,8 @@ export const useSupabaseInscricao = () => {
         throw new Error("Par de turmas não encontrado ou inativo.");
       }
 
-      // Verificar se o curso está no par selecionado
-      if (!parSelecionado.cursos.includes(formData.curso)) {
-        throw new Error("O curso selecionado não está disponível no par de turmas escolhido.");
-      }
+      // Remover restrição de curso - qualquer curso pode ser inscrito em qualquer turma
+      // Validação removida para permitir flexibilidade total
 
       // Verificar disponibilidade na turma específica
       const turmaId = formData.turma.replace(`${formData.par}_`, '');

@@ -44,25 +44,11 @@ const Inscricao = () => {
   // Fixed price of 40,000 Kz
   const price = 40000;
 
-  // Filtrar cursos disponíveis baseados nos pares de turmas ATIVOS
+  // Todos os cursos estão disponíveis para qualquer turma - sem restrições
   const cursosDisponiveis = useMemo(() => {
-    // Filtrar apenas pares ativos
-    const paresAtivos = turmaPairs.filter(par => par.ativo);
-    
-    const cursosNasTurmas = new Set<string>();
-    paresAtivos.forEach(par => {
-      par.cursos.forEach(curso => cursosNasTurmas.add(curso));
-    });
-    
-    const cursosComNomes: { [key: string]: string } = {};
-    Array.from(cursosNasTurmas).forEach(curso => {
-      if (courseNames[curso]) {
-        cursosComNomes[curso] = courseNames[curso];
-      }
-    });
-    
-    return cursosComNomes;
-  }, [turmaPairs]);
+    // Retornar TODOS os cursos disponíveis no sistema, sem filtros
+    return courseNames;
+  }, []);
 
   // Filtrar pares disponíveis baseados no turno selecionado (TODOS os pares ativos do período)
   const paresDisponiveis = useMemo(() => {
