@@ -163,6 +163,17 @@ export const salasService = {
     
     if (error) throw error;
     return data as DBSala;
+  },
+
+  async create(sala: Omit<DBSala, 'id' | 'created_at' | 'updated_at'>) {
+    const { data, error } = await supabase
+      .from('salas')
+      .insert(sala)
+      .select()
+      .single();
+    
+    if (error) throw error;
+    return data as DBSala;
   }
 };
 

@@ -34,6 +34,7 @@ import {
 import { TurmaPair, Aluno, gruposCursos } from "@/types/turma";
 import { useToast } from "@/hooks/use-toast";
 import { AlunosStatistics } from "./AlunosStatistics";
+import { alunosService } from "@/services/supabaseService";
 
 interface TurmaIndividualManagementProps {
   turmaPairs: TurmaPair[];
@@ -283,13 +284,59 @@ export const TurmaIndividualManagement = ({
 
               return (
                 <div className="space-y-4">
-                  {/* Informações da Turma */}
+                   {/* Informações da Turma */}
                   <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                     <div className="flex items-center gap-2 p-3 bg-blue-50 rounded-lg">
                       <MapPin className="w-5 h-5 text-blue-600" />
                       <div>
                         <div className="font-semibold text-blue-900">Sala</div>
-                        <div className="text-blue-700">{turmaData.sala}</div>
+                        <Dialog>
+                          <DialogTrigger asChild>
+                            <Button variant="ghost" className="p-0 h-auto text-blue-700 hover:text-blue-800">
+                              {turmaData.sala}
+                            </Button>
+                          </DialogTrigger>
+                          <DialogContent>
+                            <DialogHeader>
+                              <DialogTitle>Editar Sala - Turma {selectedTurma}</DialogTitle>
+                            </DialogHeader>
+                            <div className="space-y-4">
+                              <div>
+                                <Label>Número da Sala</Label>
+                                <Input
+                                  value={turmaData.sala}
+                                  onChange={(e) => {
+                                    const updatedPair = {
+                                      ...selectedPair,
+                                      [selectedTurma === 'A' ? 'turmaA' : 'turmaB']: {
+                                        ...turmaData,
+                                        sala: e.target.value
+                                      }
+                                    };
+                                    setSelectedPair(updatedPair);
+                                  }}
+                                  placeholder="Ex: U107, Sala A1, etc."
+                                />
+                              </div>
+                              <div className="flex justify-end gap-2">
+                                <Button variant="outline" onClick={() => setSelectedPair(selectedPair)}>
+                                  Cancelar
+                                </Button>
+                                <Button onClick={() => {
+                                  if (selectedPair) {
+                                    onUpdateTurmaPair(selectedPair.id, selectedPair);
+                                    toast({
+                                      title: "Sala atualizada",
+                                      description: `Sala da Turma ${selectedTurma} alterada para ${turmaData.sala}`,
+                                    });
+                                  }
+                                }}>
+                                  Salvar
+                                </Button>
+                              </div>
+                            </div>
+                          </DialogContent>
+                        </Dialog>
                       </div>
                     </div>
                     <div className="flex items-center gap-2 p-3 bg-green-50 rounded-lg">

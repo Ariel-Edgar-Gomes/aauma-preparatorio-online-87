@@ -241,25 +241,67 @@ export const useSupabaseTurmaData = () => {
       if (updates.ativo !== undefined) dbUpdates.ativo = updates.ativo;
       
       // Atualizar dados das turmas se necessário
-      if (updates.turmaA) {
+      if (updates.turmaA || updates.turmaB) {
         const turmas = await turmasService.getByTurmaPairId(id);
-        const turmaA = turmas.find(t => t.tipo === 'A');
-        if (turmaA) {
-          await turmasService.update(turmaA.id, {
-            capacidade: updates.turmaA.capacidade !== undefined ? updates.turmaA.capacidade : turmaA.capacidade,
-            alunos_inscritos: updates.turmaA.alunosInscritos !== undefined ? updates.turmaA.alunosInscritos : turmaA.alunos_inscritos
-          });
+        
+        if (updates.turmaA) {
+          const turmaA = turmas.find(t => t.tipo === 'A');
+          if (turmaA) {
+            // Encontrar a sala correspondente se a sala foi alterada
+            let salaId = turmaA.sala_id;
+            if (updates.turmaA.sala) {
+              const salas = await salasService.getAll();
+              const salaEncontrada = salas.find(s => s.codigo === updates.turmaA.sala);
+              if (salaEncontrada) {
+                salaId = salaEncontrada.id;
+              } else {
+                // Criar nova sala se não existir
+                const novaSala = await salasService.create({
+                  codigo: updates.turmaA.sala,
+                  capacidade: updates.turmaA.capacidade || turmaA.capacidade,
+                  tipo: 'sala',
+                  ativo: true
+                });
+                salaId = novaSala.id;
+              }
+            }
+            
+            await turmasService.update(turmaA.id, {
+              sala_id: salaId,
+              capacidade: updates.turmaA.capacidade !== undefined ? updates.turmaA.capacidade : turmaA.capacidade,
+              alunos_inscritos: updates.turmaA.alunosInscritos !== undefined ? updates.turmaA.alunosInscritos : turmaA.alunos_inscritos
+            });
+          }
         }
-      }
-      
-      if (updates.turmaB) {
-        const turmas = await turmasService.getByTurmaPairId(id);
-        const turmaB = turmas.find(t => t.tipo === 'B');
-        if (turmaB) {
-          await turmasService.update(turmaB.id, {
-            capacidade: updates.turmaB.capacidade !== undefined ? updates.turmaB.capacidade : turmaB.capacidade,
-            alunos_inscritos: updates.turmaB.alunosInscritos !== undefined ? updates.turmaB.alunosInscritos : turmaB.alunos_inscritos
-          });
+        
+        if (updates.turmaB) {
+          const turmaB = turmas.find(t => t.tipo === 'B');
+          if (turmaB) {
+            // Encontrar a sala correspondente se a sala foi alterada
+            let salaId = turmaB.sala_id;
+            if (updates.turmaB.sala) {
+              const salas = await salasService.getAll();
+              const salaEncontrada = salas.find(s => s.codigo === updates.turmaB.sala);
+              if (salaEncontrada) {
+                salaId = salaEncontrada.id;
+              } else {
+                // Criar nova sala se não existir
+                const novaSala = await salasService.create({
+                  codigo: updates.turmaB.sala,
+                  capacidade: updates.turmaB.capacidade || turmaB.capacidade,
+                  tipo: 'sala',
+                  ativo: true
+                });
+                salaId = novaSala.id;
+              }
+            }
+            
+            await turmasService.update(turmaB.id, {
+              sala_id: salaId,
+              capacidade: updates.turmaB.capacidade !== undefined ? updates.turmaB.capacidade : turmaB.capacidade,
+              alunos_inscritos: updates.turmaB.alunosInscritos !== undefined ? updates.turmaB.alunosInscritos : turmaB.alunos_inscritos
+            });
+          }
         }
       }
       
