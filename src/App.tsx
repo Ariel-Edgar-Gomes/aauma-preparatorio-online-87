@@ -12,6 +12,7 @@ import AdminFinanceiro from "./pages/admin/Financeiro";
 import AdminHorarios from "./pages/admin/Horarios";
 import AdminTurmas from "./pages/admin/Turmas";
 import NotFound from "./pages/NotFound";
+import { AdminLayout } from "./components/AdminLayout";
 
 const queryClient = new QueryClient();
 
@@ -25,11 +26,15 @@ const App = () => (
           <Route path="/" element={<Index />} />
           <Route path="/inscricao" element={<Inscricao />} />
           <Route path="/inscricao-sucesso" element={<InscricaoSucesso />} />
-          <Route path="/admin" element={<AdminDashboard />} />
-          <Route path="/admin/dashboard" element={<AdminDashboard />} />
-          <Route path="/admin/financeiro" element={<AdminFinanceiro />} />
-          <Route path="/admin/horarios" element={<AdminHorarios />} />
-          <Route path="/admin/turmas" element={<AdminTurmas />} />
+          
+          {/* Admin routes with layout */}
+          <Route path="/admin" element={<AdminLayout />}>
+            <Route index element={<AdminDashboard />} />
+            <Route path="dashboard" element={<AdminDashboard />} />
+            <Route path="financeiro" element={<AdminFinanceiro />} />
+            <Route path="horarios" element={<AdminHorarios />} />
+            <Route path="turmas" element={<AdminTurmas />} />
+          </Route>
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
