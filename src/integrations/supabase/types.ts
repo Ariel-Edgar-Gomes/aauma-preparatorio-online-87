@@ -19,6 +19,7 @@ export type Database = {
           comprovativo_pagamento_url: string | null
           copia_bi_url: string | null
           created_at: string
+          created_by: string | null
           curso_codigo: string
           data_inicio: string
           data_inscricao: string
@@ -46,6 +47,7 @@ export type Database = {
           comprovativo_pagamento_url?: string | null
           copia_bi_url?: string | null
           created_at?: string
+          created_by?: string | null
           curso_codigo: string
           data_inicio: string
           data_inscricao?: string
@@ -73,6 +75,7 @@ export type Database = {
           comprovativo_pagamento_url?: string | null
           copia_bi_url?: string | null
           created_at?: string
+          created_by?: string | null
           curso_codigo?: string
           data_inicio?: string
           data_inscricao?: string
@@ -185,6 +188,33 @@ export type Database = {
           periodo?: Database["public"]["Enums"]["periodo_type"]
           professor?: string | null
           updated_at?: string
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          created_at: string | null
+          created_by: string | null
+          email: string | null
+          full_name: string | null
+          id: string
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          created_by?: string | null
+          email?: string | null
+          full_name?: string | null
+          id: string
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          created_by?: string | null
+          email?: string | null
+          full_name?: string | null
+          id?: string
+          updated_at?: string | null
         }
         Relationships: []
       }
@@ -308,14 +338,55 @@ export type Database = {
           },
         ]
       }
+      user_roles: {
+        Row: {
+          created_at: string | null
+          created_by: string | null
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          created_by?: string | null
+          id?: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          created_by?: string | null
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      has_role: {
+        Args: {
+          _user_id: string
+          _role: Database["public"]["Enums"]["app_role"]
+        }
+        Returns: boolean
+      }
+      is_admin: {
+        Args: { _user_id: string }
+        Returns: boolean
+      }
     }
     Enums: {
+      app_role:
+        | "admin"
+        | "inscricao_simples"
+        | "inscricao_completa"
+        | "visualizador"
+        | "financeiro"
+        | "gestor_turmas"
       forma_pagamento_type: "Cash" | "Transferencia" | "Cartao"
       grupo_cursos_type: "engenharias" | "saude" | "ciencias-sociais-humanas"
       periodo_type: "manha" | "tarde"
@@ -447,6 +518,14 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
+      app_role: [
+        "admin",
+        "inscricao_simples",
+        "inscricao_completa",
+        "visualizador",
+        "financeiro",
+        "gestor_turmas",
+      ],
       forma_pagamento_type: ["Cash", "Transferencia", "Cartao"],
       grupo_cursos_type: ["engenharias", "saude", "ciencias-sociais-humanas"],
       periodo_type: ["manha", "tarde"],

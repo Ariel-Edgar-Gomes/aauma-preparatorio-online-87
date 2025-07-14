@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { alunosService, turmaPairsService, turmasService, cursosService } from "@/services/supabaseService";
+import { useAuth } from "@/components/AuthProvider";
 
 interface InscricaoFormData {
   nomeCompleto: string;
@@ -25,6 +26,7 @@ interface InscricaoFormData {
 
 export const useSupabaseInscricao = () => {
   const { toast } = useToast();
+  const { user } = useAuth();
   const [submitting, setSubmitting] = useState(false);
 
   const submitInscricao = async (formData: InscricaoFormData): Promise<boolean> => {

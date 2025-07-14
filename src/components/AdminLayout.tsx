@@ -7,7 +7,8 @@ import {
   GraduationCap,
   ArrowLeft,
   LogOut,
-  User
+  User,
+  UserCog
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "./AuthProvider";
@@ -24,41 +25,48 @@ import {
   useSidebar,
 } from "@/components/ui/sidebar";
 
-const navigationItems = [
+const getAllNavigationItems = () => [
   {
     title: "Dashboard",
     url: "/admin",
-    icon: LayoutDashboard
+    icon: LayoutDashboard,
+    permissions: []
+  },
+  {
+    title: "Usuários",
+    url: "/admin/usuarios",
+    icon: UserCog,
+    permissions: ['admin']
   },
   {
     title: "Turmas",
     url: "/admin/turmas",
-    icon: Users
+    icon: Users,
+    permissions: ['admin', 'gestor_turmas']
   },
   {
     title: "Gestão Individual",
     url: "/admin/gestao-individual",
-    icon: Users
+    icon: Users,
+    permissions: ['admin', 'inscricao_simples', 'inscricao_completa', 'visualizador']
   },
   {
     title: "Horários",
     url: "/admin/horarios",
-    icon: Clock
+    icon: Clock,
+    permissions: ['admin']
   },
   {
     title: "Financeiro",
     url: "/admin/financeiro",
-    icon: DollarSign
+    icon: DollarSign,
+    permissions: ['admin', 'financeiro', 'visualizador']
   },
   {
     title: "Nova Inscrição",
     url: "/inscricao",
-    icon: GraduationCap
-  },
-  {
-    title: "Site Principal",
-    url: "/",
-    icon: ArrowLeft
+    icon: GraduationCap,
+    permissions: ['admin', 'inscricao_simples', 'inscricao_completa']
   }
 ];
 
@@ -67,6 +75,13 @@ function AdminSidebar() {
   const location = useLocation();
   const currentPath = location.pathname;
   const collapsed = state === "collapsed";
+  const { hasRole, isAdmin } = useAuth();
+  
+  const navigationItems = getAllNavigationItems().filter(item => {
+    if (item.permissions.length === 0) return true;
+    if (isAdmin()) return true;
+    return item.permissions.some(permission => hasRole(permission as any));
+  });
 
   const isActive = (path: string) => {
     if (path === "/admin") {
@@ -128,7 +143,7 @@ function AdminSidebar() {
 }
 
 export function AdminLayout() {
-  const { user, signOut } = useAuth();
+  const { user, signOut, roles } = useAuth();
 
   const handleSignOut = async () => {
     await signOut();
@@ -149,7 +164,12 @@ export function AdminLayout() {
             <div className="flex items-center gap-2">
               <div className="flex items-center gap-2 text-sm text-muted-foreground">
                 <User className="h-4 w-4" />
-                <span>{user?.email}</span>
+                <div className="flex flex-col">
+                  <span>{user?.email}</span>
+                  <span className="text-xs text-muted-foreground">
+                    {roles.length > 0 ? roles.join(', ') : 'Usuário'}
+                  </span>
+                </div>
               </div>
               <Button
                 variant="ghost"
