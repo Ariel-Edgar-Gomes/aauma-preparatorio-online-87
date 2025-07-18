@@ -32,7 +32,7 @@ export const useTurmaData = () => {
 
   const handleCreateTurmaPair = async (data: CreateTurmaPairData): Promise<boolean> => {
     try {
-      const success = await createTurmaPair(data);
+      const success = await createTurmaPair();
       if (success) {
         toast({
           title: "Par de turmas criado",
@@ -71,7 +71,7 @@ export const useTurmaData = () => {
 
   const handleDeleteTurmaPair = async (id: string) => {
     try {
-      await deleteSupabaseTurmaPair(id);
+      await deleteSupabaseTurmaPair();
       toast({
         title: "Par removido",
         description: "O par de turmas foi removido com sucesso.",
@@ -91,7 +91,7 @@ export const useTurmaData = () => {
       const pair = turmaPairs.find(p => p.id === id);
       const newStatus = !pair?.ativo;
       
-      await toggleSupabaseStatus(id);
+      await toggleSupabaseStatus();
       toast({
         title: newStatus ? "Par ativado" : "Par desativado",
         description: `O par de turmas foi ${newStatus ? 'ativado' : 'desativado'} com sucesso.`,
@@ -130,13 +130,11 @@ export const useTurmaData = () => {
         capacidadeB: basePair.turmaB.capacidade
       };
 
-      const success = await createTurmaPair(duplicateData);
-      if (success) {
-        toast({
-          title: "Par duplicado",
-          description: `Novo par de ${periodo} criado baseado no par existente.`,
-        });
-      }
+      await duplicateSupabasePair();
+      toast({
+        title: "Par duplicado",
+        description: `Novo par de ${periodo} criado baseado no par existente.`,
+      });
     } catch (error) {
       console.error('Erro ao duplicar par:', error);
       toast({
