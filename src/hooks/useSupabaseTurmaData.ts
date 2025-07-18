@@ -7,112 +7,147 @@ import type { TurmaPair, TurmaIndividual, Aluno, CreateTurmaPairData } from "@/t
 const convertDBTurmaPairToInterface = async (dbPair: any): Promise<TurmaPair> => {
   console.log('[convertDBTurmaPairToInterface] Convertendo par:', dbPair.id, dbPair.nome);
   
-  // Buscar as turmas A e B
-  const turmas = await turmasService.getByTurmaPairId(dbPair.id);
-  const turmaA = turmas.find(t => t.tipo === 'A');
-  const turmaB = turmas.find(t => t.tipo === 'B');
-  
-  console.log('[convertDBTurmaPairToInterface] Turmas encontradas:', {
-    turmaA: turmaA ? { id: turmaA.id, alunos_inscritos: turmaA.alunos_inscritos } : null,
-    turmaB: turmaB ? { id: turmaB.id, alunos_inscritos: turmaB.alunos_inscritos } : null
-  });
-  
-  // Buscar alunos de cada turma
-  const alunosTurmaA = turmaA ? await alunosService.getByTurmaId(turmaA.id) : [];
-  const alunosTurmaB = turmaB ? await alunosService.getByTurmaId(turmaB.id) : [];
-  
-  console.log('[convertDBTurmaPairToInterface] Alunos encontrados:', {
-    alunosTurmaA: alunosTurmaA.length,
-    alunosTurmaB: alunosTurmaB.length
-  });
-  
-  // Verificar e corrigir inconsistências nos contadores
-  if (turmaA && alunosTurmaA.length !== turmaA.alunos_inscritos) {
-    console.log('[convertDBTurmaPairToInterface] Corrigindo contador Turma A:', turmaA.alunos_inscritos, '->', alunosTurmaA.length);
-    await turmasService.update(turmaA.id, { alunos_inscritos: alunosTurmaA.length });
-    turmaA.alunos_inscritos = alunosTurmaA.length;
+  try {
+    // Buscar as turmas A e B
+    const turmas = await turmasService.getByTurmaPairId(dbPair.id);
+    const turmaA = turmas.find(t => t.tipo === 'A');
+    const turmaB = turmas.find(t => t.tipo === 'B');
+    
+    console.log('[convertDBTurmaPairToInterface] Turmas encontradas:', {
+      turmaA: turmaA ? { id: turmaA.id, alunos_inscritos: turmaA.alunos_inscritos } : null,
+      turmaB: turmaB ? { id: turmaB.id, alunos_inscritos: turmaB.alunos_inscritos } : null
+    });
+    
+    // Buscar alunos de cada turma
+    const alunosTurmaA = turmaA ? await alunosService.getByTurmaId(turmaA.id) : [];
+    const alunosTurmaB = turmaB ? await alunosService.getByTurmaId(turmaB.id) : [];
+    
+    console.log('[convertDBTurmaPairToInterface] Alunos encontrados:', {
+      alunosTurmaA: alunosTurmaA.length,
+      alunosTurmaB: alunosTurmaB.length
+    });
+    
+    // Verificar e corrigir inconsistências nos contadores
+    if (turmaA && alunosTurmaA.length !== turmaA.alunos_inscritos) {
+      console.log('[convertDBTurmaPairToInterface] Corrigindo contador Turma A:', turmaA.alunos_inscritos, '->', alunosTurmaA.length);
+      try {
+        await turmasService.update(turmaA.id, { alunos_inscritos: alunosTurmaA.length });
+        turmaA.alunos_inscritos = alunosTurmaA.length;
+      } catch (updateError) {
+        console.error('[convertDBTurmaPairToInterface] Erro ao atualizar contador Turma A:', updateError);
+      }
+    }
+    
+    if (turmaB && alunosTurmaB.length !== turmaB.alunos_inscritos) {
+      console.log('[convertDBTurmaPairToInterface] Corrigindo contador Turma B:', turmaB.alunos_inscritos, '->', alunosTurmaB.length);
+      try {
+        await turmasService.update(turmaB.id, { alunos_inscritos: alunosTurmaB.length });
+        turmaB.alunos_inscritos = alunosTurmaB.length;
+      } catch (updateError) {
+        console.error('[convertDBTurmaPairToInterface] Erro ao atualizar contador Turma B:', updateError);
+      }
+    }
+    
+    // Buscar informações das salas separadamente para evitar JOIN complexo
+    let salaAInfo = { codigo: "", capacidade: 0 };
+    let salaBInfo = { codigo: "", capacidade: 0 };
+    
+    if (turmaA?.sala_id) {
+      try {
+        const salaA = await salasService.getById(turmaA.sala_id);
+        salaAInfo = { codigo: salaA.codigo, capacidade: salaA.capacidade };
+      } catch (salaError) {
+        console.error('[convertDBTurmaPairToInterface] Erro ao buscar sala A:', salaError);
+      }
+    }
+    
+    if (turmaB?.sala_id) {
+      try {
+        const salaB = await salasService.getById(turmaB.sala_id);
+        salaBInfo = { codigo: salaB.codigo, capacidade: salaB.capacidade };
+      } catch (salaError) {
+        console.error('[convertDBTurmaPairToInterface] Erro ao buscar sala B:', salaError);
+      }
+    }
+    
+    // Converter alunos para o formato da interface
+    const convertAlunos = (alunosDB: any[]): Aluno[] => {
+      return alunosDB.map(a => ({
+        id: a.id,
+        nome: a.nome,
+        email: a.email || "",
+        telefone: a.telefone,
+        curso: a.curso_codigo,
+        numeroEstudante: a.numero_estudante,
+        dataInscricao: a.data_inscricao.split('T')[0],
+        status: a.status,
+        observacoes: a.observacoes,
+        numeroBI: a.numero_bi,
+        dataNascimento: a.data_nascimento,
+        endereco: a.endereco,
+        formaPagamento: a.forma_pagamento,
+        duracao: a.duracao,
+        dataInicio: a.data_inicio,
+        turno: a.turno,
+        par: a.turma_pair_id,
+        turma: a.turma_id
+      }));
+    };
+    
+    const turmaAInterface: TurmaIndividual = turmaA ? {
+      sala: salaAInfo.codigo,
+      capacidade: turmaA.capacidade,
+      alunosInscritos: alunosTurmaA.length, // Usar contagem real dos alunos
+      horarioSemanal: turmaA.horario_semanal || {},
+      alunos: convertAlunos(alunosTurmaA)
+    } : {
+      sala: "",
+      capacidade: 0,
+      alunosInscritos: 0,
+      horarioSemanal: {},
+      alunos: []
+    };
+    
+    const turmaBInterface: TurmaIndividual = turmaB ? {
+      sala: salaBInfo.codigo,
+      capacidade: turmaB.capacidade,
+      alunosInscritos: alunosTurmaB.length, // Usar contagem real dos alunos
+      horarioSemanal: turmaB.horario_semanal || {},
+      alunos: convertAlunos(alunosTurmaB)
+    } : {
+      sala: "",
+      capacidade: 0,
+      alunosInscritos: 0,
+      horarioSemanal: {},
+      alunos: []
+    };
+    
+    const result = {
+      id: dbPair.id,
+      nome: dbPair.nome,
+      periodo: dbPair.periodo,
+      horarioPeriodo: dbPair.horario_periodo,
+      cursos: dbPair.cursos || [],
+      disciplinasComuns: dbPair.disciplinas_comuns || [],
+      horarioSemanal: dbPair.horario_semanal || {},
+      turmaA: turmaAInterface,
+      turmaB: turmaBInterface,
+      ativo: dbPair.ativo,
+      criadoEm: dbPair.created_at.split('T')[0]
+    };
+    
+    console.log('[convertDBTurmaPairToInterface] Par convertido:', {
+      id: result.id,
+      nome: result.nome,
+      turmaA_alunos: result.turmaA.alunosInscritos,
+      turmaB_alunos: result.turmaB.alunosInscritos
+    });
+    
+    return result;
+  } catch (error) {
+    console.error('[convertDBTurmaPairToInterface] Erro na conversão:', error);
+    throw error;
   }
-  
-  if (turmaB && alunosTurmaB.length !== turmaB.alunos_inscritos) {
-    console.log('[convertDBTurmaPairToInterface] Corrigindo contador Turma B:', turmaB.alunos_inscritos, '->', alunosTurmaB.length);
-    await turmasService.update(turmaB.id, { alunos_inscritos: alunosTurmaB.length });
-    turmaB.alunos_inscritos = alunosTurmaB.length;
-  }
-  
-  // Converter alunos para o formato da interface
-  const convertAlunos = (alunosDB: any[]): Aluno[] => {
-    return alunosDB.map(a => ({
-      id: a.id,
-      nome: a.nome,
-      email: a.email || "",
-      telefone: a.telefone,
-      curso: a.curso_codigo,
-      numeroEstudante: a.numero_estudante,
-      dataInscricao: a.data_inscricao.split('T')[0],
-      status: a.status,
-      observacoes: a.observacoes,
-      numeroBI: a.numero_bi,
-      dataNascimento: a.data_nascimento,
-      endereco: a.endereco,
-      formaPagamento: a.forma_pagamento,
-      duracao: a.duracao,
-      dataInicio: a.data_inicio,
-      turno: a.turno,
-      par: a.turma_pair_id,
-      turma: a.turma_id
-    }));
-  };
-  
-  const turmaAInterface: TurmaIndividual = turmaA ? {
-    sala: turmaA.salas?.codigo || "",
-    capacidade: turmaA.capacidade,
-    alunosInscritos: alunosTurmaA.length, // Usar contagem real dos alunos
-    horarioSemanal: turmaA.horario_semanal,
-    alunos: convertAlunos(alunosTurmaA)
-  } : {
-    sala: "",
-    capacidade: 0,
-    alunosInscritos: 0,
-    horarioSemanal: {},
-    alunos: []
-  };
-  
-  const turmaBInterface: TurmaIndividual = turmaB ? {
-    sala: turmaB.salas?.codigo || "",
-    capacidade: turmaB.capacidade,
-    alunosInscritos: alunosTurmaB.length, // Usar contagem real dos alunos
-    horarioSemanal: turmaB.horario_semanal,
-    alunos: convertAlunos(alunosTurmaB)
-  } : {
-    sala: "",
-    capacidade: 0,
-    alunosInscritos: 0,
-    horarioSemanal: {},
-    alunos: []
-  };
-  
-  const result = {
-    id: dbPair.id,
-    nome: dbPair.nome,
-    periodo: dbPair.periodo,
-    horarioPeriodo: dbPair.horario_periodo,
-    cursos: dbPair.cursos,
-    disciplinasComuns: dbPair.disciplinas_comuns,
-    horarioSemanal: dbPair.horario_semanal,
-    turmaA: turmaAInterface,
-    turmaB: turmaBInterface,
-    ativo: dbPair.ativo,
-    criadoEm: dbPair.created_at.split('T')[0]
-  };
-  
-  console.log('[convertDBTurmaPairToInterface] Par convertido:', {
-    id: result.id,
-    nome: result.nome,
-    turmaA_alunos: result.turmaA.alunosInscritos,
-    turmaB_alunos: result.turmaB.alunosInscritos
-  });
-  
-  return result;
 };
 
 export const useSupabaseTurmaData = () => {
@@ -132,8 +167,13 @@ export const useSupabaseTurmaData = () => {
       // Converter cada par de turma com dados consistentes
       const convertedPairs: TurmaPair[] = [];
       for (const dbPair of dbPairs) {
-        const converted = await convertDBTurmaPairToInterface(dbPair);
-        convertedPairs.push(converted);
+        try {
+          const converted = await convertDBTurmaPairToInterface(dbPair);
+          convertedPairs.push(converted);
+        } catch (conversionError) {
+          console.error('[useSupabaseTurmaData] Erro ao converter par:', dbPair.id, conversionError);
+          // Continua processando outros pares mesmo se um falhar
+        }
       }
       
       setTurmaPairs(convertedPairs);
