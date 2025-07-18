@@ -21,6 +21,11 @@ export interface Aluno {
   turno?: string;
   par?: string;
   turma?: string;
+  // Informações do criador
+  criador?: {
+    nome: string;
+    email: string;
+  } | null;
 }
 
 export interface TurmaIndividual {

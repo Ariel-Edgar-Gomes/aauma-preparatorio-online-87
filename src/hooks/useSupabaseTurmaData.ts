@@ -18,9 +18,13 @@ const convertDBTurmaPairToInterface = async (dbPair: any): Promise<TurmaPair> =>
       turmaB: turmaB ? { id: turmaB.id, alunos_inscritos: turmaB.alunos_inscritos } : null
     });
     
-    // Buscar alunos de cada turma
-    const alunosTurmaA = turmaA ? await alunosService.getByTurmaId(turmaA.id) : [];
-    const alunosTurmaB = turmaB ? await alunosService.getByTurmaId(turmaB.id) : [];
+    // Buscar alunos de cada turma com informações do criador
+    const alunosTurmaA = turmaA ? await alunosService.getAllWithCreator().then(all => 
+      all.filter(a => a.turma_id === turmaA.id)
+    ) : [];
+    const alunosTurmaB = turmaB ? await alunosService.getAllWithCreator().then(all => 
+      all.filter(a => a.turma_id === turmaB.id)
+    ) : [];
     
     console.log('[convertDBTurmaPairToInterface] Alunos encontrados:', {
       alunosTurmaA: alunosTurmaA.length,
@@ -70,7 +74,7 @@ const convertDBTurmaPairToInterface = async (dbPair: any): Promise<TurmaPair> =>
       }
     }
     
-    // Converter alunos para o formato da interface
+    // Converter alunos para o formato da interface, incluindo informações do criador
     const convertAlunos = (alunosDB: any[]): Aluno[] => {
       return alunosDB.map(a => ({
         id: a.id,
@@ -90,7 +94,12 @@ const convertDBTurmaPairToInterface = async (dbPair: any): Promise<TurmaPair> =>
         dataInicio: a.data_inicio,
         turno: a.turno,
         par: a.turma_pair_id,
-        turma: a.turma_id
+        turma: a.turma_id,
+        // Adicionar informações do criador
+        criador: a.creator ? {
+          nome: a.creator.full_name || 'Usuário Desconhecido',
+          email: a.creator.email || ''
+        } : null
       }));
     };
     

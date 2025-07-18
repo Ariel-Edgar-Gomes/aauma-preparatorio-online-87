@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Trash2, Users, MapPin, Clock, ChevronDown, ChevronUp } from "lucide-react";
 import { TurmaPair } from "@/types/turma";
+import { AlunosList } from "./AlunosList";
 
 
 interface TurmaPairGridProps {
@@ -302,6 +303,20 @@ export const TurmaPairGrid = ({
                     </div>
                   </div>
                 )}
+              </div>
+
+              {/* Lista de Alunos */}
+              <div className="grid grid-cols-2 gap-2 mt-2">
+                <AlunosList 
+                  alunos={turmaPair.turmaA.alunos} 
+                  turmaLabel="Turma A" 
+                  turmaColor="blue"
+                />
+                <AlunosList 
+                  alunos={turmaPair.turmaB.alunos} 
+                  turmaLabel="Turma B" 
+                  turmaColor="red"
+                />
               </div>
 
               {/* Actions - Ultra Compacto */}
