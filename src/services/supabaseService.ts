@@ -382,7 +382,10 @@ export const alunosService = {
   async create(aluno: Omit<DBAluno, 'id' | 'numero_estudante' | 'data_inscricao' | 'created_at' | 'updated_at'>) {
     const { data, error } = await supabase
       .from('alunos')
-      .insert(aluno)
+      .insert({
+        ...aluno,
+        created_by: (await supabase.auth.getUser()).data.user?.id
+      })
       .select()
       .single();
     
@@ -445,5 +448,95 @@ export const alunosService = {
     };
     
     return stats;
+  },
+
+  // Estatísticas por usuário
+  async getStatisticsByUser() {
+    // Buscar alunos com created_by
+    const { data: alunos, error: alunosError } = await supabase
+      .from('alunos')
+      .select('created_by, status')
+      .not('created_by', 'is', null);
+    
+    if (alunosError) throw alunosError;
+    
+    // Buscar perfis dos usuários únicos
+    const userIds = [...new Set(alunos.map(a => a.created_by))];
+    const { data: profiles, error: profilesError } = await supabase
+      .from('profiles')
+      .select('id, full_name, email')
+      .in('id', userIds);
+    
+    if (profilesError) throw profilesError;
+    
+    const profilesMap = profiles.reduce((acc, profile) => {
+      acc[profile.id] = profile;
+      return acc;
+    }, {} as Record<string, any>);
+    
+    const userStats = alunos.reduce((acc, aluno) => {
+      const userId = aluno.created_by;
+      if (!userId) return acc;
+      
+      if (!acc[userId]) {
+        const profile = profilesMap[userId];
+        acc[userId] = {
+          userId,
+          userName: profile?.full_name || 'Usuário Desconhecido',
+          userEmail: profile?.email || '',
+          totalInscricoes: 0,
+          inscritos: 0,
+          confirmados: 0,
+          cancelados: 0
+        };
+      }
+      
+      acc[userId].totalInscricoes++;
+      if (aluno.status === 'inscrito') acc[userId].inscritos++;
+      if (aluno.status === 'confirmado') acc[userId].confirmados++;
+      if (aluno.status === 'cancelado') acc[userId].cancelados++;
+      
+      return acc;
+    }, {} as Record<string, {
+      userId: string;
+      userName: string;
+      userEmail: string;
+      totalInscricoes: number;
+      inscritos: number;
+      confirmados: number;
+      cancelados: number;
+    }>);
+    
+    return Object.values(userStats);
+  },
+
+  async getAllWithCreator() {
+    // Buscar alunos
+    const { data: alunos, error: alunosError } = await supabase
+      .from('alunos')
+      .select('*')
+      .order('created_at', { ascending: false });
+    
+    if (alunosError) throw alunosError;
+    
+    // Buscar perfis dos criadores únicos
+    const userIds = [...new Set(alunos.map(a => a.created_by).filter(Boolean))];
+    const { data: profiles, error: profilesError } = await supabase
+      .from('profiles')
+      .select('id, full_name, email')
+      .in('id', userIds);
+    
+    if (profilesError) throw profilesError;
+    
+    const profilesMap = profiles.reduce((acc, profile) => {
+      acc[profile.id] = profile;
+      return acc;
+    }, {} as Record<string, any>);
+    
+    // Adicionar informações do criador aos alunos
+    return alunos.map(aluno => ({
+      ...aluno,
+      creator: aluno.created_by ? profilesMap[aluno.created_by] : null
+    }));
   }
 };

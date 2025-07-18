@@ -6,6 +6,7 @@ import { Users, GraduationCap, BookOpen, TrendingUp, Clock, MapPin, DollarSign, 
 import { Link } from "react-router-dom";
 import { alunosService, turmaPairsService, cursosService, salasService } from "@/services/supabaseService";
 import { useToast } from "@/hooks/use-toast";
+import { UserEnrollmentStats } from "@/components/admin/UserEnrollmentStats";
 
 interface DashboardStats {
   totalAlunos: number;
@@ -266,6 +267,11 @@ const AdminDashboard = () => {
             </div>
           </CardContent>
         </Card>
+      </div>
+
+      {/* Estatísticas por Usuário */}
+      <div className="mb-8">
+        <UserEnrollmentStats refreshTrigger={loading ? 0 : 1} />
       </div>
 
       {/* Quick Actions */}
