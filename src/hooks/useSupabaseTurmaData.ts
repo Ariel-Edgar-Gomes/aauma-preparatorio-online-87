@@ -38,12 +38,15 @@ const convertDBTurmaPairToInterface = async (dbPair: any): Promise<TurmaPair> =>
     }));
   };
   
+  const alunosConvertidosA = convertAlunos(alunosTurmaA);
+  const alunosConvertidosB = convertAlunos(alunosTurmaB);
+  
   const turmaAInterface: TurmaIndividual = turmaA ? {
     sala: turmaA.salas?.codigo || "",
     capacidade: turmaA.capacidade,
-    alunosInscritos: turmaA.alunos_inscritos,
+    alunosInscritos: alunosConvertidosA.length,
     horarioSemanal: turmaA.horario_semanal,
-    alunos: convertAlunos(alunosTurmaA)
+    alunos: alunosConvertidosA
   } : {
     sala: "",
     capacidade: 0,
@@ -55,9 +58,9 @@ const convertDBTurmaPairToInterface = async (dbPair: any): Promise<TurmaPair> =>
   const turmaBInterface: TurmaIndividual = turmaB ? {
     sala: turmaB.salas?.codigo || "",
     capacidade: turmaB.capacidade,
-    alunosInscritos: turmaB.alunos_inscritos,
+    alunosInscritos: alunosConvertidosB.length,
     horarioSemanal: turmaB.horario_semanal,
-    alunos: convertAlunos(alunosTurmaB)
+    alunos: alunosConvertidosB
   } : {
     sala: "",
     capacidade: 0,
@@ -65,6 +68,17 @@ const convertDBTurmaPairToInterface = async (dbPair: any): Promise<TurmaPair> =>
     horarioSemanal: {},
     alunos: []
   };
+  
+  // Sincronizar os contadores na base de dados se estiverem desatualizados
+  if (turmaA && turmaA.alunos_inscritos !== alunosConvertidosA.length) {
+    console.log(`[useSupabaseTurmaData] Atualizando contador da Turma A: ${turmaA.alunos_inscritos} -> ${alunosConvertidosA.length}`);
+    await turmasService.update(turmaA.id, { alunos_inscritos: alunosConvertidosA.length });
+  }
+  
+  if (turmaB && turmaB.alunos_inscritos !== alunosConvertidosB.length) {
+    console.log(`[useSupabaseTurmaData] Atualizando contador da Turma B: ${turmaB.alunos_inscritos} -> ${alunosConvertidosB.length}`);
+    await turmasService.update(turmaB.id, { alunos_inscritos: alunosConvertidosB.length });
+  }
   
   return {
     id: dbPair.id,
