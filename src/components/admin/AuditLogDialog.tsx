@@ -12,12 +12,12 @@ import { Eye } from "lucide-react";
 
 interface AuditLog {
   id: string;
-  user_id: string;
+  user_id: string | null;
   user_email: string;
   user_name: string;
   action: string;
   table_name: string;
-  record_id: string;
+  record_id: string | null;
   old_values: any;
   new_values: any;
   created_at: string;
@@ -35,28 +35,66 @@ export const AuditLogDialog = ({ open, onOpenChange }: AuditLogDialogProps) => {
   const fetchAuditLogs = async () => {
     try {
       setLoading(true);
-      const { data, error } = await supabase
+      
+      // Buscar logs de auditoria
+      const { data: auditData, error: auditError } = await supabase
         .from('audit_logs')
-        .select(`
-          *,
-          profiles!audit_logs_user_id_fkey(email, full_name)
-        `)
+        .select('*')
         .order('created_at', { ascending: false })
         .limit(100);
 
-      if (error) {
+      if (auditError) {
+        console.error("Erro ao carregar logs de auditoria:", auditError);
         toast.error("Erro ao carregar logs de auditoria");
         return;
       }
 
-      const formattedLogs = data?.map(log => ({
-        ...log,
-        user_email: log.profiles?.email || 'Email não disponível',
-        user_name: log.profiles?.full_name || 'Nome não disponível'
-      })) || [];
+      // Buscar informações dos usuários para os logs que têm user_id
+      const userIds = auditData
+        ?.filter(log => log.user_id)
+        .map(log => log.user_id)
+        .filter((value, index, self) => self.indexOf(value) === index) || [];
+
+      let userProfiles: Record<string, { email: string; full_name: string }> = {};
+
+      if (userIds.length > 0) {
+        const { data: profileData, error: profileError } = await supabase
+          .from('profiles')
+          .select('id, email, full_name')
+          .in('id', userIds);
+
+        if (!profileError && profileData) {
+          userProfiles = profileData.reduce((acc, profile) => {
+            acc[profile.id] = {
+              email: profile.email || 'Email não disponível',
+              full_name: profile.full_name || 'Nome não disponível'
+            };
+            return acc;
+          }, {} as Record<string, { email: string; full_name: string }>);
+        }
+      }
+
+      // Combinar logs com informações dos usuários
+      const formattedLogs: AuditLog[] = auditData?.map(log => {
+        const userInfo = log.user_id ? userProfiles[log.user_id] : null;
+        
+        return {
+          id: log.id,
+          user_id: log.user_id,
+          user_email: userInfo?.email || 'Sistema',
+          user_name: userInfo?.full_name || 'Sistema',
+          action: log.action,
+          table_name: log.table_name,
+          record_id: log.record_id,
+          old_values: log.old_values,
+          new_values: log.new_values,
+          created_at: log.created_at
+        };
+      }) || [];
 
       setLogs(formattedLogs);
     } catch (error: any) {
+      console.error("Erro ao carregar logs:", error);
       toast.error("Erro ao carregar logs: " + error.message);
     } finally {
       setLoading(false);
@@ -130,12 +168,15 @@ export const AuditLogDialog = ({ open, onOpenChange }: AuditLogDialogProps) => {
                       </Badge>
                     </TableCell>
                     <TableCell className="font-mono text-sm">{log.table_name}</TableCell>
-                    <TableCell className="font-mono text-xs">{log.record_id?.substring(0, 8)}...</TableCell>
+                    <TableCell className="font-mono text-xs">
+                      {log.record_id ? `${log.record_id.substring(0, 8)}...` : 'N/A'}
+                    </TableCell>
                     <TableCell>
                       <Button
                         variant="ghost"
                         size="sm"
                         onClick={() => {
+                          console.log('Log completo:', log);
                           console.log('Valores antigos:', log.old_values);
                           console.log('Valores novos:', log.new_values);
                           toast.info("Detalhes logados no console");
