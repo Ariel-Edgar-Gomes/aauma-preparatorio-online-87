@@ -1,16 +1,15 @@
+
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth, UserRole } from "@/components/AuthProvider";
-import { Plus, UserPlus, Edit, Trash2 } from "lucide-react";
+import { UserPlus, Trash2, FileText } from "lucide-react";
+import { CreateUserDialog } from "@/components/admin/CreateUserDialog";
+import { AuditLogDialog } from "@/components/admin/AuditLogDialog";
 
 interface UserProfile {
   id: string;
@@ -29,26 +28,12 @@ const roleLabels: Record<UserRole, string> = {
   gestor_turmas: "Gestor de Turmas"
 };
 
-const roleDescriptions: Record<UserRole, string> = {
-  admin: "Acesso total ao sistema",
-  inscricao_simples: "Pode fazer inscrições e ver alunos que inscreveu",
-  inscricao_completa: "Pode fazer inscrições, ver e editar alunos",
-  visualizador: "Pode apenas visualizar dados sem editar",
-  financeiro: "Acesso aos dados financeiros",
-  gestor_turmas: "Pode gerenciar turmas e pares de turmas"
-};
-
 const GestaoUsuarios = () => {
   const { isAdmin } = useAuth();
   const [users, setUsers] = useState<UserProfile[]>([]);
   const [loading, setLoading] = useState(true);
   const [showCreateDialog, setShowCreateDialog] = useState(false);
-  const [newUser, setNewUser] = useState({
-    email: "",
-    password: "",
-    full_name: "",
-    roles: [] as UserRole[]
-  });
+  const [showAuditDialog, setShowAuditDialog] = useState(false);
 
   useEffect(() => {
     if (isAdmin()) {
@@ -58,7 +43,7 @@ const GestaoUsuarios = () => {
 
   const fetchUsers = async () => {
     try {
-      // Fetch profiles
+      // Buscar perfis
       const { data: profiles, error: profilesError } = await supabase
         .from('profiles')
         .select('*');
@@ -68,7 +53,7 @@ const GestaoUsuarios = () => {
         return;
       }
 
-      // Fetch roles for each user
+      // Buscar roles para cada usuário
       const usersWithRoles = await Promise.all(
         profiles.map(async (profile) => {
           const { data: roles } = await supabase
@@ -91,59 +76,29 @@ const GestaoUsuarios = () => {
     }
   };
 
-  const createUser = async () => {
-    if (!newUser.email || !newUser.password || !newUser.full_name || newUser.roles.length === 0) {
-      toast.error("Preencha todos os campos e selecione pelo menos um papel");
+  const deleteUser = async (userId: string) => {
+    if (!confirm('Tem certeza que deseja excluir este usuário?')) {
       return;
     }
 
     try {
-      setLoading(true);
+      // Excluir roles do usuário primeiro
+      await supabase
+        .from('user_roles')
+        .delete()
+        .eq('user_id', userId);
 
-      // Create user in Supabase Auth
-      const { data, error } = await supabase.auth.admin.createUser({
-        email: newUser.email,
-        password: newUser.password,
-        user_metadata: {
-          full_name: newUser.full_name
-        }
-      });
+      // Excluir perfil (isso também excluirá o usuário da auth devido ao CASCADE)
+      const { error } = await supabase
+        .from('profiles')
+        .delete()
+        .eq('id', userId);
 
-      if (error) {
-        toast.error("Erro ao criar usuário: " + error.message);
-        return;
-      }
-
-      // Add roles
-      if (data.user) {
-        for (const role of newUser.roles) {
-          await supabase
-            .from('user_roles')
-            .insert({
-              user_id: data.user.id,
-              role: role
-            });
-        }
-      }
-
-      toast.success("Usuário criado com sucesso!");
-      setShowCreateDialog(false);
-      setNewUser({ email: "", password: "", full_name: "", roles: [] });
-      fetchUsers();
-    } catch (error: any) {
-      toast.error("Erro ao criar usuário: " + error.message);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const deleteUser = async (userId: string) => {
-    try {
-      const { error } = await supabase.auth.admin.deleteUser(userId);
       if (error) {
         toast.error("Erro ao excluir usuário: " + error.message);
         return;
       }
+
       toast.success("Usuário excluído com sucesso!");
       fetchUsers();
     } catch (error: any) {
@@ -173,94 +128,20 @@ const GestaoUsuarios = () => {
           <p className="text-muted-foreground">Gerencie usuários e suas permissões no sistema</p>
         </div>
         
-        <Dialog open={showCreateDialog} onOpenChange={setShowCreateDialog}>
-          <DialogTrigger asChild>
-            <Button>
-              <UserPlus className="mr-2 h-4 w-4" />
-              Criar Usuário
-            </Button>
-          </DialogTrigger>
-          <DialogContent className="max-w-md">
-            <DialogHeader>
-              <DialogTitle>Criar Novo Usuário</DialogTitle>
-              <DialogDescription>
-                Crie um novo usuário e defina suas permissões
-              </DialogDescription>
-            </DialogHeader>
-            
-            <div className="space-y-4">
-              <div>
-                <Label htmlFor="email">Email</Label>
-                <Input
-                  id="email"
-                  type="email"
-                  value={newUser.email}
-                  onChange={(e) => setNewUser({...newUser, email: e.target.value})}
-                  placeholder="usuario@exemplo.com"
-                />
-              </div>
-              
-              <div>
-                <Label htmlFor="password">Senha</Label>
-                <Input
-                  id="password"
-                  type="password"
-                  value={newUser.password}
-                  onChange={(e) => setNewUser({...newUser, password: e.target.value})}
-                  placeholder="••••••••"
-                />
-              </div>
-              
-              <div>
-                <Label htmlFor="full_name">Nome Completo</Label>
-                <Input
-                  id="full_name"
-                  value={newUser.full_name}
-                  onChange={(e) => setNewUser({...newUser, full_name: e.target.value})}
-                  placeholder="Nome do usuário"
-                />
-              </div>
-              
-              <div>
-                <Label>Papéis/Permissões</Label>
-                <div className="space-y-2 mt-2">
-                  {Object.entries(roleLabels).map(([role, label]) => (
-                    <div key={role} className="flex items-center space-x-2">
-                      <input
-                        type="checkbox"
-                        id={role}
-                        checked={newUser.roles.includes(role as UserRole)}
-                        onChange={(e) => {
-                          if (e.target.checked) {
-                            setNewUser({
-                              ...newUser,
-                              roles: [...newUser.roles, role as UserRole]
-                            });
-                          } else {
-                            setNewUser({
-                              ...newUser,
-                              roles: newUser.roles.filter(r => r !== role)
-                            });
-                          }
-                        }}
-                      />
-                      <Label htmlFor={role} className="text-sm">
-                        {label}
-                        <span className="block text-xs text-muted-foreground">
-                          {roleDescriptions[role as UserRole]}
-                        </span>
-                      </Label>
-                    </div>
-                  ))}
-                </div>
-              </div>
-              
-              <Button onClick={createUser} className="w-full" disabled={loading}>
-                {loading ? "Criando..." : "Criar Usuário"}
-              </Button>
-            </div>
-          </DialogContent>
-        </Dialog>
+        <div className="flex gap-2">
+          <Button
+            variant="outline"
+            onClick={() => setShowAuditDialog(true)}
+          >
+            <FileText className="mr-2 h-4 w-4" />
+            Log de Auditoria
+          </Button>
+          
+          <Button onClick={() => setShowCreateDialog(true)}>
+            <UserPlus className="mr-2 h-4 w-4" />
+            Criar Usuário
+          </Button>
+        </div>
       </div>
 
       <Card>
@@ -317,6 +198,17 @@ const GestaoUsuarios = () => {
           )}
         </CardContent>
       </Card>
+
+      <CreateUserDialog
+        open={showCreateDialog}
+        onOpenChange={setShowCreateDialog}
+        onUserCreated={fetchUsers}
+      />
+
+      <AuditLogDialog
+        open={showAuditDialog}
+        onOpenChange={setShowAuditDialog}
+      />
     </div>
   );
 };
