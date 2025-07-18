@@ -4,9 +4,10 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Search, Users, FileText, Download, Printer, UserCheck, AlertCircle, UserX } from "lucide-react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Search, Users, FileText, Download, Printer, UserCheck, AlertCircle, UserX, Filter } from "lucide-react";
 import jsPDF from "jspdf";
-import { alunosService } from "@/services/supabaseService";
+import { alunosService, turmaPairsService, turmasService } from "@/services/supabaseService";
 import AlunoEditDialog from "@/components/admin/AlunoEditDialog";
 import { courseNames } from "@/types/schedule";
 import { useToast } from "@/hooks/use-toast";
@@ -14,20 +15,39 @@ import { useToast } from "@/hooks/use-toast";
 const GestaoIndividualComUsuarios = () => {
   const { toast } = useToast();
   const [alunosWithCreator, setAlunosWithCreator] = useState<any[]>([]);
+  const [turmaPairs, setTurmaPairs] = useState<any[]>([]);
+  const [turmas, setTurmas] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
+  const [selectedTurmaPair, setSelectedTurmaPair] = useState<string>("all");
+  const [selectedTurma, setSelectedTurma] = useState<string>("all");
   const [selectedAluno, setSelectedAluno] = useState<any>(null);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
 
   // Carregar dados dos alunos com informações do criador
   useEffect(() => {
-    const loadAlunosWithCreator = async () => {
+    const loadAllData = async () => {
       try {
         setLoading(true);
-        const data = await alunosService.getAllWithCreator();
-        setAlunosWithCreator(data);
+        const [alunosData, turmaPairsData, turmasData] = await Promise.all([
+          alunosService.getAllWithCreator(),
+          turmaPairsService.getAll(),
+          turmasService.getByTurmaPairId('') // Buscar todas as turmas
+        ]);
+        
+        setAlunosWithCreator(alunosData);
+        setTurmaPairs(turmaPairsData);
+        
+        // Buscar todas as turmas de todos os pares
+        const allTurmas: any[] = [];
+        for (const pair of turmaPairsData) {
+          const pairTurmas = await turmasService.getByTurmaPairId(pair.id);
+          allTurmas.push(...pairTurmas);
+        }
+        setTurmas(allTurmas);
+        
       } catch (error) {
-        console.error('Erro ao carregar alunos com criador:', error);
+        console.error('Erro ao carregar dados:', error);
         toast({
           title: "Erro ao carregar dados",
           description: "Não foi possível carregar os dados dos alunos.",
@@ -38,24 +58,43 @@ const GestaoIndividualComUsuarios = () => {
       }
     };
 
-    loadAlunosWithCreator();
+    loadAllData();
   }, []);
 
-  // Filtrar alunos baseado no termo de pesquisa
+  // Filtrar alunos baseado no termo de pesquisa e filtros de turma
   const alunosFiltrados = useMemo(() => {
-    if (!searchTerm) return alunosWithCreator;
-    
-    const termLower = searchTerm.toLowerCase();
-    return alunosWithCreator.filter(aluno => 
-      aluno.nome.toLowerCase().includes(termLower) ||
-      aluno.email?.toLowerCase().includes(termLower) ||
-      aluno.telefone.includes(termLower) ||
-      aluno.numero_bi.includes(termLower) ||
-      aluno.numero_estudante?.toLowerCase().includes(termLower) ||
-      courseNames[aluno.curso_codigo]?.toLowerCase().includes(termLower) ||
-      aluno.creator?.full_name?.toLowerCase().includes(termLower)
-    );
-  }, [alunosWithCreator, searchTerm]);
+    let filteredAlunos = alunosWithCreator;
+
+    // Filtro por termo de busca
+    if (searchTerm) {
+      const termLower = searchTerm.toLowerCase();
+      filteredAlunos = filteredAlunos.filter(aluno => 
+        aluno.nome.toLowerCase().includes(termLower) ||
+        aluno.email?.toLowerCase().includes(termLower) ||
+        aluno.telefone.includes(termLower) ||
+        aluno.numero_bi.includes(termLower) ||
+        aluno.numero_estudante?.toLowerCase().includes(termLower) ||
+        courseNames[aluno.curso_codigo]?.toLowerCase().includes(termLower) ||
+        aluno.creator?.full_name?.toLowerCase().includes(termLower)
+      );
+    }
+
+    // Filtro por par de turma
+    if (selectedTurmaPair !== "all") {
+      filteredAlunos = filteredAlunos.filter(aluno => 
+        aluno.turma_pair_id === selectedTurmaPair
+      );
+    }
+
+    // Filtro por turma específica (A ou B)
+    if (selectedTurma !== "all") {
+      filteredAlunos = filteredAlunos.filter(aluno => 
+        aluno.turma_id === selectedTurma
+      );
+    }
+
+    return filteredAlunos;
+  }, [alunosWithCreator, searchTerm, selectedTurmaPair, selectedTurma]);
 
   const handleEditAluno = (aluno: any) => {
     setSelectedAluno(aluno);
@@ -197,20 +236,21 @@ const GestaoIndividualComUsuarios = () => {
         </Card>
       </div>
 
-      {/* Busca */}
+      {/* Busca e Filtros */}
       <Card className="mb-6">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Search className="w-5 h-5" />
-            Buscar Alunos
+            Buscar e Filtrar Alunos
           </CardTitle>
           <CardDescription>
             Pesquise por nome, email, telefone, BI, número de estudante, curso ou usuário responsável
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="flex gap-4">
-            <div className="flex-1">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+            {/* Campo de busca */}
+            <div className="md:col-span-2">
               <Input
                 placeholder="Digite sua busca..."
                 value={searchTerm}
@@ -218,8 +258,55 @@ const GestaoIndividualComUsuarios = () => {
                 className="w-full"
               />
             </div>
-            <Button variant="outline" onClick={() => setSearchTerm("")}>
-              Limpar
+            
+            {/* Filtro por Par de Turma */}
+            <div>
+              <Select value={selectedTurmaPair} onValueChange={setSelectedTurmaPair}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Filtrar por Par de Turma" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Todos os Pares</SelectItem>
+                  {turmaPairs.map((pair) => (
+                    <SelectItem key={pair.id} value={pair.id}>
+                      {pair.nome} ({pair.periodo})
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            
+            {/* Filtro por Turma Específica */}
+            <div>
+              <Select value={selectedTurma} onValueChange={setSelectedTurma}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Filtrar por Turma" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Todas as Turmas</SelectItem>
+                  {turmas
+                    .filter(turma => selectedTurmaPair === "all" || turma.turma_pair_id === selectedTurmaPair)
+                    .map((turma) => {
+                      const pair = turmaPairs.find(p => p.id === turma.turma_pair_id);
+                      return (
+                        <SelectItem key={turma.id} value={turma.id}>
+                          {pair?.nome} - Turma {turma.tipo} (Sala: {turma.salas?.codigo || 'N/A'})
+                        </SelectItem>
+                      );
+                    })}
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+          
+          <div className="flex gap-2 mt-4">
+            <Button variant="outline" onClick={() => {
+              setSearchTerm("");
+              setSelectedTurmaPair("all");
+              setSelectedTurma("all");
+            }}>
+              <Filter className="mr-2 h-4 w-4" />
+              Limpar Filtros
             </Button>
           </div>
         </CardContent>
