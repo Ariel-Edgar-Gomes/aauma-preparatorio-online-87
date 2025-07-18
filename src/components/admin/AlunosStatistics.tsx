@@ -1,3 +1,4 @@
+
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { 
@@ -18,36 +19,37 @@ interface AlunosStatisticsProps {
 }
 
 export const AlunosStatistics = ({ turmaPairs }: AlunosStatisticsProps) => {
-  // Calcular estatísticas gerais usando exatamente os dados da gestão de pares
+  console.log('[AlunosStatistics] Calculando estatísticas para pares:', turmaPairs.length);
+  
+  // Calcular estatísticas gerais usando dados consistentes dos pares
   const getAllAlunos = (): Aluno[] => {
-    return turmaPairs.flatMap(pair => [
+    const alunos = turmaPairs.flatMap(pair => [
       ...pair.turmaA.alunos,
       ...pair.turmaB.alunos
     ]);
+    console.log('[AlunosStatistics] Total de alunos encontrados:', alunos.length);
+    return alunos;
   };
 
   const allAlunos = getAllAlunos();
   
-  // Usar os números exatos da gestão de pares
-  const totalAlunosGestao = turmaPairs.reduce((total, pair) => 
-    total + pair.turmaA.alunosInscritos + pair.turmaB.alunosInscritos, 0
-  );
+  // Usar contagem real dos alunos das turmas
+  const totalAlunos = turmaPairs.reduce((total, pair) => {
+    const alunosPar = pair.turmaA.alunosInscritos + pair.turmaB.alunosInscritos;
+    console.log(`[AlunosStatistics] ${pair.nome}: TurmaA=${pair.turmaA.alunosInscritos}, TurmaB=${pair.turmaB.alunosInscritos}, Total=${alunosPar}`);
+    return total + alunosPar;
+  }, 0);
   
-  const totalAlunos = totalAlunosGestao; // Usar dados da gestão de pares
+  console.log('[AlunosStatistics] Total de alunos calculado:', totalAlunos);
 
-  // Estatísticas por status
+  // Estatísticas por status usando dados reais dos alunos
   const alunosConfirmados = allAlunos.filter(a => a.status === 'confirmado').length;
   const alunosInscritos = allAlunos.filter(a => a.status === 'inscrito').length;
   const alunosCancelados = allAlunos.filter(a => a.status === 'cancelado').length;
 
-  // Estatísticas por curso - usar TODOS os cursos da gestão de pares
-  const alunosPorCurso = turmaPairs.reduce((acc, pair) => {
-    // Para cada curso do par, contar alunos proporcionalmente
-    pair.cursos.forEach(curso => {
-      const alunosTurmaA = Math.floor(pair.turmaA.alunosInscritos / pair.cursos.length);
-      const alunosTurmaB = Math.floor(pair.turmaB.alunosInscritos / pair.cursos.length);
-      acc[curso] = (acc[curso] || 0) + alunosTurmaA + alunosTurmaB;
-    });
+  // Estatísticas por curso - contar alunos reais por curso
+  const alunosPorCurso = allAlunos.reduce((acc, aluno) => {
+    acc[aluno.curso] = (acc[aluno.curso] || 0) + 1;
     return acc;
   }, {} as Record<string, number>);
 
@@ -59,7 +61,7 @@ export const AlunosStatistics = ({ turmaPairs }: AlunosStatisticsProps) => {
     }
   });
 
-  // Estatísticas por período
+  // Estatísticas por período usando dados reais
   const alunosManha = turmaPairs
     .filter(pair => pair.periodo === 'manha')
     .reduce((total, pair) => total + pair.turmaA.alunosInscritos + pair.turmaB.alunosInscritos, 0);
@@ -68,7 +70,7 @@ export const AlunosStatistics = ({ turmaPairs }: AlunosStatisticsProps) => {
     .filter(pair => pair.periodo === 'tarde')
     .reduce((total, pair) => total + pair.turmaA.alunosInscritos + pair.turmaB.alunosInscritos, 0);
 
-  // Estatísticas por turma (A vs B)
+  // Estatísticas por turma (A vs B) usando dados reais
   const alunosTurmaA = turmaPairs.reduce((total, pair) => total + pair.turmaA.alunosInscritos, 0);
   const alunosTurmaB = turmaPairs.reduce((total, pair) => total + pair.turmaB.alunosInscritos, 0);
 
@@ -82,6 +84,18 @@ export const AlunosStatistics = ({ turmaPairs }: AlunosStatisticsProps) => {
   const topCursos = Object.entries(alunosPorCurso)
     .sort(([,a], [,b]) => b - a)
     .slice(0, 5);
+
+  console.log('[AlunosStatistics] Estatísticas calculadas:', {
+    totalAlunos,
+    alunosConfirmados,
+    alunosInscritos,
+    alunosCancelados,
+    alunosManha,
+    alunosTarde,
+    alunosTurmaA,
+    alunosTurmaB,
+    taxaOcupacao
+  });
 
   return (
     <div className="space-y-6">
