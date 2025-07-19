@@ -3,7 +3,7 @@ import { useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Trash2, Users, MapPin, Clock, ChevronDown, ChevronUp } from "lucide-react";
+import { Trash2, Users, MapPin, Clock, ChevronDown, ChevronUp, Edit } from "lucide-react";
 import { TurmaPair } from "@/types/turma";
 import { AlunosList } from "./AlunosList";
 
@@ -12,12 +12,14 @@ interface TurmaPairGridProps {
   turmaPairs: TurmaPair[];
   onDeleteTurmaPair: (id: string) => void;
   onToggleStatus: (id: string) => void;
+  onEditTurmaPair: (turmaPair: TurmaPair) => void;
 }
 
 export const TurmaPairGrid = ({ 
   turmaPairs, 
   onDeleteTurmaPair,
-  onToggleStatus 
+  onToggleStatus,
+  onEditTurmaPair
 }: TurmaPairGridProps) => {
   const [expandedTurma, setExpandedTurma] = useState<string | null>(null);
   const [selectedTurma, setSelectedTurma] = useState<'A' | 'B'>('A');
@@ -324,15 +326,26 @@ export const TurmaPairGrid = ({
                 <div className="text-[10px] text-muted-foreground">
                   {new Date(turmaPair.criadoEm).toLocaleDateString('pt-PT')}
                 </div>
-                <Button
-                  size="sm"
-                  variant="outline"
-                  onClick={() => onDeleteTurmaPair(turmaPair.id)}
-                  className="text-destructive hover:text-destructive-foreground hover:bg-destructive h-5 px-1 text-[10px]"
-                >
-                  <Trash2 className="w-2 h-2 mr-0.5" />
-                  Remover
-                </Button>
+                <div className="flex gap-1">
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => onEditTurmaPair(turmaPair)}
+                    className="text-primary hover:text-primary-foreground hover:bg-primary h-5 px-1 text-[10px]"
+                  >
+                    <Edit className="w-2 h-2 mr-0.5" />
+                    Editar
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => onDeleteTurmaPair(turmaPair.id)}
+                    className="text-destructive hover:text-destructive-foreground hover:bg-destructive h-5 px-1 text-[10px]"
+                  >
+                    <Trash2 className="w-2 h-2 mr-0.5" />
+                    Remover
+                  </Button>
+                </div>
               </div>
             </CardContent>
           </Card>

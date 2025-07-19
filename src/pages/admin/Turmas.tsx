@@ -1,10 +1,13 @@
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Plus, RefreshCw, Users, BookOpen } from "lucide-react";
 import { useTurmaData } from "@/hooks/useTurmaData";
+import { TurmaPair } from "@/types/turma";
 import { TurmaPairGrid } from "@/components/admin/TurmaPairGrid";
 import { TurmaManagementArea } from "@/components/admin/TurmaManagementArea";
 import { TurmaIndividualManagement } from "@/components/admin/TurmaIndividualManagement";
 import { SalasManagement } from "@/components/admin/SalasManagement";
+import { TurmaPairEditDialog } from "@/components/admin/TurmaPairEditDialog";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
@@ -21,6 +24,9 @@ const AdminTurmas = () => {
     handleDeleteAluno,
     handleUpdateAlunoStatus
   } = useTurmaData();
+  
+  const [editingTurmaPair, setEditingTurmaPair] = useState<TurmaPair | null>(null);
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
 
   if (loading) {
     return (
@@ -131,11 +137,15 @@ const AdminTurmas = () => {
           </TabsList>
         
           <TabsContent value="overview" className="mt-6">
-            <TurmaPairGrid
-              turmaPairs={turmaPairs}
-              onDeleteTurmaPair={handleDeleteTurmaPair}
-              onToggleStatus={handleToggleStatus}
-            />
+                <TurmaPairGrid 
+                  turmaPairs={turmaPairs} 
+                  onDeleteTurmaPair={handleDeleteTurmaPair}
+                  onToggleStatus={handleToggleStatus}
+                  onEditTurmaPair={(turmaPair) => {
+                    setEditingTurmaPair(turmaPair);
+                    setIsEditDialogOpen(true);
+                  }}
+                />
           </TabsContent>
           
           <TabsContent value="management" className="mt-6">
@@ -163,6 +173,14 @@ const AdminTurmas = () => {
           </TabsContent>
         </Tabs>
       </div>
+      
+      {/* Dialog de Edição */}
+      <TurmaPairEditDialog
+        turmaPair={editingTurmaPair}
+        open={isEditDialogOpen}
+        onOpenChange={setIsEditDialogOpen}
+        onSave={handleUpdateTurmaPair}
+      />
     </div>
   );
 };
