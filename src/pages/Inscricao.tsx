@@ -332,13 +332,11 @@ const Inscricao = () => {
     title, 
     field, 
     required = false, 
-    accept = "image/*,.pdf",
     description 
   }: { 
     title: string; 
     field: string; 
     required?: boolean; 
-    accept?: string;
     description?: string;
   }) => (
     <Card className="border-2 border-dashed border-[#003366]/20 hover:border-[#003366]/40 transition-colors">
@@ -355,7 +353,6 @@ const Inscricao = () => {
       <CardContent className="pt-0">
         <Input
           type="file"
-          accept={accept}
           onChange={(e) => handleFileUpload(field, e.target.files?.[0] || null)}
           className="file:bg-[#d32f2f] file:text-white file:border-0 file:rounded-md file:px-3 file:py-1 file:hover:bg-[#d32f2f]/90"
         />
@@ -930,28 +927,24 @@ const Inscricao = () => {
                   <FileUploadCard
                     title="Foto Tipo Passe"
                     field="foto"
-                    accept="image/*,.pdf"
                     description="Foto recente, fundo branco (opcional)"
                   />
                   
                   <FileUploadCard
                     title="Cópia do BI"
                     field="copiaBI"
-                    accept="image/*,.pdf"
                     description="Cópia legível do BI (opcional)"
                   />
                   
                   <FileUploadCard
                     title="Declaração/Certificado"
                     field="declaracaoCertificado"
-                    accept="image/*,.pdf"
                     description="Ensino Médio (opcional)"
                   />
 
                   <FileUploadCard
                     title="Comprovativo de Pagamento"
                     field="comprovativoPagamento"
-                    accept="image/*,.pdf"
                     description="Comprovativo do pagamento (opcional)"
                   />
                 </div>
