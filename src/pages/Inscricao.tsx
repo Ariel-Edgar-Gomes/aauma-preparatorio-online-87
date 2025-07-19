@@ -203,10 +203,16 @@ const Inscricao = () => {
     console.log('[Inscricao] handleFileUpload called with field:', field, 'file:', file);
     
     if (file) {
-      console.log('[Inscricao] File uploaded:', field, file.name, file.size, file.type);
+      console.log('[Inscricao] File details:', {
+        name: file.name,
+        size: file.size,
+        type: file.type,
+        lastModified: file.lastModified
+      });
       
       // Validate file size (max 5MB)
       if (file.size > 5 * 1024 * 1024) {
+        console.log('[Inscricao] File too large:', file.size);
         toast({
           title: "Arquivo muito grande",
           description: "O arquivo deve ter no máximo 5MB.",
@@ -217,7 +223,9 @@ const Inscricao = () => {
 
       // Validate file type
       const allowedTypes = ['image/jpeg', 'image/png', 'image/jpg', 'application/pdf'];
+      console.log('[Inscricao] Checking file type:', file.type, 'allowed:', allowedTypes);
       if (!allowedTypes.includes(file.type)) {
+        console.log('[Inscricao] Invalid file type detected:', file.type);
         toast({
           title: "Tipo de arquivo inválido",
           description: "Apenas arquivos JPG, PNG ou PDF são aceitos.",
@@ -225,11 +233,15 @@ const Inscricao = () => {
         });
         return;
       }
+      
+      console.log('[Inscricao] File validation passed for field:', field);
+    } else {
+      console.log('[Inscricao] No file selected for field:', field);
     }
 
     setFormData(prev => {
       const updatedData = { ...prev, [field]: file };
-      console.log('[Inscricao] Updated formData with field:', field, 'Current formData:', updatedData);
+      console.log('[Inscricao] Updated formData with field:', field, 'File object:', file ? { name: file.name, type: file.type } : null);
       return updatedData;
     });
   };
