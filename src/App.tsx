@@ -14,6 +14,7 @@ import AdminHorarios from "./pages/admin/Horarios";
 import AdminTurmas from "./pages/admin/Turmas";
 import GestaoIndividual from "./pages/admin/GestaoIndividual";
 import GestaoUsuarios from "./pages/admin/GestaoUsuarios";
+import PesquisaGlobal from "./pages/admin/PesquisaGlobal";
 import Auditoria from "./pages/admin/Auditoria";
 import Inscricoes from "./pages/Inscricoes";
 import NotFound from "./pages/NotFound";
@@ -69,6 +70,7 @@ const App = () => (
               <Route path="horarios" element={<AdminHorarios />} />
               <Route path="turmas" element={<AdminTurmas />} />
               <Route path="gestao-individual" element={<GestaoIndividual />} />
+              <Route path="pesquisa-global" element={<PesquisaGlobal />} />
               <Route path="usuarios" element={
                 <ProtectedRoute requiredPermission="admin">
                   <GestaoUsuarios />

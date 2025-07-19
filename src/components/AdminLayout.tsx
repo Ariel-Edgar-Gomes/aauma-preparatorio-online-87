@@ -10,7 +10,8 @@ import {
   User,
   UserCog,
   Shield,
-  Eye
+  Eye,
+  Search
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "./AuthProvider";
@@ -57,6 +58,12 @@ const getAllNavigationItems = () => [
     url: "/admin/gestao-individual",
     icon: Users,
     permissions: ['admin', 'inscricao_simples', 'inscricao_completa', 'visualizador']
+  },
+  {
+    title: "Pesquisa Global",
+    url: "/admin/pesquisa-global",
+    icon: Search,
+    permissions: []
   },
   {
     title: "Horários",
