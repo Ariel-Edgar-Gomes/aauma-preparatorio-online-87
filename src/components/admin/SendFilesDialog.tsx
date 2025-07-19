@@ -72,6 +72,16 @@ export const SendFilesDialog: React.FC<SendFilesDialogProps> = ({
       const { error } = await supabase.functions.invoke('send-files-email', {
         body: {
           studentName: aluno.nome,
+          studentInfo: {
+            curso: aluno.curso,
+            numeroEstudante: aluno.numeroEstudante,
+            dataInscricao: aluno.dataInscricao,
+            turno: aluno.turno,
+            par: aluno.par,
+            turma: aluno.turma,
+            telefone: aluno.telefone,
+            email: aluno.email
+          },
           files: files
         }
       });
