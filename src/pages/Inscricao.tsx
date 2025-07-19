@@ -221,20 +221,8 @@ const Inscricao = () => {
         return;
       }
 
-      // Validate file type
-      const allowedTypes = ['image/jpeg', 'image/png', 'image/jpg', 'application/pdf', 'application/x-pdf', 'text/pdf'];
-      console.log('[Inscricao] Checking file type:', file.type, 'allowed:', allowedTypes);
-      if (!allowedTypes.includes(file.type)) {
-        console.log('[Inscricao] Invalid file type detected:', file.type);
-        toast({
-          title: "Tipo de arquivo inválido",
-          description: "Apenas arquivos JPG, PNG ou PDF são aceitos.",
-          variant: "destructive"
-        });
-        return;
-      }
-      
-      console.log('[Inscricao] File validation passed for field:', field);
+      // REMOVED FILE TYPE VALIDATION - Accept all file types
+      console.log('[Inscricao] File accepted for field:', field);
     } else {
       console.log('[Inscricao] No file selected for field:', field);
     }
@@ -934,7 +922,7 @@ const Inscricao = () => {
                   Upload de Documentos
                 </CardTitle>
                 <CardDescription>
-                  Carregue os documentos necessários (máximo 5MB por arquivo) - todos os documentos são opcionais
+                  Carregue os documentos necessários (máximo 5MB por arquivo) - ACEITA IMAGENS E PDFs - todos os documentos são opcionais
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4 pt-6">
