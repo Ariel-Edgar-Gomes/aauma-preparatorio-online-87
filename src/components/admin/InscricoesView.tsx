@@ -110,7 +110,7 @@ export const InscricoesView = () => {
           const creator = profiles.find(p => p.id === aluno.created_by);
           return {
             ...aluno,
-            creator_name: creator?.full_name || 'Sistema',
+            creator_name: creator?.full_name || (aluno.created_by ? 'Usuário Removido' : 'Sistema Antigo'),
             creator_email: creator?.email || 'N/A'
           };
         });
