@@ -331,7 +331,8 @@ export const useTurmaData = () => {
       const nomePeriodo = periodo === 'manha' ? 'Manhã' : 'Tarde';
       const horarioPeriodo = periodo === 'manha' ? '08h00 - 12h00' : '13h00 - 17h00';
       
-      await turmaPairsService.create({
+      // Criar o par de turmas
+      const novoPar = await turmaPairsService.create({
         nome: `Par ${proximoNumero} - ${nomePeriodo}`,
         periodo,
         horario_periodo: horarioPeriodo,
@@ -340,12 +341,59 @@ export const useTurmaData = () => {
         horario_semanal: {},
         ativo: true
       });
+
+      // Criar salas padrão se não existirem
+      const codigoSalaA = `${proximoNumero}A-${periodo}`;
+      const codigoSalaB = `${proximoNumero}B-${periodo}`;
+      
+      let salaA, salaB;
+      
+      try {
+        salaA = await salasService.getByCodigo(codigoSalaA);
+      } catch {
+        salaA = await salasService.create({
+          codigo: codigoSalaA,
+          capacidade: 30,
+          tipo: 'sala',
+          ativo: true
+        });
+      }
+      
+      try {
+        salaB = await salasService.getByCodigo(codigoSalaB);
+      } catch {
+        salaB = await salasService.create({
+          codigo: codigoSalaB,
+          capacidade: 30,
+          tipo: 'sala',
+          ativo: true
+        });
+      }
+
+      // Criar as turmas A e B
+      await turmasService.create({
+        turma_pair_id: novoPar.id,
+        tipo: 'A',
+        sala_id: salaA.id,
+        capacidade: 30,
+        alunos_inscritos: 0,
+        horario_semanal: {}
+      });
+
+      await turmasService.create({
+        turma_pair_id: novoPar.id,
+        tipo: 'B',
+        sala_id: salaB.id,
+        capacidade: 30,
+        alunos_inscritos: 0,
+        horario_semanal: {}
+      });
       
       await loadTurmaPairs();
       
       toast({
-        title: "Par duplicado",
-        description: `Novo par de ${periodo} criado baseado no par existente.`,
+        title: "Par criado",
+        description: `Novo par de ${nomePeriodo.toLowerCase()} criado com sucesso com Turma A e B.`,
       });
     } catch (error) {
       console.error('Erro ao duplicar par:', error);
