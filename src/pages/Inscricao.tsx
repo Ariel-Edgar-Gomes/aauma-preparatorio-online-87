@@ -356,7 +356,9 @@ const Inscricao = () => {
         {formData[field as keyof typeof formData] && (
           <p className="text-xs text-green-600 mt-2 flex items-center gap-1">
             <FileText className="w-3 h-3" />
-            Arquivo carregado: {(formData[field as keyof typeof formData] as File)?.name}
+            Arquivo carregado: {formData[field as keyof typeof formData] instanceof File 
+              ? (formData[field as keyof typeof formData] as File).name 
+              : 'Arquivo selecionado'}
           </p>
         )}
       </CardContent>
