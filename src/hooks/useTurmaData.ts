@@ -139,31 +139,8 @@ export const useTurmaData = () => {
       
       // Buscar as turmas associadas primeiro
       const turmas = await turmasService.getByTurmaPairId(id);
-      let turmaA = turmas.find(t => t.tipo === 'A');
-      let turmaB = turmas.find(t => t.tipo === 'B');
-      
-      // Criar turmas se não existirem
-      if (!turmaA && updates.turmaA) {
-        turmaA = await turmasService.create({
-          turma_pair_id: id,
-          tipo: 'A',
-          sala_id: null,
-          capacidade: updates.turmaA.capacidade || 30,
-          alunos_inscritos: 0,
-          horario_semanal: {}
-        });
-      }
-      
-      if (!turmaB && updates.turmaB) {
-        turmaB = await turmasService.create({
-          turma_pair_id: id,
-          tipo: 'B',
-          sala_id: null,
-          capacidade: updates.turmaB.capacidade || 30,
-          alunos_inscritos: 0,
-          horario_semanal: {}
-        });
-      }
+      const turmaA = turmas.find(t => t.tipo === 'A');
+      const turmaB = turmas.find(t => t.tipo === 'B');
       
       // Atualizar turmas individuais se necessário
       if (updates.turmaA && turmaA) {
