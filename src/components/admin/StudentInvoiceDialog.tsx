@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { InvoiceTemplate } from "@/components/invoice/InvoiceTemplate";
 import { Aluno } from "@/types/turma";
@@ -51,35 +51,38 @@ export const StudentInvoiceDialog: React.FC<StudentInvoiceDialogProps> = ({
 
   if (!aluno) return null;
 
-  console.log('Dados do aluno para fatura:', {
-    nome: aluno.nome,
-    telefone: aluno.telefone,
-    par: aluno.par || aluno.turma_pair_id,
-    turmaPairName,
-    curso: aluno.curso || aluno.curso_codigo
-  });
+  const invoiceData = useMemo(() => {
+    console.log('Criando invoice data com:', {
+      nome: aluno.nome,
+      telefone: aluno.telefone,
+      par: aluno.par || aluno.turma_pair_id,
+      turmaPairName,
+      curso: aluno.curso || aluno.curso_codigo
+    });
 
-  const invoiceData = {
-    studentName: aluno.nome,
-    course: aluno.curso || aluno.curso_codigo,
-    shift: aluno.turno || '',
-    email: aluno.email,
-    contact: aluno.telefone,
-    birthDate: aluno.data_nascimento || aluno.dataNascimento,
-    address: aluno.endereco,
-    biNumber: aluno.numero_bi || aluno.numeroBI,
-    duration: aluno.duracao,
-    startDate: aluno.data_inicio || aluno.dataInicio || '',
-    paymentMethod: aluno.forma_pagamento || aluno.formaPagamento,
-    inscriptionNumber: aluno.numero_estudante || aluno.numeroEstudante || 'N/A',
-    inscriptionDate: aluno.data_inscricao || aluno.dataInscricao,
-    amount: Number(aluno.valor_pago) || 40000,
-    createdBy: aluno.creator?.full_name || aluno.criador?.nome,
-    turmaPair: turmaPairName || 'Carregando par de turma...',
-    turma: aluno.turma
-  };
+    const data = {
+      studentName: aluno.nome,
+      course: aluno.curso || aluno.curso_codigo,
+      shift: aluno.turno || '',
+      email: aluno.email,
+      contact: aluno.telefone,
+      birthDate: aluno.data_nascimento || aluno.dataNascimento,
+      address: aluno.endereco,
+      biNumber: aluno.numero_bi || aluno.numeroBI,
+      duration: aluno.duracao,
+      startDate: aluno.data_inicio || aluno.dataInicio || '',
+      paymentMethod: aluno.forma_pagamento || aluno.formaPagamento,
+      inscriptionNumber: aluno.numero_estudante || aluno.numeroEstudante || 'N/A',
+      inscriptionDate: aluno.data_inscricao || aluno.dataInscricao,
+      amount: Number(aluno.valor_pago) || 40000,
+      createdBy: aluno.creator?.full_name || aluno.criador?.nome,
+      turmaPair: turmaPairName || 'Carregando par de turma...',
+      turma: aluno.turma
+    };
 
-  console.log('Invoice data criada:', invoiceData);
+    console.log('Invoice data final:', data);
+    return data;
+  }, [aluno, turmaPairName]);
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
