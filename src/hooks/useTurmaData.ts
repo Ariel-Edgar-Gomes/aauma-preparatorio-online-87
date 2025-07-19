@@ -61,15 +61,19 @@ export const useTurmaData = () => {
         ativo: true
       });
       
-      // Criar ou buscar salas (pode ser um código de sala dinâmico)
+      // Criar ou buscar salas dinamicamente
       let salaAId = null;
       let salaBId = null;
+
+      console.log('[useTurmaData] Processando salas:', { salaA: data.salaA, salaB: data.salaB });
 
       try {
         const salaA = await salasService.getByCodigo(data.salaA);
         salaAId = salaA.id;
+        console.log('[useTurmaData] Sala A encontrada:', salaA);
       } catch {
         // Se não encontrar a sala, criar uma nova
+        console.log('[useTurmaData] Criando nova sala A:', data.salaA);
         const novaSalaA = await salasService.create({
           codigo: data.salaA,
           capacidade: data.capacidadeA,
@@ -77,13 +81,16 @@ export const useTurmaData = () => {
           tipo: 'sala'
         });
         salaAId = novaSalaA.id;
+        console.log('[useTurmaData] Sala A criada:', novaSalaA);
       }
 
       try {
         const salaB = await salasService.getByCodigo(data.salaB);
         salaBId = salaB.id;
+        console.log('[useTurmaData] Sala B encontrada:', salaB);
       } catch {
         // Se não encontrar a sala, criar uma nova
+        console.log('[useTurmaData] Criando nova sala B:', data.salaB);
         const novaSalaB = await salasService.create({
           codigo: data.salaB,
           capacidade: data.capacidadeB,
@@ -91,6 +98,7 @@ export const useTurmaData = () => {
           tipo: 'sala'
         });
         salaBId = novaSalaB.id;
+        console.log('[useTurmaData] Sala B criada:', novaSalaB);
       }
       
       // Criar turma A
@@ -149,12 +157,15 @@ export const useTurmaData = () => {
           turmaAUpdates.capacidade = updates.turmaA.capacidade;
         }
         if (updates.turmaA.sala) {
+          console.log('[useTurmaData] Atualizando sala da Turma A para:', updates.turmaA.sala);
           try {
             const sala = await salasService.getByCodigo(updates.turmaA.sala);
             turmaAUpdates.sala_id = sala.id;
+            console.log('[useTurmaData] Sala A encontrada:', sala);
           } catch (salaError) {
             // Se não encontrar a sala, criar uma nova
             try {
+              console.log('[useTurmaData] Criando nova sala A:', updates.turmaA.sala);
               const novaSala = await salasService.create({
                 codigo: updates.turmaA.sala,
                 capacidade: updates.turmaA.capacidade || 30,
@@ -162,6 +173,7 @@ export const useTurmaData = () => {
                 tipo: 'sala'
               });
               turmaAUpdates.sala_id = novaSala.id;
+              console.log('[useTurmaData] Nova sala A criada:', novaSala);
             } catch (createError) {
               console.error('[useTurmaData] Erro ao criar sala A:', createError);
               toast({
@@ -186,12 +198,15 @@ export const useTurmaData = () => {
           turmaBUpdates.capacidade = updates.turmaB.capacidade;
         }
         if (updates.turmaB.sala) {
+          console.log('[useTurmaData] Atualizando sala da Turma B para:', updates.turmaB.sala);
           try {
             const sala = await salasService.getByCodigo(updates.turmaB.sala);
             turmaBUpdates.sala_id = sala.id;
+            console.log('[useTurmaData] Sala B encontrada:', sala);
           } catch (salaError) {
             // Se não encontrar a sala, criar uma nova
             try {
+              console.log('[useTurmaData] Criando nova sala B:', updates.turmaB.sala);
               const novaSala = await salasService.create({
                 codigo: updates.turmaB.sala,
                 capacidade: updates.turmaB.capacidade || 30,
@@ -199,6 +214,7 @@ export const useTurmaData = () => {
                 tipo: 'sala'
               });
               turmaBUpdates.sala_id = novaSala.id;
+              console.log('[useTurmaData] Nova sala B criada:', novaSala);
             } catch (createError) {
               console.error('[useTurmaData] Erro ao criar sala B:', createError);
               toast({

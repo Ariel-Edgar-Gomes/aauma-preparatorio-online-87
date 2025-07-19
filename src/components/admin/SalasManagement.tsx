@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -8,21 +8,14 @@ import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
-import { Pencil, Plus, Trash2 } from "lucide-react";
-import { salasService } from "@/services/supabaseService";
-import { useToast } from "@/hooks/use-toast";
+import { Pencil, Plus, Trash2, AlertCircle } from "lucide-react";
+import { DBSala } from "@/services/supabaseService";
+import { useSalasData } from "@/hooks/useSalasData";
 
-interface Sala {
-  id: string;
-  codigo: string;
-  capacidade: number;
-  tipo: string;
-  ativo: boolean;
-}
+type Sala = DBSala;
 
 export function SalasManagement() {
-  const [salas, setSalas] = useState<Sala[]>([]);
-  const [loading, setLoading] = useState(true);
+  const { salas, loading, createSala, updateSala, deleteSala } = useSalasData();
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingSala, setEditingSala] = useState<Sala | null>(null);
   const [formData, setFormData] = useState({
@@ -31,28 +24,7 @@ export function SalasManagement() {
     tipo: "sala",
     ativo: true
   });
-  const { toast } = useToast();
 
-  const loadSalas = async () => {
-    try {
-      setLoading(true);
-      const data = await salasService.getAll();
-      setSalas(data || []);
-    } catch (error) {
-      console.error('Erro ao carregar salas:', error);
-      toast({
-        title: "Erro",
-        description: "Erro ao carregar salas",
-        variant: "destructive",
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    loadSalas();
-  }, []);
 
   const handleOpenDialog = (sala?: Sala) => {
     if (sala) {
@@ -77,28 +49,23 @@ export function SalasManagement() {
 
   const handleSave = async () => {
     try {
+      // Validações
+      if (!formData.codigo.trim()) {
+        return;
+      }
+
+      if (formData.capacidade < 1) {
+        return;
+      }
+
       if (editingSala) {
-        await salasService.update(editingSala.id, formData);
-        toast({
-          title: "Sucesso",
-          description: "Sala atualizada com sucesso",
-        });
+        await updateSala(editingSala.id, formData);
       } else {
-        await salasService.create(formData);
-        toast({
-          title: "Sucesso", 
-          description: "Sala criada com sucesso",
-        });
+        await createSala(formData);
       }
       setDialogOpen(false);
-      loadSalas();
     } catch (error) {
-      console.error('Erro ao salvar sala:', error);
-      toast({
-        title: "Erro",
-        description: "Erro ao salvar sala",
-        variant: "destructive",
-      });
+      // Erro já é tratado no hook
     }
   };
 
@@ -106,24 +73,26 @@ export function SalasManagement() {
     if (!confirm("Tem certeza que deseja deletar esta sala?")) return;
     
     try {
-      await salasService.delete(id);
-      toast({
-        title: "Sucesso",
-        description: "Sala deletada com sucesso",
-      });
-      loadSalas();
+      await deleteSala(id);
     } catch (error) {
-      console.error('Erro ao deletar sala:', error);
-      toast({
-        title: "Erro",
-        description: "Erro ao deletar sala",
-        variant: "destructive",
-      });
+      // Erro já é tratado no hook
     }
   };
 
   if (loading) {
-    return <div>Carregando salas...</div>;
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle>Gestão de Salas</CardTitle>
+          <CardDescription>Carregando salas...</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="flex items-center justify-center p-8">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+          </div>
+        </CardContent>
+      </Card>
+    );
   }
 
   return (
@@ -215,36 +184,48 @@ export function SalasManagement() {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {salas.map((sala) => (
-              <TableRow key={sala.id}>
-                <TableCell className="font-medium">{sala.codigo}</TableCell>
-                <TableCell>{sala.capacidade}</TableCell>
-                <TableCell className="capitalize">{sala.tipo}</TableCell>
-                <TableCell>
-                  <Badge variant={sala.ativo ? "default" : "secondary"}>
-                    {sala.ativo ? "Ativo" : "Inativo"}
-                  </Badge>
-                </TableCell>
-                <TableCell>
-                  <div className="flex gap-2">
-                    <Button 
-                      variant="outline" 
-                      size="sm"
-                      onClick={() => handleOpenDialog(sala)}
-                    >
-                      <Pencil className="h-4 w-4" />
-                    </Button>
-                    <Button 
-                      variant="outline" 
-                      size="sm"
-                      onClick={() => handleDelete(sala.id)}
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
+            {salas.length === 0 ? (
+              <TableRow>
+                <TableCell colSpan={5} className="text-center py-8">
+                  <div className="flex flex-col items-center gap-2 text-muted-foreground">
+                    <AlertCircle className="h-8 w-8" />
+                    <p>Nenhuma sala encontrada</p>
+                    <p className="text-sm">Adicione uma sala para começar</p>
                   </div>
                 </TableCell>
               </TableRow>
-            ))}
+            ) : (
+              salas.map((sala) => (
+                <TableRow key={sala.id}>
+                  <TableCell className="font-medium">{sala.codigo}</TableCell>
+                  <TableCell>{sala.capacidade}</TableCell>
+                  <TableCell className="capitalize">{sala.tipo}</TableCell>
+                  <TableCell>
+                    <Badge variant={sala.ativo ? "default" : "secondary"}>
+                      {sala.ativo ? "Ativo" : "Inativo"}
+                    </Badge>
+                  </TableCell>
+                  <TableCell>
+                    <div className="flex gap-2">
+                      <Button 
+                        variant="outline" 
+                        size="sm"
+                        onClick={() => handleOpenDialog(sala)}
+                      >
+                        <Pencil className="h-4 w-4" />
+                      </Button>
+                      <Button 
+                        variant="outline" 
+                        size="sm"
+                        onClick={() => handleDelete(sala.id)}
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </TableCell>
+                </TableRow>
+              ))
+            )}
           </TableBody>
         </Table>
       </CardContent>
