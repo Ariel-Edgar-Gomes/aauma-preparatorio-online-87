@@ -66,18 +66,38 @@ const PesquisaGlobal = () => {
 
   // Filtrar alunos baseado no termo de pesquisa
   const alunosFiltrados = useMemo(() => {
-    if (!searchTerm) return alunos;
+    console.log('[PesquisaGlobal] Filtrando alunos:', { 
+      searchTerm, 
+      totalAlunos: alunos.length,
+      hasSearchTerm: !!searchTerm 
+    });
     
-    const termLower = searchTerm.toLowerCase();
-    return alunos.filter(aluno => 
-      aluno.nome.toLowerCase().includes(termLower) ||
-      aluno.email?.toLowerCase().includes(termLower) ||
-      aluno.telefone?.includes(termLower) ||
-      aluno.numero_bi?.toLowerCase().includes(termLower) ||
-      aluno.numero_estudante?.toLowerCase().includes(termLower) ||
-      courseNames[aluno.curso_codigo]?.toLowerCase().includes(termLower) ||
-      aluno.status?.toLowerCase().includes(termLower)
-    );
+    if (!searchTerm || searchTerm.trim() === '') {
+      console.log('[PesquisaGlobal] Sem termo de pesquisa, retornando todos os alunos');
+      return alunos;
+    }
+    
+    const termLower = searchTerm.toLowerCase().trim();
+    const filtered = alunos.filter(aluno => {
+      const matches = 
+        aluno.nome?.toLowerCase().includes(termLower) ||
+        aluno.email?.toLowerCase().includes(termLower) ||
+        aluno.telefone?.includes(termLower) ||
+        aluno.numero_bi?.toLowerCase().includes(termLower) ||
+        aluno.numero_estudante?.toLowerCase().includes(termLower) ||
+        courseNames[aluno.curso_codigo]?.toLowerCase().includes(termLower) ||
+        aluno.status?.toLowerCase().includes(termLower);
+      
+      return matches;
+    });
+    
+    console.log('[PesquisaGlobal] Alunos filtrados:', { 
+      termLower, 
+      filteredCount: filtered.length,
+      sampleFiltered: filtered.slice(0, 3).map(a => a.nome)
+    });
+    
+    return filtered;
   }, [alunos, searchTerm]);
 
   // Função para obter nome do par de turma
@@ -201,7 +221,11 @@ const PesquisaGlobal = () => {
               <Input
                 placeholder="Digite aqui para pesquisar..."
                 value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
+                onChange={(e) => {
+                  const newValue = e.target.value;
+                  console.log('[PesquisaGlobal] Campo de pesquisa alterado:', { newValue, oldValue: searchTerm });
+                  setSearchTerm(newValue);
+                }}
                 className="pl-10 text-base h-12"
               />
             </div>
