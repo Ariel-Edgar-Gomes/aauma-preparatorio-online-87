@@ -219,25 +219,6 @@ export const TurmaManagementArea = ({
                       </div>
                     </div>
 
-                    <div className="grid grid-cols-2 gap-4">
-                      <div>
-                        <Label>Alunos Inscritos Turma A</Label>
-                        <Input
-                          type="number"
-                          value={editingPair.turmaA.alunosInscritos}
-                          onChange={(e) => updateTurmaData('A', 'alunosInscritos', parseInt(e.target.value))}
-                        />
-                      </div>
-                      
-                      <div>
-                        <Label>Alunos Inscritos Turma B</Label>
-                        <Input
-                          type="number"
-                          value={editingPair.turmaB.alunosInscritos}
-                          onChange={(e) => updateTurmaData('B', 'alunosInscritos', parseInt(e.target.value))}
-                        />
-                      </div>
-                    </div>
 
                     <div className="flex justify-end gap-2">
                       <Button variant="outline" onClick={() => setEditingPair(null)}>
