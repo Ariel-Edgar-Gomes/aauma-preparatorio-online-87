@@ -18,6 +18,9 @@ interface InvoiceData {
   inscriptionNumber: string;
   inscriptionDate: string;
   amount: number;
+  createdBy?: string;
+  turmaPair?: string;
+  turma?: string;
 }
 
 interface InvoiceTemplateProps {
@@ -304,10 +307,22 @@ export const InvoiceTemplate: React.FC<InvoiceTemplateProps> = ({ data }) => {
                 <span className="font-bold w-28 text-aauma-navy flex-shrink-0">Curso:</span>
                 <span className="text-gray-800">{data.course}</span>
               </div>
-              <div className="flex">
-                <span className="font-bold w-28 text-aauma-navy flex-shrink-0">Período:</span>
-                <span className="text-gray-800">{formatPeriod(data.shift)}</span>
-              </div>
+               <div className="flex">
+                 <span className="font-bold w-28 text-aauma-navy flex-shrink-0">Período:</span>
+                 <span className="text-gray-800">{formatPeriod(data.shift)}</span>
+               </div>
+               {data.turmaPair && (
+                 <div className="flex">
+                   <span className="font-bold w-28 text-aauma-navy flex-shrink-0">Par:</span>
+                   <span className="text-gray-800">{data.turmaPair}</span>
+                 </div>
+               )}
+               {data.turma && (
+                 <div className="flex">
+                   <span className="font-bold w-28 text-aauma-navy flex-shrink-0">Turma:</span>
+                   <span className="text-gray-800">Turma {data.turma}</span>
+                 </div>
+               )}
             </div>
             <div className="space-y-2">
               <div className="flex">
@@ -428,11 +443,14 @@ export const InvoiceTemplate: React.FC<InvoiceTemplateProps> = ({ data }) => {
           </div>
         </div>
 
-        {/* Signatures - Centered */}
-        <div className="signatures text-center mt-10">
-          <div className="signature-line border-b border-black w-48 mx-auto mb-2"></div>
-          <p className="font-bold text-sm text-aauma-navy">Assinatura do Responsável</p>
-        </div>
+         {/* Signatures - Centered */}
+         <div className="signatures text-center mt-10">
+           <div className="signature-line border-b border-black w-48 mx-auto mb-2"></div>
+           <p className="font-bold text-sm text-aauma-navy">Assinatura do Responsável</p>
+           {data.createdBy && (
+             <p className="text-xs text-gray-600 mt-2">Inscrição realizada por: {data.createdBy}</p>
+           )}
+         </div>
 
         {/* Footer */}
         <div className="footer text-xs text-center pt-4 border-t border-gray-300 mt-8">

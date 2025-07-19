@@ -32,8 +32,8 @@ const Inscricao = () => {
     par: "",
     turma: "",
     turno: "",
-    duracao: "1 Mes",
-    dataInicio: "2025-02-15",
+    duracao: "3 Meses",
+    dataInicio: "2025-08-11",
     formaPagamento: "Transferencia",
     statusPagamento: "inscrito",
     foto: null as File | null,
@@ -816,33 +816,32 @@ const Inscricao = () => {
               </CardHeader>
               <CardContent className="space-y-4 pt-6">
                 <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4">
-                  <div>
-                    <Label htmlFor="duracao" className="text-[#003366] font-medium">Duração *</Label>
-                    <Select value={formData.duracao} onValueChange={(value) => handleInputChange('duracao', value)}>
-                      <SelectTrigger className="border-gray-300 focus:border-[#003366] focus:ring-[#003366]/20">
-                        <SelectValue placeholder="Selecione a duração" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="3 Meses">3 Meses</SelectItem>
-                        <SelectItem value="6 Meses">6 Meses</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
+                   <div>
+                     <Label htmlFor="duracao" className="text-[#003366] font-medium">Duração</Label>
+                     <Select value={formData.duracao} onValueChange={(value) => handleInputChange('duracao', value)}>
+                       <SelectTrigger className="border-gray-300 focus:border-[#003366] focus:ring-[#003366]/20">
+                         <SelectValue placeholder="Selecione a duração" />
+                       </SelectTrigger>
+                       <SelectContent>
+                         <SelectItem value="3 Meses">3 Meses</SelectItem>
+                         <SelectItem value="6 Meses">6 Meses</SelectItem>
+                       </SelectContent>
+                     </Select>
+                   </div>
 
-                  <div>
-                    <Label htmlFor="dataInicio" className="flex items-center gap-1 text-[#003366] font-medium">
-                      <Calendar className="w-4 h-4" />
-                      Data de Início *
-                    </Label>
-                    <Input
-                      id="dataInicio"
-                      type="date"
-                      value={formData.dataInicio}
-                      onChange={(e) => handleInputChange('dataInicio', e.target.value)}
-                      className="border-gray-300 focus:border-[#003366] focus:ring-[#003366]/20"
-                      required
-                    />
-                  </div>
+                   <div>
+                     <Label htmlFor="dataInicio" className="flex items-center gap-1 text-[#003366] font-medium">
+                       <Calendar className="w-4 h-4" />
+                       Data de Início
+                     </Label>
+                     <Input
+                       id="dataInicio"
+                       type="date"
+                       value={formData.dataInicio}
+                       onChange={(e) => handleInputChange('dataInicio', e.target.value)}
+                       className="border-gray-300 focus:border-[#003366] focus:ring-[#003366]/20"
+                     />
+                   </div>
 
                   <div>
                     <Label htmlFor="formaPagamento" className="flex items-center gap-1 text-[#003366] font-medium">

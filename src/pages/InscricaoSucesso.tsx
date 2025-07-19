@@ -41,7 +41,9 @@ const InscricaoSucesso = () => {
     paymentMethod: inscricaoData.formaPagamento,
     inscriptionNumber: generateSequentialNumber(),
     inscriptionDate: new Date().toISOString(),
-    amount: 40000
+    amount: 40000,
+    turmaPair: inscricaoData.par,
+    turma: inscricaoData.turma
   } : null;
 
   if (!inscricaoData) {

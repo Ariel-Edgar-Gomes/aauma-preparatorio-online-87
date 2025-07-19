@@ -21,6 +21,12 @@ export interface Aluno {
   turno?: string;
   par?: string;
   turma?: string;
+  // Campos de arquivos
+  foto_url?: string;
+  copia_bi_url?: string;
+  declaracao_certificado_url?: string;
+  comprovativo_pagamento_url?: string;
+  valor_pago?: number;
   // Informações do criador
   criador?: {
     nome: string;

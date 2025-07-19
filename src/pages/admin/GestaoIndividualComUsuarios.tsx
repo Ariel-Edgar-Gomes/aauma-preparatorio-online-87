@@ -5,10 +5,13 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Search, Users, FileText, Download, Printer, UserCheck, AlertCircle, UserX, Filter } from "lucide-react";
+import { Search, Users, FileText, Download, Printer, UserCheck, AlertCircle, UserX, Filter, Edit, Mail, BarChart3 } from "lucide-react";
 import jsPDF from "jspdf";
 import { alunosService, turmaPairsService, turmasService } from "@/services/supabaseService";
 import AlunoEditDialog from "@/components/admin/AlunoEditDialog";
+import { StudentInvoiceDialog } from "@/components/admin/StudentInvoiceDialog";
+import { SendFilesDialog } from "@/components/admin/SendFilesDialog";
+import { UserReportDialog } from "@/components/admin/UserReportDialog";
 import { courseNames } from "@/types/schedule";
 import { useToast } from "@/hooks/use-toast";
 
@@ -23,6 +26,11 @@ const GestaoIndividualComUsuarios = () => {
   const [selectedTurma, setSelectedTurma] = useState<string>("all");
   const [selectedAluno, setSelectedAluno] = useState<any>(null);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const [invoiceDialogOpen, setInvoiceDialogOpen] = useState(false);
+  const [selectedAlunoForInvoice, setSelectedAlunoForInvoice] = useState<any>(null);
+  const [sendFilesDialogOpen, setSendFilesDialogOpen] = useState(false);
+  const [selectedAlunoForFiles, setSelectedAlunoForFiles] = useState<any>(null);
+  const [userReportDialogOpen, setUserReportDialogOpen] = useState(false);
 
   // Carregar dados dos alunos com informações do criador
   useEffect(() => {
@@ -101,6 +109,16 @@ const GestaoIndividualComUsuarios = () => {
     setIsEditDialogOpen(true);
   };
 
+  const handleViewInvoice = (aluno: any) => {
+    setSelectedAlunoForInvoice(aluno);
+    setInvoiceDialogOpen(true);
+  };
+
+  const handleSendFiles = (aluno: any) => {
+    setSelectedAlunoForFiles(aluno);
+    setSendFilesDialogOpen(true);
+  };
+
   const handleExportPDF = async () => {
     const doc = new jsPDF();
     
@@ -174,6 +192,14 @@ const GestaoIndividualComUsuarios = () => {
         </div>
         
         <div className="flex gap-2">
+          <Button 
+            onClick={() => setUserReportDialogOpen(true)} 
+            variant="outline"
+            className="bg-blue-50 hover:bg-blue-100 border-blue-200"
+          >
+            <BarChart3 className="mr-2 h-4 w-4" />
+            Relatório Individual
+          </Button>
           <Button onClick={handleExportPDF} variant="outline">
             <Download className="mr-2 h-4 w-4" />
             Exportar PDF
@@ -387,13 +413,32 @@ const GestaoIndividualComUsuarios = () => {
                       {new Date(aluno.data_inscricao).toLocaleDateString('pt-PT')}
                     </TableCell>
                     <TableCell className="text-right">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => handleEditAluno(aluno)}
-                      >
-                        Editar
-                      </Button>
+                      <div className="flex gap-2">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleEditAluno(aluno)}
+                          className="text-blue-600 hover:bg-blue-600 hover:text-white"
+                        >
+                          <Edit className="w-4 h-4" />
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleViewInvoice(aluno)}
+                          className="text-green-600 hover:bg-green-600 hover:text-white"
+                        >
+                          <FileText className="w-4 h-4" />
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleSendFiles(aluno)}
+                          className="text-purple-600 hover:bg-purple-600 hover:text-white"
+                        >
+                          <Mail className="w-4 h-4" />
+                        </Button>
+                      </div>
                     </TableCell>
                   </TableRow>
                 ))}
@@ -422,6 +467,26 @@ const GestaoIndividualComUsuarios = () => {
           setIsEditDialogOpen(false);
         }}
         availableCursos={Object.keys(courseNames)}
+      />
+
+      {/* Invoice Dialog */}
+      <StudentInvoiceDialog 
+        aluno={selectedAlunoForInvoice}
+        open={invoiceDialogOpen}
+        onOpenChange={setInvoiceDialogOpen}
+      />
+
+      {/* Send Files Dialog */}
+      <SendFilesDialog 
+        aluno={selectedAlunoForFiles}
+        open={sendFilesDialogOpen}
+        onOpenChange={setSendFilesDialogOpen}
+      />
+
+      {/* User Report Dialog */}
+      <UserReportDialog 
+        open={userReportDialogOpen}
+        onOpenChange={setUserReportDialogOpen}
       />
     </div>
   );
