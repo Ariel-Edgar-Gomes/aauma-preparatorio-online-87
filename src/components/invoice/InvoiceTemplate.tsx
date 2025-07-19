@@ -15,6 +15,7 @@ interface InvoiceData {
   duration?: string;
   startDate: string;
   paymentMethod?: string; 
+  paymentStatus?: string;
   inscriptionNumber: string;
   inscriptionDate: string;
   amount: number;
@@ -42,34 +43,37 @@ export const InvoiceTemplate: React.FC<InvoiceTemplateProps> = ({ data }) => {
           <head>
             <title>Fatura - ${data.studentName}</title>
             <style>
-              @page { 
-                size: A4; 
-                margin: 15mm; 
-              }
-              * {
-                box-sizing: border-box;
-              }
-              body { 
-                font-family: Arial, sans-serif; 
-                margin: 0; 
-                padding: 0; 
-                font-size: 11px;
-                line-height: 1.3;
-                color: #000;
-              }
-              .invoice-container { 
-                max-width: 100%; 
-                margin: 0; 
-                padding: 24px;
-                background: white;
-                border: 1px solid #d1d5db;
-              }
-              .header { 
-                text-align: center; 
-                margin-bottom: 20px; 
-                border-bottom: 2px solid #003366;
-                padding-bottom: 15px;
-              }
+               @page { 
+                 size: A4; 
+                 margin: 10mm; 
+               }
+               * {
+                 box-sizing: border-box;
+               }
+               body { 
+                 font-family: Arial, sans-serif; 
+                 margin: 0; 
+                 padding: 0; 
+                 font-size: 10px;
+                 line-height: 1.2;
+                 color: #000;
+                 overflow: hidden;
+               }
+               .invoice-container { 
+                 max-width: 100%; 
+                 margin: 0; 
+                 padding: 16px;
+                 background: white;
+                 border: 1px solid #d1d5db;
+                 height: calc(100vh - 20mm);
+                 overflow: hidden;
+               }
+               .header { 
+                 text-align: center; 
+                 margin-bottom: 12px; 
+                 border-bottom: 2px solid #003366;
+                 padding-bottom: 10px;
+               }
                .logo { 
                  width: 48px; 
                  height: 48px; 
@@ -90,15 +94,15 @@ export const InvoiceTemplate: React.FC<InvoiceTemplateProps> = ({ data }) => {
                 color: #d32f2f;
                 text-align: center;
               }
-              .info-section { 
-                margin-bottom: 20px; 
-              }
-              .info-grid {
-                display: grid;
-                grid-template-columns: 1fr 1fr;
-                gap: 32px;
-                margin-bottom: 20px;
-              }
+               .info-section { 
+                 margin-bottom: 12px; 
+               }
+               .info-grid {
+                 display: grid;
+                 grid-template-columns: 1fr 1fr;
+                 gap: 24px;
+                 margin-bottom: 12px;
+               }
               .info-row { 
                 display: flex; 
                 margin-bottom: 8px; 
@@ -114,12 +118,12 @@ export const InvoiceTemplate: React.FC<InvoiceTemplateProps> = ({ data }) => {
                 color: #1f2937;
                 flex: 1;
               }
-              .table { 
-                width: 100%; 
-                border-collapse: collapse; 
-                margin: 20px 0; 
-                font-size: 12px;
-              }
+               .table { 
+                 width: 100%; 
+                 border-collapse: collapse; 
+                 margin: 10px 0; 
+                 font-size: 10px;
+               }
               .table th, .table td { 
                 border: 1px solid #9ca3af; 
                 padding: 12px; 
@@ -346,8 +350,14 @@ export const InvoiceTemplate: React.FC<InvoiceTemplateProps> = ({ data }) => {
                 </div>
               )}
               <div className="flex">
-                <span className="font-bold w-28 text-aauma-navy flex-shrink-0">Status:</span>
-                <span className="text-green-600 font-medium">Activo</span>
+                <span className="font-bold w-28 text-aauma-navy flex-shrink-0">Status Pagamento:</span>
+                <span className={`font-medium ${
+                  data.paymentStatus === 'confirmado' ? 'text-green-600' : 
+                  data.paymentStatus === 'inscrito' ? 'text-yellow-600' : 'text-red-600'
+                }`}>
+                  {data.paymentStatus === 'confirmado' ? 'Confirmado (Pago)' : 
+                   data.paymentStatus === 'inscrito' ? 'Inscrito (Pendente)' : 'Cancelado'}
+                </span>
               </div>
             </div>
           </div>

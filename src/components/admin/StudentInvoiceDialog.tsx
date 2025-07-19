@@ -84,6 +84,7 @@ export const StudentInvoiceDialog: React.FC<StudentInvoiceDialogProps> = ({
       duration: aluno.duracao,
       startDate: aluno.data_inicio || aluno.dataInicio || '',
       paymentMethod: aluno.forma_pagamento || aluno.formaPagamento,
+      paymentStatus: aluno.status,
       inscriptionNumber: aluno.numero_estudante || aluno.numeroEstudante || 'N/A',
       inscriptionDate: aluno.data_inscricao || aluno.dataInscricao,
       amount: Number(aluno.valor_pago) || 40000,
