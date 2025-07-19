@@ -4,6 +4,7 @@ import { useTurmaData } from "@/hooks/useTurmaData";
 import { TurmaPairGrid } from "@/components/admin/TurmaPairGrid";
 import { TurmaManagementArea } from "@/components/admin/TurmaManagementArea";
 import { TurmaIndividualManagement } from "@/components/admin/TurmaIndividualManagement";
+import { SalasManagement } from "@/components/admin/SalasManagement";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
@@ -102,7 +103,7 @@ const AdminTurmas = () => {
       {/* Navigation Tabs */}
       <div className="bg-white p-4 rounded-lg shadow-sm border">
         <Tabs defaultValue="overview" className="w-full">
-          <TabsList className="grid w-full grid-cols-3 h-12 bg-muted rounded-lg p-1">
+          <TabsList className="grid w-full grid-cols-4 h-12 bg-muted rounded-lg p-1">
             <TabsTrigger 
               value="overview" 
               className="text-sm font-medium data-[state=active]:bg-white data-[state=active]:text-primary"
@@ -120,6 +121,12 @@ const AdminTurmas = () => {
               className="text-sm font-medium data-[state=active]:bg-white data-[state=active]:text-primary"
             >
               👥 Gestão Individual
+            </TabsTrigger>
+            <TabsTrigger 
+              value="salas" 
+              className="text-sm font-medium data-[state=active]:bg-white data-[state=active]:text-primary"
+            >
+              🏫 Gestão de Salas
             </TabsTrigger>
           </TabsList>
         
@@ -149,6 +156,10 @@ const AdminTurmas = () => {
               onDeleteAluno={handleDeleteAluno}
               onUpdateAlunoStatus={handleUpdateAlunoStatus}
             />
+          </TabsContent>
+          
+          <TabsContent value="salas" className="mt-6">
+            <SalasManagement />
           </TabsContent>
         </Tabs>
       </div>

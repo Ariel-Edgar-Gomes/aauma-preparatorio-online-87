@@ -174,6 +174,28 @@ export const salasService = {
     
     if (error) throw error;
     return data as DBSala;
+  },
+
+  async update(id: string, updates: Partial<DBSala>) {
+    const { data, error } = await supabase
+      .from('salas')
+      .update(updates)
+      .eq('id', id)
+      .select()
+      .maybeSingle();
+    
+    if (error) throw error;
+    if (!data) throw new Error('Sala não encontrada');
+    return data as DBSala;
+  },
+
+  async delete(id: string) {
+    const { error } = await supabase
+      .from('salas')
+      .delete()
+      .eq('id', id);
+    
+    if (error) throw error;
   }
 };
 

@@ -65,9 +65,5 @@ export interface CreateTurmaPairData {
   capacidadeB: number;
 }
 
-export const salas = [
-  "U107", "U108", "U109", "U110", "U111", "U112", "U113",
-  "Lab01", "Lab02", "Lab03",
-  "Auditório", "Sala A1", "Sala A2", "Sala A3"
-];
+// Salas are now managed dynamically through the database
 
