@@ -20,6 +20,7 @@ import { AuditLogsList } from "./AuditLogsList";
 import { AuditViewsList } from "./AuditViewsList";
 import { UserAuditReport } from "./UserAuditReport";
 import { UserDetailedAuditReport } from "./UserDetailedAuditReport";
+import { AuditUserSelector } from "./AuditUserSelector";
 
 export const AuditDashboard: React.FC = () => {
   const { userStats, loading, fetchUserAuditStats } = useAuditData();
@@ -152,12 +153,13 @@ export const AuditDashboard: React.FC = () => {
 
       {/* Abas de Auditoria */}
       <Tabs defaultValue="overview" className="w-full">
-        <TabsList className="grid w-full grid-cols-5">
+        <TabsList className="grid w-full grid-cols-6">
           <TabsTrigger value="overview">Visão Geral</TabsTrigger>
+          <TabsTrigger value="selector">Selecionar Usuário</TabsTrigger>
+          <TabsTrigger value="detailed">Controle Detalhado</TabsTrigger>
           <TabsTrigger value="actions">Ações</TabsTrigger>
           <TabsTrigger value="views">Visualizações</TabsTrigger>
           <TabsTrigger value="users">Por Usuário</TabsTrigger>
-          <TabsTrigger value="detailed">Controle Detalhado</TabsTrigger>
         </TabsList>
 
         <TabsContent value="overview" className="space-y-4">
@@ -226,6 +228,31 @@ export const AuditDashboard: React.FC = () => {
           </div>
         </TabsContent>
 
+        <TabsContent value="selector">
+          <AuditUserSelector 
+            onUserSelect={(userId, userName) => {
+              setDetailedUserId(userId);
+              setDetailedUserName(userName);
+            }}
+            selectedUserId={detailedUserId || undefined}
+          />
+        </TabsContent>
+
+        <TabsContent value="detailed">
+          {detailedUserId ? (
+            <UserDetailedAuditReport 
+              userId={detailedUserId} 
+              userName={detailedUserName}
+            />
+          ) : (
+            <Card>
+              <CardContent className="p-6 text-center text-muted-foreground">
+                Selecione um usuário na aba "Selecionar Usuário" para ver os detalhes completos
+              </CardContent>
+            </Card>
+          )}
+        </TabsContent>
+
         <TabsContent value="actions">
           <AuditLogsList selectedUserId={selectedUserId} />
         </TabsContent>
@@ -244,21 +271,6 @@ export const AuditDashboard: React.FC = () => {
               setDetailedUserName(userName);
             }}
           />
-        </TabsContent>
-
-        <TabsContent value="detailed">
-          {detailedUserId ? (
-            <UserDetailedAuditReport 
-              userId={detailedUserId} 
-              userName={detailedUserName}
-            />
-          ) : (
-            <Card>
-              <CardContent className="p-6 text-center text-muted-foreground">
-                Selecione um usuário na aba "Por Usuário" para ver os detalhes completos
-              </CardContent>
-            </Card>
-          )}
         </TabsContent>
       </Tabs>
     </div>
