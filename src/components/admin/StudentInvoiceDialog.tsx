@@ -15,6 +15,20 @@ export const StudentInvoiceDialog: React.FC<StudentInvoiceDialogProps> = ({
   open,
   onOpenChange
 }) => {
+  // Early return BEFORE any hooks are called
+  if (!aluno) {
+    return (
+      <Dialog open={open} onOpenChange={onOpenChange}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Erro</DialogTitle>
+          </DialogHeader>
+          <div>Nenhum aluno selecionado</div>
+        </DialogContent>
+      </Dialog>
+    );
+  }
+
   const [turmaPairName, setTurmaPairName] = useState<string>('');
 
   useEffect(() => {
@@ -48,8 +62,6 @@ export const StudentInvoiceDialog: React.FC<StudentInvoiceDialogProps> = ({
       fetchTurmaPairName();
     }
   }, [open, aluno]);
-
-  if (!aluno) return null;
 
   const invoiceData = useMemo(() => {
     console.log('Criando invoice data com:', {
