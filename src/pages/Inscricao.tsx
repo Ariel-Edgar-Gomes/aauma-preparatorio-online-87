@@ -222,7 +222,7 @@ const Inscricao = () => {
       }
 
       // Validate file type
-      const allowedTypes = ['image/jpeg', 'image/png', 'image/jpg', 'application/pdf'];
+      const allowedTypes = ['image/jpeg', 'image/png', 'image/jpg', 'application/pdf', 'application/x-pdf', 'text/pdf'];
       console.log('[Inscricao] Checking file type:', file.type, 'allowed:', allowedTypes);
       if (!allowedTypes.includes(file.type)) {
         console.log('[Inscricao] Invalid file type detected:', file.type);
