@@ -98,7 +98,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     const permissions: Record<string, UserRole[]> = {
       'inscricao': ['inscricao_simples', 'inscricao_completa'],
       'edit_alunos': ['inscricao_completa'],
-      'view_financeiro': ['financeiro', 'visualizador'],
+      'view_financeiro': ['financeiro', 'visualizador', 'inscricao_completa'],
       'manage_turmas': ['gestor_turmas'],
       'view_data': ['visualizador', 'financeiro', 'inscricao_simples', 'inscricao_completa', 'gestor_turmas']
     };
