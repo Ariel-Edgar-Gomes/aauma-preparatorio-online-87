@@ -69,36 +69,51 @@ export const InscricoesView = () => {
     try {
       setLoading(true);
       
-      // Buscar minhas inscrições
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      // Buscar minhas inscrições (sem foreign key relationship)
       const { data: minhas, error: minhasError } = await supabase
         .from('alunos')
-        .select(`
-          *,
-          creator:profiles!created_by(full_name, email)
-        `)
-        .eq('created_by', (await supabase.auth.getUser()).data.user?.id)
+        .select('*')
+        .eq('created_by', user.id)
         .order('created_at', { ascending: false });
 
       if (minhasError) throw minhasError;
 
-      // Buscar todas as inscrições
+      // Buscar todas as inscrições (sem foreign key relationship)
       const { data: todas, error: todasError } = await supabase
         .from('alunos')
-        .select(`
-          *,
-          creator:profiles!created_by(full_name, email)
-        `)
+        .select('*')
         .order('created_at', { ascending: false });
 
       if (todasError) throw todasError;
 
-      // Processar dados
+      // Buscar perfis dos criadores para todas as inscrições
+      const criadoresIds = [...new Set(todas?.map(aluno => aluno.created_by).filter(Boolean))] as string[];
+      
+      let profiles: any[] = [];
+      if (criadoresIds.length > 0) {
+        const { data: profilesData, error: profilesError } = await supabase
+          .from('profiles')
+          .select('id, full_name, email')
+          .in('id', criadoresIds);
+
+        if (!profilesError) {
+          profiles = profilesData || [];
+        }
+      }
+
+      // Processar dados combinando com perfis
       const processarAlunos = (alunos: any[]) => 
-        alunos.map(aluno => ({
-          ...aluno,
-          creator_name: aluno.creator?.full_name || 'Sistema',
-          creator_email: aluno.creator?.email || 'N/A'
-        }));
+        alunos.map(aluno => {
+          const creator = profiles.find(p => p.id === aluno.created_by);
+          return {
+            ...aluno,
+            creator_name: creator?.full_name || 'Sistema',
+            creator_email: creator?.email || 'N/A'
+          };
+        });
 
       setMinhasInscricoes(processarAlunos(minhas || []));
       setTodasInscricoes(processarAlunos(todas || []));
