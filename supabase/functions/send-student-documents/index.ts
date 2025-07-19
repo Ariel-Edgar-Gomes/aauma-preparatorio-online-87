@@ -54,7 +54,7 @@ const handler = async (req: Request): Promise<Response> => {
     const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
 
     // Email destination
-    const emailDestination = "associacaodosestudantescauma@gmail.com";
+    const emailDestination = "arieledgargomes09@gmail.com";
 
     // Prepare attachments
     const attachments = [];
