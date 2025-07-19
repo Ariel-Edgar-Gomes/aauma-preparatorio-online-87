@@ -200,6 +200,8 @@ const Inscricao = () => {
   };
 
   const handleFileUpload = (field: string, file: File | null) => {
+    console.log('[Inscricao] handleFileUpload called with field:', field, 'file:', file);
+    
     if (file) {
       console.log('[Inscricao] File uploaded:', field, file.name, file.size, file.type);
       
@@ -225,7 +227,11 @@ const Inscricao = () => {
       }
     }
 
-    setFormData(prev => ({ ...prev, [field]: file }));
+    setFormData(prev => {
+      const updatedData = { ...prev, [field]: file };
+      console.log('[Inscricao] Updated formData with field:', field, 'Current formData:', updatedData);
+      return updatedData;
+    });
   };
 
   const handleExportPDF = () => {
