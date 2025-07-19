@@ -5,7 +5,7 @@ import { Aluno } from "@/types/turma";
 import { turmaPairsService } from "@/services/supabaseService";
 
 interface StudentInvoiceDialogProps {
-  aluno: Aluno | null;
+  aluno: any | null; // Changed to any to handle both Aluno and DBAluno types
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }
@@ -19,9 +19,11 @@ export const StudentInvoiceDialog: React.FC<StudentInvoiceDialogProps> = ({
 
   useEffect(() => {
     const fetchTurmaPairName = async () => {
-      if (aluno?.par) {
+      // Use turma_pair_id instead of par (database field vs interface field)
+      const turmaPairId = aluno?.turma_pair_id || aluno?.par;
+      if (turmaPairId) {
         try {
-          const turmaPair = await turmaPairsService.getById(aluno.par);
+          const turmaPair = await turmaPairsService.getById(turmaPairId);
           if (turmaPair) {
             setTurmaPairName(turmaPair.nome);
           }
@@ -31,32 +33,42 @@ export const StudentInvoiceDialog: React.FC<StudentInvoiceDialogProps> = ({
       }
     };
 
-    if (open && aluno?.par) {
+    if (open && aluno) {
       fetchTurmaPairName();
     }
-  }, [open, aluno?.par]);
+  }, [open, aluno]);
 
   if (!aluno) return null;
 
+  console.log('Dados do aluno para fatura:', {
+    nome: aluno.nome,
+    telefone: aluno.telefone,
+    par: aluno.par || aluno.turma_pair_id,
+    turmaPairName,
+    curso: aluno.curso || aluno.curso_codigo
+  });
+
   const invoiceData = {
     studentName: aluno.nome,
-    course: aluno.curso,
+    course: aluno.curso || aluno.curso_codigo,
     shift: aluno.turno || '',
     email: aluno.email,
     contact: aluno.telefone,
-    birthDate: aluno.dataNascimento,
+    birthDate: aluno.data_nascimento || aluno.dataNascimento,
     address: aluno.endereco,
-    biNumber: aluno.numeroBI,
+    biNumber: aluno.numero_bi || aluno.numeroBI,
     duration: aluno.duracao,
-    startDate: aluno.dataInicio || '',
-    paymentMethod: aluno.formaPagamento,
-    inscriptionNumber: aluno.numeroEstudante || 'N/A',
-    inscriptionDate: aluno.dataInscricao,
+    startDate: aluno.data_inicio || aluno.dataInicio || '',
+    paymentMethod: aluno.forma_pagamento || aluno.formaPagamento,
+    inscriptionNumber: aluno.numero_estudante || aluno.numeroEstudante || 'N/A',
+    inscriptionDate: aluno.data_inscricao || aluno.dataInscricao,
     amount: Number(aluno.valor_pago) || 40000,
-    createdBy: aluno.criador?.nome,
+    createdBy: aluno.creator?.full_name || aluno.criador?.nome,
     turmaPair: turmaPairName || aluno.par || 'Par não especificado',
     turma: aluno.turma
   };
+
+  console.log('Invoice data criada:', invoiceData);
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
