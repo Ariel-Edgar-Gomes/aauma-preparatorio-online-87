@@ -174,9 +174,12 @@ export const useTurmaData = () => {
         await turmaPairsService.update(id, dbUpdates);
       }
       
-      // Recarregar dados
-      console.log('[useTurmaData] Recarregando dados...');
-      await loadTurmaPairs();
+      // Atualizar estado local para refletir as mudanças
+      setTurmaPairs(current => 
+        current.map(pair => 
+          pair.id === id ? { ...pair, ...updates } : pair
+        )
+      );
       
       toast({
         title: "Par atualizado",
@@ -229,7 +232,6 @@ export const useTurmaData = () => {
       );
       
       await turmaPairsService.update(id, { ativo: newStatus });
-      await loadTurmaPairs();
       
       toast({
         title: newStatus ? "Par ativado" : "Par desativado",

@@ -31,26 +31,7 @@ const convertDBTurmaPairToInterface = async (dbPair: any): Promise<TurmaPair> =>
       alunosTurmaB: alunosTurmaB.length
     });
     
-    // Verificar e corrigir inconsistências nos contadores
-    if (turmaA && alunosTurmaA.length !== turmaA.alunos_inscritos) {
-      console.log('[convertDBTurmaPairToInterface] Corrigindo contador Turma A:', turmaA.alunos_inscritos, '->', alunosTurmaA.length);
-      try {
-        await turmasService.update(turmaA.id, { alunos_inscritos: alunosTurmaA.length });
-        turmaA.alunos_inscritos = alunosTurmaA.length;
-      } catch (updateError) {
-        console.error('[convertDBTurmaPairToInterface] Erro ao atualizar contador Turma A:', updateError);
-      }
-    }
-    
-    if (turmaB && alunosTurmaB.length !== turmaB.alunos_inscritos) {
-      console.log('[convertDBTurmaPairToInterface] Corrigindo contador Turma B:', turmaB.alunos_inscritos, '->', alunosTurmaB.length);
-      try {
-        await turmasService.update(turmaB.id, { alunos_inscritos: alunosTurmaB.length });
-        turmaB.alunos_inscritos = alunosTurmaB.length;
-      } catch (updateError) {
-        console.error('[convertDBTurmaPairToInterface] Erro ao atualizar contador Turma B:', updateError);
-      }
-    }
+    // Usar contagem real de alunos (não corrigir automaticamente para evitar conflitos)
     
     // Buscar informações das salas separadamente para evitar JOIN complexo
     let salaAInfo = { codigo: "", capacidade: 0 };
@@ -389,9 +370,6 @@ export const useSupabaseTurmaData = () => {
       
       await turmaPairsService.update(id, dbUpdates);
       
-      // Recarregar dados para garantir sincronização completa
-      await loadTurmaPairs();
-      
       toast({
         title: "Par de turmas atualizado",
         description: "Alterações salvas com sucesso.",
@@ -455,9 +433,6 @@ export const useSupabaseTurmaData = () => {
       );
       
       await turmaPairsService.update(id, { ativo: newStatus });
-      
-      // Recarregar dados para garantir sincronização
-      await loadTurmaPairs();
       
       toast({
         title: newStatus ? "Par de turmas ativado" : "Par de turmas desativado",
