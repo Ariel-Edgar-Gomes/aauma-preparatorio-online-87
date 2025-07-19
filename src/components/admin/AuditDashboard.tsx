@@ -19,10 +19,13 @@ import { useAuditData } from "@/hooks/useAuditData";
 import { AuditLogsList } from "./AuditLogsList";
 import { AuditViewsList } from "./AuditViewsList";
 import { UserAuditReport } from "./UserAuditReport";
+import { UserDetailedAuditReport } from "./UserDetailedAuditReport";
 
 export const AuditDashboard: React.FC = () => {
   const { userStats, loading, fetchUserAuditStats } = useAuditData();
   const [selectedUserId, setSelectedUserId] = useState<string>('');
+  const [detailedUserId, setDetailedUserId] = useState<string | null>(null);
+  const [detailedUserName, setDetailedUserName] = useState<string>('');
 
   useEffect(() => {
     fetchUserAuditStats();
@@ -149,11 +152,12 @@ export const AuditDashboard: React.FC = () => {
 
       {/* Abas de Auditoria */}
       <Tabs defaultValue="overview" className="w-full">
-        <TabsList className="grid w-full grid-cols-4">
+        <TabsList className="grid w-full grid-cols-5">
           <TabsTrigger value="overview">Visão Geral</TabsTrigger>
           <TabsTrigger value="actions">Ações</TabsTrigger>
           <TabsTrigger value="views">Visualizações</TabsTrigger>
           <TabsTrigger value="users">Por Usuário</TabsTrigger>
+          <TabsTrigger value="detailed">Controle Detalhado</TabsTrigger>
         </TabsList>
 
         <TabsContent value="overview" className="space-y-4">
@@ -235,7 +239,26 @@ export const AuditDashboard: React.FC = () => {
             userStats={userStats} 
             onUserSelect={handleUserSelect}
             selectedUserId={selectedUserId}
+            onDetailedView={(userId, userName) => {
+              setDetailedUserId(userId);
+              setDetailedUserName(userName);
+            }}
           />
+        </TabsContent>
+
+        <TabsContent value="detailed">
+          {detailedUserId ? (
+            <UserDetailedAuditReport 
+              userId={detailedUserId} 
+              userName={detailedUserName}
+            />
+          ) : (
+            <Card>
+              <CardContent className="p-6 text-center text-muted-foreground">
+                Selecione um usuário na aba "Por Usuário" para ver os detalhes completos
+              </CardContent>
+            </Card>
+          )}
         </TabsContent>
       </Tabs>
     </div>

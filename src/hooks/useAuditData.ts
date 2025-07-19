@@ -61,10 +61,7 @@ export const useAuditData = () => {
       setLoading(true);
       let query = supabase
         .from('audit_logs')
-        .select(`
-          *,
-          user:profiles(full_name, email)
-        `)
+        .select('*')
         .order('created_at', { ascending: false })
         .limit(limit);
 
@@ -88,10 +85,7 @@ export const useAuditData = () => {
       setLoading(true);
       let query = supabase
         .from('audit_views')
-        .select(`
-          *,
-          user:profiles(full_name, email)
-        `)
+        .select('*')
         .order('created_at', { ascending: false })
         .limit(limit);
 

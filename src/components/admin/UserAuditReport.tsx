@@ -25,12 +25,14 @@ interface UserAuditReportProps {
   userStats: UserAuditStats[];
   onUserSelect: (userId: string) => void;
   selectedUserId?: string;
+  onDetailedView?: (userId: string, userName: string) => void;
 }
 
 export const UserAuditReport: React.FC<UserAuditReportProps> = ({ 
   userStats, 
   onUserSelect, 
-  selectedUserId 
+  selectedUserId,
+  onDetailedView 
 }) => {
   const [searchTerm, setSearchTerm] = useState('');
 
@@ -245,18 +247,34 @@ export const UserAuditReport: React.FC<UserAuditReportProps> = ({
                       )}
                     </TableCell>
                     <TableCell>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          exportUserReport(user);
-                        }}
-                        className="h-8 px-2"
-                      >
-                        <FileText className="w-4 h-4 mr-1" />
-                        Exportar
-                      </Button>
+                      <div className="flex gap-1">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            exportUserReport(user);
+                          }}
+                          className="h-8 px-2"
+                        >
+                          <FileText className="w-4 h-4 mr-1" />
+                          Exportar
+                        </Button>
+                        {onDetailedView && (
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              onDetailedView(user.user_id, user.user_name);
+                            }}
+                            className="h-8 px-2"
+                          >
+                            <Eye className="w-4 h-4 mr-1" />
+                            Detalhes
+                          </Button>
+                        )}
+                      </div>
                     </TableCell>
                   </TableRow>
                 ))}
