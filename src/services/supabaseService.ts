@@ -158,9 +158,10 @@ export const salasService = {
       .from('salas')
       .select('*')
       .eq('codigo', codigo)
-      .single();
+      .maybeSingle();
     
     if (error) throw error;
+    if (!data) throw new Error(`Sala com código ${codigo} não encontrada`);
     return data as DBSala;
   },
 
@@ -228,9 +229,10 @@ export const turmaPairsService = {
       .update(updates)
       .eq('id', id)
       .select()
-      .single();
+      .maybeSingle();
     
     if (error) throw error;
+    if (!data) throw new Error('Par de turmas não encontrado');
     return data as DBTurmaPair;
   },
 
@@ -327,9 +329,10 @@ export const turmasService = {
           tipo
         )
       `)
-      .single();
+      .maybeSingle();
     
     if (error) throw error;
+    if (!data) throw new Error('Turma não encontrada');
     return data as DBTurma;
   }
 };
