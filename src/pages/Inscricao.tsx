@@ -221,8 +221,13 @@ const Inscricao = () => {
         return;
       }
 
-      // REMOVED FILE TYPE VALIDATION - Accept all file types
       console.log('[Inscricao] File accepted for field:', field);
+      
+      toast({
+        title: "Arquivo carregado",
+        description: `${file.name} foi carregado com sucesso.`,
+        variant: "default"
+      });
     } else {
       console.log('[Inscricao] No file selected for field:', field);
     }
@@ -230,6 +235,7 @@ const Inscricao = () => {
     setFormData(prev => {
       const updatedData = { ...prev, [field]: file };
       console.log('[Inscricao] Updated formData with field:', field, 'File object:', file ? { name: file.name, type: file.type } : null);
+      console.log('[Inscricao] Full formData after update:', updatedData);
       return updatedData;
     });
   };
