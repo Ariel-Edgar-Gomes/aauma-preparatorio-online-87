@@ -344,38 +344,53 @@ const Inscricao = () => {
     field: string; 
     required?: boolean; 
     description?: string;
-  }) => (
-    <Card className="border-2 border-dashed border-[#003366]/20 hover:border-[#003366]/40 transition-colors">
-      <CardHeader className="pb-3">
-        <CardTitle className="text-sm font-medium text-[#003366] flex items-center gap-2">
-          <Upload className="w-4 h-4" />
-          {title}
-          {required && <Badge variant="destructive" className="text-xs bg-[#d32f2f] hover:bg-[#d32f2f]/90">Obrigatório</Badge>}
-        </CardTitle>
-        {description && (
-          <CardDescription className="text-xs">{description}</CardDescription>
-        )}
-      </CardHeader>
-      <CardContent className="pt-0">
-        <Input
-          type="file"
-          onChange={(e) => handleFileUpload(field, e.target.files?.[0] || null)}
-          className="file:bg-[#d32f2f] file:text-white file:border-0 file:rounded-md file:px-3 file:py-1 file:hover:bg-[#d32f2f]/90"
-        />
-        {formData[field as keyof typeof formData] && (
-          <div className="mt-2 p-2 bg-green-50 border border-green-200 rounded-md">
-            <p className="text-xs text-green-700 flex items-center gap-1">
-              <FileText className="w-3 h-3" />
-              <span className="font-medium">Arquivo selecionado:</span>
-              <span className="truncate">
-                {(formData[field as keyof typeof formData] as File)?.name || 'Arquivo carregado'}
-              </span>
-            </p>
-          </div>
-        )}
-      </CardContent>
-    </Card>
-  );
+  }) => {
+    const fieldValue = formData[field as keyof typeof formData] as File | null;
+    const hasFile = fieldValue instanceof File;
+    
+    return (
+      <Card className="border-2 border-dashed border-[#003366]/20 hover:border-[#003366]/40 transition-colors">
+        <CardHeader className="pb-3">
+          <CardTitle className="text-sm font-medium text-[#003366] flex items-center gap-2">
+            <Upload className="w-4 h-4" />
+            {title}
+            {required && <Badge variant="destructive" className="text-xs bg-[#d32f2f] hover:bg-[#d32f2f]/90">Obrigatório</Badge>}
+          </CardTitle>
+          {description && (
+            <CardDescription className="text-xs">{description}</CardDescription>
+          )}
+        </CardHeader>
+        <CardContent className="pt-0 space-y-3">
+          <Input
+            type="file"
+            onChange={(e) => handleFileUpload(field, e.target.files?.[0] || null)}
+            className="file:bg-[#d32f2f] file:text-white file:border-0 file:rounded-md file:px-3 file:py-1 file:hover:bg-[#d32f2f]/90"
+          />
+          
+          {hasFile && (
+            <div className="p-3 bg-green-50 border border-green-200 rounded-lg">
+              <div className="flex items-center gap-2">
+                <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                <span className="text-sm font-medium text-green-700">Arquivo Selecionado</span>
+              </div>
+              <p className="text-sm text-green-600 mt-1 truncate">
+                {fieldValue?.name || 'Arquivo carregado'}
+              </p>
+              <p className="text-xs text-green-500 mt-1">
+                Tamanho: {fieldValue ? Math.round(fieldValue.size / 1024) : 0} KB
+              </p>
+            </div>
+          )}
+          
+          {!hasFile && (
+            <div className="text-xs text-gray-500 text-center py-2">
+              Nenhum arquivo selecionado
+            </div>
+          )}
+        </CardContent>
+      </Card>
+    );
+  };
 
   // Mostrar loading enquanto carrega os dados das turmas (igual na página admin)
   if (turmaLoading) {
