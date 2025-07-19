@@ -313,14 +313,14 @@ export const InvoiceTemplate: React.FC<InvoiceTemplateProps> = ({ data }) => {
                </div>
                {data.turmaPair && (
                  <div className="flex">
-                   <span className="font-bold w-28 text-aauma-navy flex-shrink-0">Par:</span>
+                   <span className="font-bold w-28 text-aauma-navy flex-shrink-0">Par de Turma:</span>
                    <span className="text-gray-800">{data.turmaPair}</span>
                  </div>
                )}
                {data.turma && (
                  <div className="flex">
                    <span className="font-bold w-28 text-aauma-navy flex-shrink-0">Turma:</span>
-                   <span className="text-gray-800">Turma {data.turma}</span>
+                   <span className="text-gray-800">{data.turma.includes('_A') ? 'Turma A' : data.turma.includes('_B') ? 'Turma B' : data.turma}</span>
                  </div>
                )}
             </div>
@@ -445,11 +445,11 @@ export const InvoiceTemplate: React.FC<InvoiceTemplateProps> = ({ data }) => {
 
          {/* Signatures - Centered */}
          <div className="signatures text-center mt-10">
+           {data.createdBy && (
+             <p className="text-xs text-gray-600 mb-2">{data.createdBy}</p>
+           )}
            <div className="signature-line border-b border-black w-48 mx-auto mb-2"></div>
            <p className="font-bold text-sm text-aauma-navy">Assinatura do Responsável</p>
-           {data.createdBy && (
-             <p className="text-xs text-gray-600 mt-2">Inscrição realizada por: {data.createdBy}</p>
-           )}
          </div>
 
         {/* Footer */}

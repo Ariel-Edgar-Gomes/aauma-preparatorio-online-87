@@ -1,7 +1,8 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { InvoiceTemplate } from "@/components/invoice/InvoiceTemplate";
 import { Aluno } from "@/types/turma";
+import { turmaPairsService } from "@/services/supabaseService";
 
 interface StudentInvoiceDialogProps {
   aluno: Aluno | null;
@@ -14,6 +15,27 @@ export const StudentInvoiceDialog: React.FC<StudentInvoiceDialogProps> = ({
   open,
   onOpenChange
 }) => {
+  const [turmaPairName, setTurmaPairName] = useState<string>('');
+
+  useEffect(() => {
+    const fetchTurmaPairName = async () => {
+      if (aluno?.par) {
+        try {
+          const turmaPair = await turmaPairsService.getById(aluno.par);
+          if (turmaPair) {
+            setTurmaPairName(turmaPair.nome);
+          }
+        } catch (error) {
+          console.error('Erro ao buscar nome do par de turma:', error);
+        }
+      }
+    };
+
+    if (open && aluno?.par) {
+      fetchTurmaPairName();
+    }
+  }, [open, aluno?.par]);
+
   if (!aluno) return null;
 
   const invoiceData = {
@@ -32,7 +54,7 @@ export const StudentInvoiceDialog: React.FC<StudentInvoiceDialogProps> = ({
     inscriptionDate: aluno.dataInscricao,
     amount: Number(aluno.valor_pago) || 40000,
     createdBy: aluno.criador?.nome,
-    turmaPair: aluno.par,
+    turmaPair: turmaPairName || aluno.par,
     turma: aluno.turma
   };
 

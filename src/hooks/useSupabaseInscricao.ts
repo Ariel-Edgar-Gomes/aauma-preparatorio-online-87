@@ -82,7 +82,7 @@ export const useSupabaseInscricao = () => {
       const comprovativo_pagamento_url = formData.comprovativoPagamento ? 
         `uploads/comprovativo/${Date.now()}_${formData.comprovativoPagamento.name}` : undefined;
 
-      // Criar o registro do aluno
+      // Criar o registro do aluno (created_by será definido automaticamente pelo trigger)
       const novoAluno = await alunosService.create({
         nome: formData.nomeCompleto,
         email: formData.email || undefined,
