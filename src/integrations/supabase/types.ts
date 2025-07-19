@@ -120,32 +120,80 @@ export type Database = {
         Row: {
           action: string
           created_at: string
+          details: Json | null
           id: string
+          ip_address: unknown | null
           new_values: Json | null
           old_values: Json | null
           record_id: string | null
+          resource_type: string | null
           table_name: string
+          user_agent: string | null
           user_id: string | null
         }
         Insert: {
           action: string
           created_at?: string
+          details?: Json | null
           id?: string
+          ip_address?: unknown | null
           new_values?: Json | null
           old_values?: Json | null
           record_id?: string | null
+          resource_type?: string | null
           table_name: string
+          user_agent?: string | null
           user_id?: string | null
         }
         Update: {
           action?: string
           created_at?: string
+          details?: Json | null
           id?: string
+          ip_address?: unknown | null
           new_values?: Json | null
           old_values?: Json | null
           record_id?: string | null
+          resource_type?: string | null
           table_name?: string
+          user_agent?: string | null
           user_id?: string | null
+        }
+        Relationships: []
+      }
+      audit_views: {
+        Row: {
+          created_at: string | null
+          id: string
+          ip_address: unknown | null
+          metadata: Json | null
+          resource_id: string | null
+          resource_type: string | null
+          user_agent: string | null
+          user_id: string | null
+          view_type: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          ip_address?: unknown | null
+          metadata?: Json | null
+          resource_id?: string | null
+          resource_type?: string | null
+          user_agent?: string | null
+          user_id?: string | null
+          view_type: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          ip_address?: unknown | null
+          metadata?: Json | null
+          resource_id?: string | null
+          resource_type?: string | null
+          user_agent?: string | null
+          user_id?: string | null
+          view_type?: string
         }
         Relationships: []
       }
@@ -400,6 +448,22 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      get_user_audit_stats: {
+        Args: { target_user_id?: string }
+        Returns: {
+          user_id: string
+          user_name: string
+          user_email: string
+          total_actions: number
+          alunos_created: number
+          alunos_updated: number
+          alunos_deleted: number
+          users_created: number
+          role_changes: number
+          last_activity: string
+          total_views: number
+        }[]
+      }
       has_role: {
         Args: {
           _user_id: string
@@ -410,6 +474,17 @@ export type Database = {
       is_admin: {
         Args: { _user_id: string }
         Returns: boolean
+      }
+      log_view_audit: {
+        Args: {
+          p_view_type: string
+          p_resource_id?: string
+          p_resource_type?: string
+          p_metadata?: Json
+          p_ip_address?: unknown
+          p_user_agent?: string
+        }
+        Returns: string
       }
     }
     Enums: {

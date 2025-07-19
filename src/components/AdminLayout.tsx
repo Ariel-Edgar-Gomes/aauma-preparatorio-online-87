@@ -8,7 +8,8 @@ import {
   ArrowLeft,
   LogOut,
   User,
-  UserCog
+  UserCog,
+  Shield
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "./AuthProvider";
@@ -61,6 +62,12 @@ const getAllNavigationItems = () => [
     url: "/admin/financeiro",
     icon: DollarSign,
     permissions: ['admin', 'financeiro', 'visualizador']
+  },
+  {
+    title: "Auditoria",
+    url: "/admin/auditoria",
+    icon: Shield,
+    permissions: ['admin']
   },
   {
     title: "Nova Inscrição",

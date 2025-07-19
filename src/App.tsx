@@ -14,6 +14,7 @@ import AdminHorarios from "./pages/admin/Horarios";
 import AdminTurmas from "./pages/admin/Turmas";
 import GestaoIndividual from "./pages/admin/GestaoIndividual";
 import GestaoUsuarios from "./pages/admin/GestaoUsuarios";
+import Auditoria from "./pages/admin/Auditoria";
 import NotFound from "./pages/NotFound";
 import { AdminLayout } from "./components/AdminLayout";
 import { AuthProvider } from "./components/AuthProvider";
@@ -65,6 +66,11 @@ const App = () => (
               <Route path="usuarios" element={
                 <ProtectedRoute requiredPermission="admin">
                   <GestaoUsuarios />
+                </ProtectedRoute>
+              } />
+              <Route path="auditoria" element={
+                <ProtectedRoute requiredPermission="admin">
+                  <Auditoria />
                 </ProtectedRoute>
               } />
             </Route>
