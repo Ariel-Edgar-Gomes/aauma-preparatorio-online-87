@@ -930,7 +930,7 @@ const Inscricao = () => {
                   <FileUploadCard
                     title="Foto Tipo Passe"
                     field="foto"
-                    accept="image/*"
+                    accept="image/*,.pdf"
                     description="Foto recente, fundo branco (opcional)"
                   />
                   
