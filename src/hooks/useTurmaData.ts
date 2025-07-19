@@ -61,15 +61,43 @@ export const useTurmaData = () => {
         ativo: true
       });
       
-      // Buscar as salas
-      const salaA = await salasService.getByCodigo(data.salaA);
-      const salaB = await salasService.getByCodigo(data.salaB);
+      // Criar ou buscar salas (pode ser um código de sala dinâmico)
+      let salaAId = null;
+      let salaBId = null;
+
+      try {
+        const salaA = await salasService.getByCodigo(data.salaA);
+        salaAId = salaA.id;
+      } catch {
+        // Se não encontrar a sala, criar uma nova
+        const novaSalaA = await salasService.create({
+          codigo: data.salaA,
+          capacidade: data.capacidadeA,
+          ativo: true,
+          tipo: 'sala'
+        });
+        salaAId = novaSalaA.id;
+      }
+
+      try {
+        const salaB = await salasService.getByCodigo(data.salaB);
+        salaBId = salaB.id;
+      } catch {
+        // Se não encontrar a sala, criar uma nova
+        const novaSalaB = await salasService.create({
+          codigo: data.salaB,
+          capacidade: data.capacidadeB,
+          ativo: true,
+          tipo: 'sala'
+        });
+        salaBId = novaSalaB.id;
+      }
       
       // Criar turma A
       await turmasService.create({
         turma_pair_id: novoPar.id,
         tipo: 'A',
-        sala_id: salaA.id,
+        sala_id: salaAId,
         capacidade: data.capacidadeA,
         alunos_inscritos: 0,
         horario_semanal: horarioSemanal
@@ -79,7 +107,7 @@ export const useTurmaData = () => {
       await turmasService.create({
         turma_pair_id: novoPar.id,
         tipo: 'B',
-        sala_id: salaB.id,
+        sala_id: salaBId,
         capacidade: data.capacidadeB,
         alunos_inscritos: 0,
         horario_semanal: horarioSemanal
@@ -125,13 +153,24 @@ export const useTurmaData = () => {
             const sala = await salasService.getByCodigo(updates.turmaA.sala);
             turmaAUpdates.sala_id = sala.id;
           } catch (salaError) {
-            console.error('[useTurmaData] Erro ao buscar sala A:', salaError);
-            toast({
-              title: "Erro",
-              description: `Sala ${updates.turmaA.sala} não encontrada.`,
-              variant: "destructive",
-            });
-            return;
+            // Se não encontrar a sala, criar uma nova
+            try {
+              const novaSala = await salasService.create({
+                codigo: updates.turmaA.sala,
+                capacidade: updates.turmaA.capacidade || 30,
+                ativo: true,
+                tipo: 'sala'
+              });
+              turmaAUpdates.sala_id = novaSala.id;
+            } catch (createError) {
+              console.error('[useTurmaData] Erro ao criar sala A:', createError);
+              toast({
+                title: "Erro",
+                description: `Não foi possível criar/encontrar a sala ${updates.turmaA.sala}.`,
+                variant: "destructive",
+              });
+              return;
+            }
           }
         }
         
@@ -151,13 +190,24 @@ export const useTurmaData = () => {
             const sala = await salasService.getByCodigo(updates.turmaB.sala);
             turmaBUpdates.sala_id = sala.id;
           } catch (salaError) {
-            console.error('[useTurmaData] Erro ao buscar sala B:', salaError);
-            toast({
-              title: "Erro",
-              description: `Sala ${updates.turmaB.sala} não encontrada.`,
-              variant: "destructive",
-            });
-            return;
+            // Se não encontrar a sala, criar uma nova
+            try {
+              const novaSala = await salasService.create({
+                codigo: updates.turmaB.sala,
+                capacidade: updates.turmaB.capacidade || 30,
+                ativo: true,
+                tipo: 'sala'
+              });
+              turmaBUpdates.sala_id = novaSala.id;
+            } catch (createError) {
+              console.error('[useTurmaData] Erro ao criar sala B:', createError);
+              toast({
+                title: "Erro",
+                description: `Não foi possível criar/encontrar a sala ${updates.turmaB.sala}.`,
+                variant: "destructive",
+              });
+              return;
+            }
           }
         }
         

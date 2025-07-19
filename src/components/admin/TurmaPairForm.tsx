@@ -8,7 +8,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Save, Users, MapPin, BookOpen } from "lucide-react";
 import { CreateTurmaPairData } from "@/types/turma";
 import { courseNames } from "@/types/schedule";
-import { cursosService, salasService } from "@/services/supabaseService";
+import { cursosService } from "@/services/supabaseService";
 import { useEffect } from "react";
 
 interface TurmaPairFormProps {
@@ -58,7 +58,6 @@ export const TurmaPairForm = ({ onSave, onClose }: TurmaPairFormProps) => {
 
   // Buscar todos os cursos ativos do sistema
   const [cursosDisponiveis, setCursosDisponiveis] = useState<string[]>([]);
-  const [salasDisponiveis, setSalasDisponiveis] = useState<any[]>([]);
 
   useEffect(() => {
     const loadData = async () => {
@@ -67,10 +66,6 @@ export const TurmaPairForm = ({ onSave, onClose }: TurmaPairFormProps) => {
         const cursos = await cursosService.getAll();
         const cursosAtivos = cursos.filter(curso => curso.ativo).map(curso => curso.codigo);
         setCursosDisponiveis(cursosAtivos);
-
-        // Carregar salas
-        const salas = await salasService.getAll();
-        setSalasDisponiveis(salas);
       } catch (error) {
         console.error('Erro ao carregar dados:', error);
         // Fallback para lista estática de cursos
@@ -141,18 +136,12 @@ export const TurmaPairForm = ({ onSave, onClose }: TurmaPairFormProps) => {
           
           <div>
             <Label>Sala da Turma A</Label>
-            <Select value={formData.salaA} onValueChange={(value) => handleInputChange('salaA', value)}>
-              <SelectTrigger>
-                <SelectValue placeholder="Selecione uma sala" />
-              </SelectTrigger>
-              <SelectContent>
-                {salasDisponiveis.map((sala) => (
-                  <SelectItem key={sala.codigo} value={sala.codigo}>
-                    {sala.codigo} (Cap: {sala.capacidade})
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            <Input
+              type="text"
+              placeholder="Digite o número da sala (ex: 101, A1, U10)"
+              value={formData.salaA}
+              onChange={(e) => handleInputChange('salaA', e.target.value)}
+            />
           </div>
 
           <div>
@@ -176,18 +165,12 @@ export const TurmaPairForm = ({ onSave, onClose }: TurmaPairFormProps) => {
           
           <div>
             <Label>Sala da Turma B</Label>
-            <Select value={formData.salaB} onValueChange={(value) => handleInputChange('salaB', value)}>
-              <SelectTrigger>
-                <SelectValue placeholder="Selecione uma sala" />
-              </SelectTrigger>
-              <SelectContent>
-                {salasDisponiveis.map((sala) => (
-                  <SelectItem key={sala.codigo} value={sala.codigo}>
-                    {sala.codigo} (Cap: {sala.capacidade})
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            <Input
+              type="text"
+              placeholder="Digite o número da sala (ex: 102, B1, U11)"
+              value={formData.salaB}
+              onChange={(e) => handleInputChange('salaB', e.target.value)}
+            />
           </div>
 
           <div>
