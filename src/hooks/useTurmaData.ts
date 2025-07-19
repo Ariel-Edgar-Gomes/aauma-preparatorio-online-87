@@ -107,6 +107,8 @@ export const useTurmaData = () => {
 
   const handleUpdateTurmaPair = async (id: string, updates: Partial<TurmaPair>) => {
     try {
+      console.log('[useTurmaData] Iniciando atualização do par:', { id, updates });
+      
       // Atualizar estado local imediatamente para resposta rápida
       setTurmaPairs(current => 
         current.map(pair => 
@@ -124,7 +126,56 @@ export const useTurmaData = () => {
       if (updates.horarioSemanal) dbUpdates.horario_semanal = updates.horarioSemanal;
       if (updates.ativo !== undefined) dbUpdates.ativo = updates.ativo;
       
-      await turmaPairsService.update(id, dbUpdates);
+      console.log('[useTurmaData] Updates para DB:', dbUpdates);
+      
+      // Se há updates para as turmas A ou B, precisamos atualizar as turmas separadamente
+      if (updates.turmaA || updates.turmaB) {
+        console.log('[useTurmaData] Atualizando turmas individuais...');
+        const pair = turmaPairs.find(p => p.id === id);
+        if (pair) {
+          // Buscar as turmas associadas
+          const turmas = await turmasService.getByTurmaPairId(id);
+          
+          if (updates.turmaA) {
+            const turmaA = turmas.find(t => t.tipo === 'A');
+            if (turmaA) {
+              const turmaAUpdates: any = {};
+              if (updates.turmaA.capacidade !== undefined) turmaAUpdates.capacidade = updates.turmaA.capacidade;
+              if (updates.turmaA.sala) {
+                // Buscar sala por código
+                const sala = await salasService.getByCodigo(updates.turmaA.sala);
+                turmaAUpdates.sala_id = sala.id;
+              }
+              console.log('[useTurmaData] Atualizando Turma A:', turmaAUpdates);
+              await turmasService.update(turmaA.id, turmaAUpdates);
+            }
+          }
+          
+          if (updates.turmaB) {
+            const turmaB = turmas.find(t => t.tipo === 'B');
+            if (turmaB) {
+              const turmaBUpdates: any = {};
+              if (updates.turmaB.capacidade !== undefined) turmaBUpdates.capacidade = updates.turmaB.capacidade;
+              if (updates.turmaB.sala) {
+                // Buscar sala por código
+                const sala = await salasService.getByCodigo(updates.turmaB.sala);
+                turmaBUpdates.sala_id = sala.id;
+              }
+              console.log('[useTurmaData] Atualizando Turma B:', turmaBUpdates);
+              await turmasService.update(turmaB.id, turmaBUpdates);
+            }
+          }
+        }
+      }
+      
+      // Atualizar o par de turmas se há outras alterações
+      if (Object.keys(dbUpdates).length > 0) {
+        console.log('[useTurmaData] Atualizando par de turmas...');
+        await turmaPairsService.update(id, dbUpdates);
+      }
+      
+      // Recarregar dados
+      console.log('[useTurmaData] Recarregando dados...');
       await loadTurmaPairs();
       
       toast({
