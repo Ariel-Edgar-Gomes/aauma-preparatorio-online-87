@@ -357,12 +357,15 @@ const Inscricao = () => {
           className="file:bg-[#d32f2f] file:text-white file:border-0 file:rounded-md file:px-3 file:py-1 file:hover:bg-[#d32f2f]/90"
         />
         {formData[field as keyof typeof formData] && (
-          <p className="text-xs text-green-600 mt-2 flex items-center gap-1">
-            <FileText className="w-3 h-3" />
-            Arquivo carregado: {formData[field as keyof typeof formData] instanceof File 
-              ? (formData[field as keyof typeof formData] as File).name 
-              : 'Arquivo selecionado'}
-          </p>
+          <div className="mt-2 p-2 bg-green-50 border border-green-200 rounded-md">
+            <p className="text-xs text-green-700 flex items-center gap-1">
+              <FileText className="w-3 h-3" />
+              <span className="font-medium">Arquivo selecionado:</span>
+              <span className="truncate">
+                {(formData[field as keyof typeof formData] as File)?.name || 'Arquivo carregado'}
+              </span>
+            </p>
+          </div>
         )}
       </CardContent>
     </Card>
