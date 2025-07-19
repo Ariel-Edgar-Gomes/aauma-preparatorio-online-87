@@ -54,7 +54,7 @@ export const StudentInvoiceDialog: React.FC<StudentInvoiceDialogProps> = ({
     inscriptionDate: aluno.dataInscricao,
     amount: Number(aluno.valor_pago) || 40000,
     createdBy: aluno.criador?.nome,
-    turmaPair: turmaPairName || aluno.par,
+    turmaPair: turmaPairName || aluno.par || 'Par não especificado',
     turma: aluno.turma
   };
 

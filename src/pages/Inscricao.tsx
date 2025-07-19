@@ -14,13 +14,14 @@ import { useToast } from "@/hooks/use-toast";
 import { courseNames, disciplinesByDayAndCourse } from "@/types/schedule";
 import { useTurmaData } from "@/hooks/useTurmaData";
 import { useSupabaseInscricao } from "@/hooks/useSupabaseInscricao";
+import { UploadProgress } from "@/components/ui/upload-progress";
 
 
 const Inscricao = () => {
   const { toast } = useToast();
   const navigate = useNavigate();
   const { turmaPairs, loading: turmaLoading } = useTurmaData(); // Usando exatamente os mesmos dados do admin
-  const { submitInscricao, submitting } = useSupabaseInscricao();
+  const { submitInscricao, submitting, uploadProgress, uploadStep } = useSupabaseInscricao();
   const [formData, setFormData] = useState({
     nomeCompleto: "",
     email: "",
@@ -1015,6 +1016,13 @@ const Inscricao = () => {
           </form>
         </div>
       </div>
+
+      {/* Upload Progress Modal */}
+      <UploadProgress 
+        isUploading={submitting}
+        currentStep={uploadStep}
+        progress={uploadProgress}
+      />
     </div>
   );
 };
