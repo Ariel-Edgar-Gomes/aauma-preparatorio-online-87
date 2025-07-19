@@ -21,15 +21,26 @@ export const StudentInvoiceDialog: React.FC<StudentInvoiceDialogProps> = ({
     const fetchTurmaPairName = async () => {
       // Use turma_pair_id instead of par (database field vs interface field)
       const turmaPairId = aluno?.turma_pair_id || aluno?.par;
+      console.log('Buscando nome do par de turma:', { turmaPairId, aluno });
+      
       if (turmaPairId) {
         try {
           const turmaPair = await turmaPairsService.getById(turmaPairId);
+          console.log('Par de turma encontrado:', turmaPair);
           if (turmaPair) {
             setTurmaPairName(turmaPair.nome);
+            console.log('Nome do par definido:', turmaPair.nome);
+          } else {
+            console.log('Par de turma não encontrado');
+            setTurmaPairName('Par não encontrado');
           }
         } catch (error) {
           console.error('Erro ao buscar nome do par de turma:', error);
+          setTurmaPairName('Erro ao carregar par');
         }
+      } else {
+        console.log('ID do par de turma não encontrado');
+        setTurmaPairName('Par não especificado');
       }
     };
 
@@ -64,7 +75,7 @@ export const StudentInvoiceDialog: React.FC<StudentInvoiceDialogProps> = ({
     inscriptionDate: aluno.data_inscricao || aluno.dataInscricao,
     amount: Number(aluno.valor_pago) || 40000,
     createdBy: aluno.creator?.full_name || aluno.criador?.nome,
-    turmaPair: turmaPairName || aluno.par || 'Par não especificado',
+    turmaPair: turmaPairName || 'Carregando par de turma...',
     turma: aluno.turma
   };
 
