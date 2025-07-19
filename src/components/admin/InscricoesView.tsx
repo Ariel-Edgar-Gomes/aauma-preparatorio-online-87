@@ -137,6 +137,7 @@ export const InscricoesView = () => {
         aluno.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
         aluno.numero_estudante.toLowerCase().includes(searchTerm.toLowerCase()) ||
         aluno.creator_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        aluno.creator_email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
         aluno.curso_codigo.toLowerCase().includes(searchTerm.toLowerCase());
 
       const matchStatus = statusFilter === 'todos' || aluno.status === statusFilter;
@@ -219,7 +220,7 @@ export const InscricoesView = () => {
             <div className="relative">
               <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
               <Input
-                placeholder="Buscar por nome, email, criador..."
+                placeholder="Buscar por nome, email, criador, curso..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="pl-10"
@@ -319,7 +320,7 @@ export const InscricoesView = () => {
                 <Card key={aluno.id} className="hover:shadow-md transition-shadow">
                   <CardContent className="p-4">
                     <div className="space-y-3">
-                      {/* Header do Aluno */}
+                      {/* Header do Aluno com Quem Inscreveu */}
                       <div className="flex justify-between items-start">
                         <div className="flex items-center gap-3">
                           <div className="bg-blue-100 text-blue-700 p-2 rounded-full">
@@ -328,6 +329,12 @@ export const InscricoesView = () => {
                           <div>
                             <h3 className="font-semibold text-lg">{aluno.nome}</h3>
                             <p className="text-sm text-gray-600">{aluno.numero_estudante}</p>
+                            <div className="flex items-center gap-2 mt-1">
+                              <div className="bg-green-100 text-green-700 px-2 py-1 rounded-full text-xs flex items-center gap-1">
+                                <User className="h-3 w-3" />
+                                <span>Inscrito por: <strong>Você</strong></span>
+                              </div>
+                            </div>
                           </div>
                         </div>
                         <Badge 
@@ -405,18 +412,27 @@ export const InscricoesView = () => {
                         </Badge>
                       </div>
 
-                      {/* Quem Inscreveu */}
-                      <div className="bg-gray-50 rounded-lg p-3">
-                        <div className="flex items-center gap-2">
-                          <Avatar className="h-6 w-6">
-                            <AvatarFallback className="bg-blue-500 text-white text-xs">
+                      {/* Quem Inscreveu - DESTAQUE PRINCIPAL */}
+                      <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-lg p-3">
+                        <div className="flex items-center gap-3">
+                          <Avatar className="h-8 w-8 border-2 border-blue-300">
+                            <AvatarFallback className="bg-blue-500 text-white text-sm font-bold">
                               {getUserInitials(aluno.creator_name || 'S')}
                             </AvatarFallback>
                           </Avatar>
-                          <div>
-                            <p className="text-sm font-medium">Inscrito por: {aluno.creator_name}</p>
-                            <p className="text-xs text-gray-600">{aluno.creator_email}</p>
+                          <div className="flex-1">
+                            <div className="flex items-center gap-2">
+                              <User className="h-4 w-4 text-blue-600" />
+                              <span className="text-sm font-medium text-blue-900">Inscrito por:</span>
+                            </div>
+                            <p className="font-semibold text-blue-800">{aluno.creator_name}</p>
+                            <p className="text-xs text-blue-600">{aluno.creator_email}</p>
                           </div>
+                          {aluno.created_by === currentUser?.id && (
+                            <Badge variant="outline" className="bg-green-100 text-green-700 border-green-300">
+                              Você
+                            </Badge>
+                          )}
                         </div>
                       </div>
 
