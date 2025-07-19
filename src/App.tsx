@@ -15,6 +15,7 @@ import AdminTurmas from "./pages/admin/Turmas";
 import GestaoIndividual from "./pages/admin/GestaoIndividual";
 import GestaoUsuarios from "./pages/admin/GestaoUsuarios";
 import Auditoria from "./pages/admin/Auditoria";
+import Inscricoes from "./pages/Inscricoes";
 import NotFound from "./pages/NotFound";
 import { AdminLayout } from "./components/AdminLayout";
 import { AuthProvider } from "./components/AuthProvider";
@@ -33,6 +34,11 @@ const App = () => (
             <Route path="/" element={
               <ProtectedRoute>
                 <Index />
+              </ProtectedRoute>
+            } />
+            <Route path="/inscricoes" element={
+              <ProtectedRoute>
+                <Inscricoes />
               </ProtectedRoute>
             } />
             <Route path="/inscricao" element={

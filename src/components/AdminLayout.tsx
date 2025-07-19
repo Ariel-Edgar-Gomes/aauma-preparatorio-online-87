@@ -9,7 +9,8 @@ import {
   LogOut,
   User,
   UserCog,
-  Shield
+  Shield,
+  Eye
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "./AuthProvider";
@@ -31,6 +32,12 @@ const getAllNavigationItems = () => [
     title: "Dashboard",
     url: "/admin",
     icon: LayoutDashboard,
+    permissions: []
+  },
+  {
+    title: "Inscrições",
+    url: "/inscricoes",
+    icon: Eye,
     permissions: []
   },
   {
