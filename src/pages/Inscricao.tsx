@@ -32,7 +32,7 @@ const Inscricao = () => {
     par: "",
     turma: "",
     turno: "",
-    duracao: "3 Meses",
+    duracao: "1 Mês",
     dataInicio: "2025-08-11",
     formaPagamento: "Transferencia",
     statusPagamento: "inscrito",
@@ -818,15 +818,13 @@ const Inscricao = () => {
                 <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4">
                    <div>
                      <Label htmlFor="duracao" className="text-[#003366] font-medium">Duração</Label>
-                     <Select value={formData.duracao} onValueChange={(value) => handleInputChange('duracao', value)}>
-                       <SelectTrigger className="border-gray-300 focus:border-[#003366] focus:ring-[#003366]/20">
-                         <SelectValue placeholder="Selecione a duração" />
-                       </SelectTrigger>
-                       <SelectContent>
-                         <SelectItem value="3 Meses">3 Meses</SelectItem>
-                         <SelectItem value="6 Meses">6 Meses</SelectItem>
-                       </SelectContent>
-                     </Select>
+                     <Input
+                       id="duracao"
+                       value={formData.duracao}
+                       readOnly
+                       className="border-gray-300 bg-gray-50 text-gray-600 cursor-not-allowed"
+                     />
+                     <p className="text-xs text-gray-500 mt-1">Duração padrão do curso</p>
                    </div>
 
                    <div>
