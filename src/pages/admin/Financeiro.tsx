@@ -151,7 +151,7 @@ const FinanceiroPage = () => {
       const { error } = await supabase
         .from('alunos')
         .delete()
-        .neq('id', ''); // Deleta todos os registros
+        .gte('created_at', '1900-01-01'); // Condição que sempre será verdadeira
 
       if (error) throw error;
 
