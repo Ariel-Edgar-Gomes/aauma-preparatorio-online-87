@@ -96,6 +96,7 @@ const FinanceiroPage = () => {
   const [updateTrigger, setUpdateTrigger] = useState(0);
   const [receitaAjuste, setReceitaAjuste] = useState(0);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [valorAjuste, setValorAjuste] = useState("");
 
   const handleEditPayment = (aluno: AlunoFinanceiro) => {
     setEditingAluno(aluno);
@@ -114,11 +115,24 @@ const FinanceiroPage = () => {
     window.location.reload();
   };
 
-  const handleAjustarReceita = (valor: number) => {
-    setReceitaAjuste(prev => prev + valor);
+  const handleAjustarReceita = (tipo: 'aumentar' | 'diminuir') => {
+    const valor = parseFloat(valorAjuste);
+    if (isNaN(valor) || valor <= 0) {
+      toast({
+        title: "Erro",
+        description: "Por favor, insira um valor válido",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    const ajuste = tipo === 'aumentar' ? valor : -valor;
+    setReceitaAjuste(prev => prev + ajuste);
+    setValorAjuste("");
+    
     toast({
-      title: valor > 0 ? "Receita aumentada" : "Receita diminuída",
-      description: `Ajuste de ${formatCurrency(Math.abs(valor))} aplicado`,
+      title: tipo === 'aumentar' ? "Receita aumentada" : "Receita diminuída",
+      description: `Ajuste de ${formatCurrency(valor)} aplicado`,
     });
   };
 
@@ -422,20 +436,29 @@ const FinanceiroPage = () => {
               Taxa: {taxaPagamento}%
             </p>
             {isAdmin() && (
-              <div className="flex gap-1 mt-2">
+              <div className="flex gap-2 mt-2">
+                <Input
+                  type="number"
+                  placeholder="Valor AOA"
+                  value={valorAjuste}
+                  onChange={(e) => setValorAjuste(e.target.value)}
+                  className="h-6 text-xs flex-1"
+                />
                 <Button 
                   size="sm" 
                   variant="outline" 
-                  onClick={() => handleAjustarReceita(10000)}
+                  onClick={() => handleAjustarReceita('aumentar')}
                   className="h-6 px-2 text-xs"
+                  disabled={!valorAjuste}
                 >
                   <Plus className="w-3 h-3" />
                 </Button>
                 <Button 
                   size="sm" 
                   variant="outline" 
-                  onClick={() => handleAjustarReceita(-10000)}
+                  onClick={() => handleAjustarReceita('diminuir')}
                   className="h-6 px-2 text-xs"
+                  disabled={!valorAjuste}
                 >
                   <Minus className="w-3 h-3" />
                 </Button>
