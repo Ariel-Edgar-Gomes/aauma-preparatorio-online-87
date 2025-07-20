@@ -3,6 +3,7 @@ import { TurmaPair, CreateTurmaPairData, Aluno } from '@/types/turma';
 import { toast } from "@/hooks/use-toast";
 import { useSupabaseTurmaData } from '@/hooks/useSupabaseTurmaData';
 import { turmaPairsService, turmasService, salasService, cursosService } from '@/services/supabaseService';
+import { supabase } from '@/integrations/supabase/client';
 
 export const useTurmaData = () => {
   const {
@@ -268,6 +269,49 @@ export const useTurmaData = () => {
 
   const handleDeleteTurmaPair = async (id: string) => {
     try {
+      // Verificar se há alunos associados ao par
+      const { data: alunosAssociados, error: alunosError } = await supabase
+        .from('alunos')
+        .select('id, nome')
+        .eq('turma_pair_id', id);
+
+      if (alunosError) {
+        throw new Error('Erro ao verificar alunos associados');
+      }
+
+      // Se há alunos associados, mostrar confirmação
+      if (alunosAssociados && alunosAssociados.length > 0) {
+        const confirmacao = window.confirm(
+          `Este par de turmas possui ${alunosAssociados.length} aluno(s) associado(s). ` +
+          `Todos os alunos serão removidos junto com o par. Deseja continuar?`
+        );
+        
+        if (!confirmacao) {
+          return;
+        }
+
+        // Remover todos os alunos associados primeiro
+        const { error: deleteAlunosError } = await supabase
+          .from('alunos')
+          .delete()
+          .eq('turma_pair_id', id);
+
+        if (deleteAlunosError) {
+          throw new Error('Erro ao remover alunos associados');
+        }
+      }
+
+      // Remover as turmas individuais (A e B) associadas ao par
+      const { error: deleteTurmasError } = await supabase
+        .from('turmas')
+        .delete()
+        .eq('turma_pair_id', id);
+
+      if (deleteTurmasError) {
+        throw new Error('Erro ao remover turmas individuais');
+      }
+
+      // Agora remover o par de turmas
       setTurmaPairs(current => current.filter(pair => pair.id !== id));
       await turmaPairsService.delete(id);
       await loadTurmaPairs();
@@ -281,7 +325,7 @@ export const useTurmaData = () => {
       await loadTurmaPairs();
       toast({
         title: "Erro",
-        description: "Não foi possível remover o par de turmas.",
+        description: error instanceof Error ? error.message : "Não foi possível remover o par de turmas.",
         variant: "destructive",
       });
     }
