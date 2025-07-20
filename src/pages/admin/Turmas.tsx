@@ -10,6 +10,7 @@ import { SalasManagement } from "@/components/admin/SalasManagement";
 import { TurmaPairEditDialog } from "@/components/admin/TurmaPairEditDialog";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useAuth } from "@/components/AuthProvider";
 
 const AdminTurmas = () => {
   const { 
@@ -25,6 +26,7 @@ const AdminTurmas = () => {
     handleUpdateAlunoStatus
   } = useTurmaData();
   
+  const { isAdmin } = useAuth();
   const [editingTurmaPair, setEditingTurmaPair] = useState<TurmaPair | null>(null);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
 
@@ -88,23 +90,25 @@ const AdminTurmas = () => {
         </div>
       </div>
 
-      {/* Quick Actions */}
-      <div className="mb-6 flex gap-3">
-        <Button 
-          onClick={() => handleDuplicatePair('manha')}
-          className="bg-aauma-navy hover:bg-aauma-navy/90 text-white"
-        >
-          <Plus className="w-4 h-4 mr-2" />
-          Criar Par de Manhã
-        </Button>
-        <Button 
-          onClick={() => handleDuplicatePair('tarde')}
-          className="bg-aauma-red hover:bg-aauma-red/90 text-white"
-        >
-          <Plus className="w-4 h-4 mr-2" />
-          Criar Par de Tarde
-        </Button>
-      </div>
+      {/* Quick Actions - Apenas para Admins */}
+      {isAdmin() && (
+        <div className="mb-6 flex gap-3">
+          <Button 
+            onClick={() => handleDuplicatePair('manha')}
+            className="bg-aauma-navy hover:bg-aauma-navy/90 text-white"
+          >
+            <Plus className="w-4 h-4 mr-2" />
+            Criar Par de Manhã
+          </Button>
+          <Button 
+            onClick={() => handleDuplicatePair('tarde')}
+            className="bg-aauma-red hover:bg-aauma-red/90 text-white"
+          >
+            <Plus className="w-4 h-4 mr-2" />
+            Criar Par de Tarde
+          </Button>
+        </div>
+      )}
 
       {/* Navigation Tabs */}
       <div className="bg-white p-4 rounded-lg shadow-sm border">
@@ -145,6 +149,7 @@ const AdminTurmas = () => {
                     setEditingTurmaPair(turmaPair);
                     setIsEditDialogOpen(true);
                   }}
+                  isAdmin={isAdmin()}
                 />
           </TabsContent>
           

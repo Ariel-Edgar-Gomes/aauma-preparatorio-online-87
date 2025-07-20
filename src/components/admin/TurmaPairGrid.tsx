@@ -13,13 +13,15 @@ interface TurmaPairGridProps {
   onDeleteTurmaPair: (id: string) => void;
   onToggleStatus: (id: string) => void;
   onEditTurmaPair: (turmaPair: TurmaPair) => void;
+  isAdmin?: boolean;
 }
 
 export const TurmaPairGrid = ({ 
   turmaPairs, 
   onDeleteTurmaPair,
   onToggleStatus,
-  onEditTurmaPair
+  onEditTurmaPair,
+  isAdmin = false
 }: TurmaPairGridProps) => {
   const [expandedTurma, setExpandedTurma] = useState<string | null>(null);
   const [selectedTurma, setSelectedTurma] = useState<'A' | 'B'>('A');
@@ -336,15 +338,17 @@ export const TurmaPairGrid = ({
                     <Edit className="w-2 h-2 mr-0.5" />
                     Editar
                   </Button>
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    onClick={() => onDeleteTurmaPair(turmaPair.id)}
-                    className="text-destructive hover:text-destructive-foreground hover:bg-destructive h-5 px-1 text-[10px]"
-                  >
-                    <Trash2 className="w-2 h-2 mr-0.5" />
-                    Remover
-                  </Button>
+                  {isAdmin && (
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => onDeleteTurmaPair(turmaPair.id)}
+                      className="text-destructive hover:text-destructive-foreground hover:bg-destructive h-5 px-1 text-[10px]"
+                    >
+                      <Trash2 className="w-2 h-2 mr-0.5" />
+                      Remover
+                    </Button>
+                  )}
                 </div>
               </div>
             </CardContent>
