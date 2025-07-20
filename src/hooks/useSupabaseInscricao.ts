@@ -201,9 +201,20 @@ export const useSupabaseInscricao = () => {
       return true;
     } catch (error) {
       console.error('[useSupabaseInscricao] Erro na inscrição:', error);
+      
+      let errorMessage = "Erro desconhecido";
+      if (error instanceof Error) {
+        // Verificar se é erro de duplicação de número de BI
+        if (error.message.includes('unique_numero_bi') || error.message.includes('duplicate key')) {
+          errorMessage = "Já existe um aluno registrado com este número de BI. Por favor, verifique o número inserido.";
+        } else {
+          errorMessage = error.message;
+        }
+      }
+      
       toast({
         title: "Erro na inscrição",
-        description: error instanceof Error ? error.message : "Erro desconhecido",
+        description: errorMessage,
         variant: "destructive"
       });
       return false;
