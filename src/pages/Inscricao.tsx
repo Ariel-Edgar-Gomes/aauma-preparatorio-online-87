@@ -1,19 +1,20 @@
 
 // Formulário de Inscrição AAUMA - Versão Atualizada
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
-import { Upload, FileText, User, Phone, Mail, GraduationCap, Clock, CreditCard, Calendar, AlertCircle, CheckCircle, Banknote, Download, Printer } from "lucide-react";
+import { Upload, FileText, User, Phone, Mail, GraduationCap, Clock, CreditCard, Calendar, AlertCircle, CheckCircle, Banknote, Download, Printer, Loader2, X } from "lucide-react";
 import jsPDF from "jspdf";
 import { Link, useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
 import { courseNames, disciplinesByDayAndCourse } from "@/types/schedule";
 import { useTurmaData } from "@/hooks/useTurmaData";
 import { useSupabaseInscricao } from "@/hooks/useSupabaseInscricao";
+import { useNumeroBI } from "@/hooks/useNumeroBI";
 import { UploadProgress } from "@/components/ui/upload-progress";
 
 
@@ -22,6 +23,7 @@ const Inscricao = () => {
   const navigate = useNavigate();
   const { turmaPairs, loading: turmaLoading } = useTurmaData(); // Usando exatamente os mesmos dados do admin
   const { submitInscricao, submitting, uploadProgress, uploadStep } = useSupabaseInscricao();
+  const { isChecking, isDuplicate, error: biError, checkNumeroBI } = useNumeroBI();
   const [formData, setFormData] = useState({
     nomeCompleto: "",
     email: "",
@@ -172,6 +174,17 @@ const Inscricao = () => {
   console.log('[Inscricao] Pares disponíveis:', paresDisponiveis);
   console.log('[Inscricao] Turmas do par selecionado:', turmasDoParSelecionado);
 
+  // Effect para verificação em tempo real do número de BI
+  useEffect(() => {
+    if (formData.numeroBI.length >= 9) {
+      const timer = setTimeout(() => {
+        checkNumeroBI(formData.numeroBI);
+      }, 500); // Debounce de 500ms
+
+      return () => clearTimeout(timer);
+    }
+  }, [formData.numeroBI, checkNumeroBI]);
+
   const handleInputChange = (field: string, value: string) => {
     setFormData(prev => {
       const newData = { ...prev, [field]: value };
@@ -312,6 +325,16 @@ const Inscricao = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     console.log('[Inscricao] Form submission started', formData);
+
+    // Verificar se há duplicação de número de BI
+    if (isDuplicate) {
+      toast({
+        title: "Erro na inscrição",
+        description: "Já existe um aluno registrado com este número de BI. Por favor, verifique o número inserido.",
+        variant: "destructive"
+      });
+      return;
+    }
 
     try {
       // Usar o hook do Supabase para submeter a inscrição
@@ -474,16 +497,54 @@ const Inscricao = () => {
                     />
                   </div>
                   
-                  <div>
+                  <div className="relative">
                     <Label htmlFor="numeroBI" className="text-[#003366] font-medium">Número do BI *</Label>
-                    <Input
-                      id="numeroBI"
-                      value={formData.numeroBI}
-                      onChange={(e) => handleInputChange('numeroBI', e.target.value)}
-                      placeholder="000000000LA000"
-                      className="border-gray-300 focus:border-[#003366] focus:ring-[#003366]/20"
-                      required
-                    />
+                    <div className="relative">
+                      <Input
+                        id="numeroBI"
+                        value={formData.numeroBI}
+                        onChange={(e) => handleInputChange('numeroBI', e.target.value)}
+                        placeholder="000000000LA000"
+                        className={`border-gray-300 focus:border-[#003366] focus:ring-[#003366]/20 pr-10 ${
+                          isDuplicate ? 'border-red-500 focus:border-red-500 focus:ring-red-500/20' : 
+                          formData.numeroBI.length >= 9 && !isChecking && !isDuplicate ? 'border-green-500 focus:border-green-500 focus:ring-green-500/20' : ''
+                        }`}
+                        required
+                      />
+                      <div className="absolute inset-y-0 right-0 pr-3 flex items-center">
+                        {isChecking && formData.numeroBI.length >= 9 && (
+                          <Loader2 className="h-4 w-4 animate-spin text-gray-400" />
+                        )}
+                        {!isChecking && formData.numeroBI.length >= 9 && isDuplicate && (
+                          <X className="h-4 w-4 text-red-500" />
+                        )}
+                        {!isChecking && formData.numeroBI.length >= 9 && !isDuplicate && !biError && (
+                          <CheckCircle className="h-4 w-4 text-green-500" />
+                        )}
+                      </div>
+                    </div>
+                    {formData.numeroBI.length >= 9 && (
+                      <div className="mt-1">
+                        {isDuplicate && (
+                          <p className="text-xs text-red-600 flex items-center gap-1">
+                            <X className="h-3 w-3" />
+                            Já existe um aluno com este número de BI
+                          </p>
+                        )}
+                        {!isDuplicate && !isChecking && !biError && (
+                          <p className="text-xs text-green-600 flex items-center gap-1">
+                            <CheckCircle className="h-3 w-3" />
+                            Número de BI disponível
+                          </p>
+                        )}
+                        {biError && (
+                          <p className="text-xs text-red-600 flex items-center gap-1">
+                            <X className="h-3 w-3" />
+                            {biError}
+                          </p>
+                        )}
+                      </div>
+                    )}
                   </div>
                 </div>
 
@@ -1005,10 +1066,13 @@ const Inscricao = () => {
                 <div className="space-y-3">
                   <Button 
                     type="submit" 
-                    className="w-full bg-[#003366] hover:bg-[#003366]/90 text-white py-3 text-lg shadow-lg"
-                    disabled={submitting}
+                    className="w-full bg-[#003366] hover:bg-[#003366]/90 text-white py-3 text-lg shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
+                    disabled={submitting || isDuplicate || isChecking}
                   >
-                    {submitting ? "Processando..." : "Confirmar Inscrição e Gerar Fatura"}
+                    {submitting ? "Processando..." : 
+                     isDuplicate ? "Número de BI já existe" :
+                     isChecking ? "Verificando..." :
+                     "Confirmar Inscrição e Gerar Fatura"}
                   </Button>
                   
                   <div className="flex gap-2">
