@@ -27,6 +27,65 @@ export const useTurmaData = () => {
     }
   }, [supabaseTurmaPairs, supabaseLoading]);
 
+  // Realtime subscriptions para atualizações instantâneas
+  useEffect(() => {
+    const channel = supabase
+      .channel('schema-db-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*', // Escuta INSERT, UPDATE, DELETE
+          schema: 'public',
+          table: 'turma_pairs'
+        },
+        () => {
+          console.log('Mudança detectada em turma_pairs - recarregando dados...');
+          loadTurmaPairs();
+        }
+      )
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'turmas'
+        },
+        () => {
+          console.log('Mudança detectada em turmas - recarregando dados...');
+          loadTurmaPairs();
+        }
+      )
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'alunos'
+        },
+        () => {
+          console.log('Mudança detectada em alunos - recarregando dados...');
+          loadTurmaPairs();
+        }
+      )
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'salas'
+        },
+        () => {
+          console.log('Mudança detectada em salas - recarregando dados...');
+          loadTurmaPairs();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [loadTurmaPairs]);
+
   const handleCreateTurmaPair = async (data: CreateTurmaPairData): Promise<boolean> => {
     try {
       // Calcular disciplinas comuns baseado nos cursos
@@ -122,8 +181,7 @@ export const useTurmaData = () => {
         horario_semanal: horarioSemanal
       });
       
-      // Recarregar dados
-      await loadTurmaPairs();
+      // O realtime cuidará da atualização automática
       
       toast({
         title: "Par de turmas criado",
@@ -249,8 +307,7 @@ export const useTurmaData = () => {
         await turmaPairsService.update(id, dbUpdates);
       }
       
-      // Recarregar dados para garantir consistência
-      await loadTurmaPairs();
+      // O realtime cuidará da atualização automática
       
       toast({
         title: "Par atualizado",
@@ -314,7 +371,7 @@ export const useTurmaData = () => {
       // Agora remover o par de turmas
       setTurmaPairs(current => current.filter(pair => pair.id !== id));
       await turmaPairsService.delete(id);
-      await loadTurmaPairs();
+      // O realtime cuidará da atualização automática
       
       toast({
         title: "Par removido",
@@ -433,7 +490,7 @@ export const useTurmaData = () => {
         horario_semanal: {}
       });
       
-      await loadTurmaPairs();
+      // O realtime cuidará da atualização automática
       
       toast({
         title: "Par criado",

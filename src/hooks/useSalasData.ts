@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { salasService, DBSala } from '@/services/supabaseService';
 import { useToast } from '@/hooks/use-toast';
+import { supabase } from '@/integrations/supabase/client';
 
 export const useSalasData = () => {
   const [salas, setSalas] = useState<DBSala[]>([]);
@@ -33,8 +34,7 @@ export const useSalasData = () => {
       const newSala = await salasService.create(salaData);
       console.log('[useSalasData] Sala criada:', newSala);
       
-      // Atualizar estado local
-      setSalas(current => [...current, newSala]);
+      // O realtime cuidará da atualização automática
       
       toast({
         title: "Sucesso",
@@ -59,12 +59,7 @@ export const useSalasData = () => {
       const updatedSala = await salasService.update(id, updates);
       console.log('[useSalasData] Sala atualizada:', updatedSala);
       
-      // Atualizar estado local
-      setSalas(current => 
-        current.map(sala => 
-          sala.id === id ? updatedSala : sala
-        )
-      );
+      // O realtime cuidará da atualização automática
       
       toast({
         title: "Sucesso",
@@ -88,8 +83,7 @@ export const useSalasData = () => {
       console.log('[useSalasData] Deletando sala:', id);
       await salasService.delete(id);
       
-      // Atualizar estado local
-      setSalas(current => current.filter(sala => sala.id !== id));
+      // O realtime cuidará da atualização automática
       
       toast({
         title: "Sucesso",
@@ -117,6 +111,30 @@ export const useSalasData = () => {
 
   useEffect(() => {
     loadSalas();
+  }, []);
+
+  // Realtime subscription para atualizações instantâneas
+  useEffect(() => {
+    const channel = supabase
+      .channel('salas-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'salas'
+        },
+        (payload) => {
+          console.log('[useSalasData] Mudança detectada:', payload);
+          // Recarregar dados quando há mudanças externas
+          loadSalas();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, []);
 
   return {
