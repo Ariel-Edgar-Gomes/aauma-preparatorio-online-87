@@ -7,9 +7,10 @@ import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth, UserRole } from "@/components/AuthProvider";
-import { UserPlus, Trash2, FileText } from "lucide-react";
+import { UserPlus, Trash2, FileText, Edit } from "lucide-react";
 import { CreateUserDialog } from "@/components/admin/CreateUserDialog";
 import { AuditLogDialog } from "@/components/admin/AuditLogDialog";
+import { EditUserDialog } from "@/components/admin/EditUserDialog";
 
 interface UserProfile {
   id: string;
@@ -34,6 +35,8 @@ const GestaoUsuarios = () => {
   const [loading, setLoading] = useState(true);
   const [showCreateDialog, setShowCreateDialog] = useState(false);
   const [showAuditDialog, setShowAuditDialog] = useState(false);
+  const [showEditDialog, setShowEditDialog] = useState(false);
+  const [selectedUser, setSelectedUser] = useState<UserProfile | null>(null);
 
   useEffect(() => {
     if (isAdmin()) {
@@ -104,6 +107,11 @@ const GestaoUsuarios = () => {
     } catch (error: any) {
       toast.error("Erro ao excluir usuário: " + error.message);
     }
+  };
+
+  const handleEditUser = (user: UserProfile) => {
+    setSelectedUser(user);
+    setShowEditDialog(true);
   };
 
   if (!isAdmin()) {
@@ -183,13 +191,22 @@ const GestaoUsuarios = () => {
                       {new Date(user.created_at).toLocaleDateString()}
                     </TableCell>
                     <TableCell className="text-right">
-                      <Button
-                        variant="destructive"
-                        size="sm"
-                        onClick={() => deleteUser(user.id)}
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
+                      <div className="flex gap-2 justify-end">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleEditUser(user)}
+                        >
+                          <Edit className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          variant="destructive"
+                          size="sm"
+                          onClick={() => deleteUser(user.id)}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
                     </TableCell>
                   </TableRow>
                 ))}
@@ -208,6 +225,13 @@ const GestaoUsuarios = () => {
       <AuditLogDialog
         open={showAuditDialog}
         onOpenChange={setShowAuditDialog}
+      />
+
+      <EditUserDialog
+        open={showEditDialog}
+        onOpenChange={setShowEditDialog}
+        user={selectedUser}
+        onUserUpdated={fetchUsers}
       />
     </div>
   );
