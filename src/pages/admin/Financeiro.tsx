@@ -27,13 +27,20 @@ import {
   FileText,
   Calculator,
   Edit,
-  Printer
+  Printer,
+  Plus,
+  Minus,
+  Trash2
 } from "lucide-react";
 import jsPDF from "jspdf";
 import { Link } from "react-router-dom";
 import { useTurmaData } from "@/hooks/useTurmaData";
 import { Aluno, TurmaPair } from "@/types/turma";
 import EditPaymentDialog from "@/components/admin/EditPaymentDialog";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/components/AuthProvider";
+import { useToast } from "@/hooks/use-toast";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 
 interface AlunoFinanceiro extends Aluno {
   valorMensalidade: number;
@@ -78,6 +85,8 @@ interface RelatorioFinanceiroPorPar {
 
 const FinanceiroPage = () => {
   const { turmaPairs, loading } = useTurmaData();
+  const { isAdmin } = useAuth();
+  const { toast } = useToast();
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("todos");
   const [formaPagamentoFilter, setFormaPagamentoFilter] = useState<string>("todos");
@@ -85,6 +94,8 @@ const FinanceiroPage = () => {
   const [editingAluno, setEditingAluno] = useState<AlunoFinanceiro | null>(null);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [updateTrigger, setUpdateTrigger] = useState(0);
+  const [receitaAjuste, setReceitaAjuste] = useState(0);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   const handleEditPayment = (aluno: AlunoFinanceiro) => {
     setEditingAluno(aluno);
@@ -101,6 +112,52 @@ const FinanceiroPage = () => {
     handleCloseEditDialog();
     // Força re-render dos dados
     window.location.reload();
+  };
+
+  const handleAjustarReceita = (valor: number) => {
+    setReceitaAjuste(prev => prev + valor);
+    toast({
+      title: valor > 0 ? "Receita aumentada" : "Receita diminuída",
+      description: `Ajuste de ${formatCurrency(Math.abs(valor))} aplicado`,
+    });
+  };
+
+  const handleDeleteAllAlunos = async () => {
+    if (!isAdmin()) {
+      toast({
+        title: "Erro",
+        description: "Apenas administradores podem realizar esta ação",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    setIsDeleting(true);
+    try {
+      const { error } = await supabase
+        .from('alunos')
+        .delete()
+        .neq('id', ''); // Deleta todos os registros
+
+      if (error) throw error;
+
+      toast({
+        title: "Sucesso",
+        description: "Todos os alunos foram removidos da base de dados",
+      });
+      
+      // Força re-render dos dados
+      window.location.reload();
+    } catch (error) {
+      console.error('Erro ao deletar alunos:', error);
+      toast({
+        title: "Erro",
+        description: "Erro ao remover alunos da base de dados",
+        variant: "destructive"
+      });
+    } finally {
+      setIsDeleting(false);
+    }
   };
 
   // Valor fixo da mensalidade única do preparatório
@@ -223,7 +280,7 @@ const FinanceiroPage = () => {
   });
 
   // Calcular estatísticas gerais
-  const totalRecebido = todosAlunosFinanceiros.reduce((sum, aluno) => sum + aluno.valorPago, 0);
+  const totalRecebido = todosAlunosFinanceiros.reduce((sum, aluno) => sum + aluno.valorPago, 0) + receitaAjuste;
   const totalPendente = todosAlunosFinanceiros.reduce((sum, aluno) => sum + aluno.valorPendente, 0);
   const totalPotencial = todosAlunosFinanceiros.length * VALOR_MENSALIDADE;
   const alunosPagos = todosAlunosFinanceiros.filter(a => a.statusPagamento === 'pago').length;
@@ -364,6 +421,26 @@ const FinanceiroPage = () => {
             <p className="text-xs text-muted-foreground">
               Taxa: {taxaPagamento}%
             </p>
+            {isAdmin() && (
+              <div className="flex gap-1 mt-2">
+                <Button 
+                  size="sm" 
+                  variant="outline" 
+                  onClick={() => handleAjustarReceita(10000)}
+                  className="h-6 px-2 text-xs"
+                >
+                  <Plus className="w-3 h-3" />
+                </Button>
+                <Button 
+                  size="sm" 
+                  variant="outline" 
+                  onClick={() => handleAjustarReceita(-10000)}
+                  className="h-6 px-2 text-xs"
+                >
+                  <Minus className="w-3 h-3" />
+                </Button>
+              </div>
+            )}
           </CardContent>
         </Card>
 
@@ -406,6 +483,55 @@ const FinanceiroPage = () => {
           </CardContent>
         </Card>
       </div>
+
+      {/* Área de Administração */}
+      {isAdmin() && (
+        <Card className="mb-6 border-red-200 bg-red-50/50">
+          <CardHeader>
+            <CardTitle className="text-red-700 flex items-center gap-2">
+              <Trash2 className="w-5 h-5" />
+              Área de Administração
+            </CardTitle>
+            <CardDescription className="text-red-600">
+              Ações administrativas avançadas - Use com cuidado!
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="flex gap-4">
+              <AlertDialog>
+                <AlertDialogTrigger asChild>
+                  <Button 
+                    variant="destructive" 
+                    size="sm"
+                    disabled={isDeleting}
+                  >
+                    <Trash2 className="w-4 h-4 mr-2" />
+                    {isDeleting ? "Removendo..." : "Apagar Todos os Alunos"}
+                  </Button>
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>Confirmar Remoção</AlertDialogTitle>
+                    <AlertDialogDescription className="text-red-600">
+                      Esta ação irá remover TODOS os alunos da base de dados permanentemente. 
+                      Esta operação não pode ser desfeita. Tem certeza que deseja continuar?
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                    <AlertDialogAction 
+                      onClick={handleDeleteAllAlunos}
+                      className="bg-red-600 hover:bg-red-700"
+                    >
+                      Sim, Apagar Todos
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       <Tabs defaultValue="resumo" className="w-full">
         <TabsList className="grid w-full grid-cols-3">
