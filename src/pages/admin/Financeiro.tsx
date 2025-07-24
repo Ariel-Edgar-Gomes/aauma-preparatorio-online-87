@@ -85,7 +85,7 @@ interface RelatorioFinanceiroPorPar {
 
 const FinanceiroPage = () => {
   const { turmaPairs, loading } = useTurmaData();
-  const { isAdmin } = useAuth();
+  const { isAdmin, hasRole } = useAuth();
   const { toast } = useToast();
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("todos");
@@ -425,47 +425,50 @@ const FinanceiroPage = () => {
 
       {/* Estatísticas Gerais */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Receita Arrecadada</CardTitle>
-            <DollarSign className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-green-600">{formatCurrency(totalRecebido)}</div>
-            <p className="text-xs text-muted-foreground">
-              Taxa: {taxaPagamento}%
-            </p>
-            {isAdmin() && (
-              <div className="flex gap-2 mt-2">
-                <Input
-                  type="number"
-                  placeholder="Valor AOA"
-                  value={valorAjuste}
-                  onChange={(e) => setValorAjuste(e.target.value)}
-                  className="h-6 text-xs flex-1"
-                />
-                <Button 
-                  size="sm" 
-                  variant="outline" 
-                  onClick={() => handleAjustarReceita('aumentar')}
-                  className="h-6 px-2 text-xs"
-                  disabled={!valorAjuste}
-                >
-                  <Plus className="w-3 h-3" />
-                </Button>
-                <Button 
-                  size="sm" 
-                  variant="outline" 
-                  onClick={() => handleAjustarReceita('diminuir')}
-                  className="h-6 px-2 text-xs"
-                  disabled={!valorAjuste}
-                >
-                  <Minus className="w-3 h-3" />
-                </Button>
-              </div>
-            )}
-          </CardContent>
-        </Card>
+        {/* Esconder receita total para inscrição simples */}
+        {!hasRole('inscricao_simples') && (
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Receita Arrecadada</CardTitle>
+              <DollarSign className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-green-600">{formatCurrency(totalRecebido)}</div>
+              <p className="text-xs text-muted-foreground">
+                Taxa: {taxaPagamento}%
+              </p>
+              {isAdmin() && (
+                <div className="flex gap-2 mt-2">
+                  <Input
+                    type="number"
+                    placeholder="Valor AOA"
+                    value={valorAjuste}
+                    onChange={(e) => setValorAjuste(e.target.value)}
+                    className="h-6 text-xs flex-1"
+                  />
+                  <Button 
+                    size="sm" 
+                    variant="outline" 
+                    onClick={() => handleAjustarReceita('aumentar')}
+                    className="h-6 px-2 text-xs"
+                    disabled={!valorAjuste}
+                  >
+                    <Plus className="w-3 h-3" />
+                  </Button>
+                  <Button 
+                    size="sm" 
+                    variant="outline" 
+                    onClick={() => handleAjustarReceita('diminuir')}
+                    className="h-6 px-2 text-xs"
+                    disabled={!valorAjuste}
+                  >
+                    <Minus className="w-3 h-3" />
+                  </Button>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        )}
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -564,130 +567,151 @@ const FinanceiroPage = () => {
         </TabsList>
 
         <TabsContent value="resumo" className="space-y-6">
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Calculator className="w-5 h-5" />
-                Relatório Financeiro por Par de Turmas
-              </CardTitle>
-              <CardDescription>
-                Resumo detalhado da situação financeira de cada par de turmas
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-6">
-                {relatoriosPorPar.map(relatorio => (
-                  <Card key={relatorio.parId} className="border-l-4 border-l-blue-500">
-                    <CardHeader className="pb-3">
-                      <div className="flex justify-between items-start">
-                        <div>
-                          <CardTitle className="text-lg">{relatorio.nomePar}</CardTitle>
-                          <div className="flex gap-4 text-sm text-gray-600 mt-1">
-                            <span>Período: {relatorio.periodo}</span>
-                            <span>•</span>
-                            
+          {/* Esconder relatórios financeiros detalhados para inscrição simples */}
+          {hasRole('inscricao_simples') ? (
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Eye className="w-5 h-5" />
+                  Acesso Limitado
+                </CardTitle>
+                <CardDescription>
+                  Usuários com role "Inscrição Simples" não têm acesso aos relatórios financeiros detalhados.
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="text-center py-8 text-gray-500">
+                  <Receipt className="w-12 h-12 mx-auto mb-4 text-gray-400" />
+                  <p>Entre em contacto com o administrador para obter acesso aos relatórios financeiros.</p>
+                </div>
+              </CardContent>
+            </Card>
+          ) : (
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Calculator className="w-5 h-5" />
+                  Relatório Financeiro por Par de Turmas
+                </CardTitle>
+                <CardDescription>
+                  Resumo detalhado da situação financeira de cada par de turmas
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-6">
+                  {relatoriosPorPar.map(relatorio => (
+                    <Card key={relatorio.parId} className="border-l-4 border-l-blue-500">
+                      <CardHeader className="pb-3">
+                        <div className="flex justify-between items-start">
+                          <div>
+                            <CardTitle className="text-lg">{relatorio.nomePar}</CardTitle>
+                            <div className="flex gap-4 text-sm text-gray-600 mt-1">
+                              <span>Período: {relatorio.periodo}</span>
+                              <span>•</span>
+                              
+                            </div>
                           </div>
+                          <Badge variant="outline" className="text-xs">
+                            {relatorio.taxaPagamento.toFixed(1)}% pago
+                          </Badge>
                         </div>
-                        <Badge variant="outline" className="text-xs">
-                          {relatorio.taxaPagamento.toFixed(1)}% pago
-                        </Badge>
-                      </div>
-                    </CardHeader>
-                    <CardContent className="pt-0">
-                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                        {/* Resumo Geral */}
-                        <div className="space-y-2">
-                          <h4 className="font-medium text-sm text-gray-700">Resumo Geral</h4>
-                          <div className="space-y-1 text-sm">
-                            <div className="flex justify-between">
-                              <span>Total Alunos:</span>
-                              <span className="font-medium">{relatorio.totalAlunos}</span>
+                      </CardHeader>
+                      <CardContent className="pt-0">
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                          {/* Resumo Geral */}
+                          <div className="space-y-2">
+                            <h4 className="font-medium text-sm text-gray-700">Resumo Geral</h4>
+                            <div className="space-y-1 text-sm">
+                              <div className="flex justify-between">
+                                <span>Total Alunos:</span>
+                                <span className="font-medium">{relatorio.totalAlunos}</span>
+                              </div>
+                              <div className="flex justify-between">
+                                <span>Pagos:</span>
+                                <span className="font-medium text-green-600">{relatorio.alunosPagos}</span>
+                              </div>
+                              <div className="flex justify-between">
+                                <span>Pendentes:</span>
+                                <span className="font-medium text-yellow-600">{relatorio.alunosPendentes}</span>
+                              </div>
+                              <div className="flex justify-between">
+                                <span>Atrasados:</span>
+                                <span className="font-medium text-red-600">{relatorio.alunosAtrasados}</span>
+                              </div>
                             </div>
-                            <div className="flex justify-between">
-                              <span>Pagos:</span>
-                              <span className="font-medium text-green-600">{relatorio.alunosPagos}</span>
+                          </div>
+
+                          {/* Turma A */}
+                          <div className="space-y-2">
+                            <h4 className="font-medium text-sm text-gray-700">Turma A - {relatorio.turmaA.sala}</h4>
+                            <div className="space-y-1 text-sm">
+                              <div className="flex justify-between">
+                                <span>Capacidade:</span>
+                                <span className="font-medium">{relatorio.turmaA.capacidade}</span>
+                              </div>
+                              <div className="flex justify-between">
+                                <span>Inscritos:</span>
+                                <span className="font-medium">{relatorio.turmaA.alunosInscritos}</span>
+                              </div>
+                              <div className="flex justify-between">
+                                <span>Receita:</span>
+                                <span className="font-medium text-green-600">{formatCurrency(relatorio.turmaA.receita)}</span>
+                              </div>
+                              <div className="flex justify-between">
+                                <span>Pendente:</span>
+                                <span className="font-medium text-red-600">{formatCurrency(relatorio.turmaA.pendente)}</span>
+                              </div>
                             </div>
-                            <div className="flex justify-between">
-                              <span>Pendentes:</span>
-                              <span className="font-medium text-yellow-600">{relatorio.alunosPendentes}</span>
-                            </div>
-                            <div className="flex justify-between">
-                              <span>Atrasados:</span>
-                              <span className="font-medium text-red-600">{relatorio.alunosAtrasados}</span>
+                          </div>
+
+                          {/* Turma B */}
+                          <div className="space-y-2">
+                            <h4 className="font-medium text-sm text-gray-700">Turma B - {relatorio.turmaB.sala}</h4>
+                            <div className="space-y-1 text-sm">
+                              <div className="flex justify-between">
+                                <span>Capacidade:</span>
+                                <span className="font-medium">{relatorio.turmaB.capacidade}</span>
+                              </div>
+                              <div className="flex justify-between">
+                                <span>Inscritos:</span>
+                                <span className="font-medium">{relatorio.turmaB.alunosInscritos}</span>
+                              </div>
+                              <div className="flex justify-between">
+                                <span>Receita:</span>
+                                <span className="font-medium text-green-600">{formatCurrency(relatorio.turmaB.receita)}</span>
+                              </div>
+                              <div className="flex justify-between">
+                                <span>Pendente:</span>
+                                <span className="font-medium text-red-600">{formatCurrency(relatorio.turmaB.pendente)}</span>
+                              </div>
                             </div>
                           </div>
                         </div>
 
-                        {/* Turma A */}
-                        <div className="space-y-2">
-                          <h4 className="font-medium text-sm text-gray-700">Turma A - {relatorio.turmaA.sala}</h4>
-                          <div className="space-y-1 text-sm">
-                            <div className="flex justify-between">
-                              <span>Capacidade:</span>
-                              <span className="font-medium">{relatorio.turmaA.capacidade}</span>
+                        {/* Totais do Par */}
+                        <div className="mt-4 pt-4 border-t">
+                          <div className="grid grid-cols-3 gap-4 text-center">
+                            <div>
+                              <div className="text-sm text-gray-600">Receita Arrecadada</div>
+                              <div className="text-lg font-bold text-green-600">{formatCurrency(relatorio.receitaArrecadada)}</div>
                             </div>
-                            <div className="flex justify-between">
-                              <span>Inscritos:</span>
-                              <span className="font-medium">{relatorio.turmaA.alunosInscritos}</span>
+                            <div>
+                              <div className="text-sm text-gray-600">Receita Pendente</div>
+                              <div className="text-lg font-bold text-red-600">{formatCurrency(relatorio.receitaPendente)}</div>
                             </div>
-                            <div className="flex justify-between">
-                              <span>Receita:</span>
-                              <span className="font-medium text-green-600">{formatCurrency(relatorio.turmaA.receita)}</span>
-                            </div>
-                            <div className="flex justify-between">
-                              <span>Pendente:</span>
-                              <span className="font-medium text-red-600">{formatCurrency(relatorio.turmaA.pendente)}</span>
+                            <div>
+                              <div className="text-sm text-gray-600">Receita Potencial</div>
+                              <div className="text-lg font-bold text-blue-600">{formatCurrency(relatorio.receitaPotencial)}</div>
                             </div>
                           </div>
                         </div>
-
-                        {/* Turma B */}
-                        <div className="space-y-2">
-                          <h4 className="font-medium text-sm text-gray-700">Turma B - {relatorio.turmaB.sala}</h4>
-                          <div className="space-y-1 text-sm">
-                            <div className="flex justify-between">
-                              <span>Capacidade:</span>
-                              <span className="font-medium">{relatorio.turmaB.capacidade}</span>
-                            </div>
-                            <div className="flex justify-between">
-                              <span>Inscritos:</span>
-                              <span className="font-medium">{relatorio.turmaB.alunosInscritos}</span>
-                            </div>
-                            <div className="flex justify-between">
-                              <span>Receita:</span>
-                              <span className="font-medium text-green-600">{formatCurrency(relatorio.turmaB.receita)}</span>
-                            </div>
-                            <div className="flex justify-between">
-                              <span>Pendente:</span>
-                              <span className="font-medium text-red-600">{formatCurrency(relatorio.turmaB.pendente)}</span>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-
-                      {/* Totais do Par */}
-                      <div className="mt-4 pt-4 border-t">
-                        <div className="grid grid-cols-3 gap-4 text-center">
-                          <div>
-                            <div className="text-sm text-gray-600">Receita Arrecadada</div>
-                            <div className="text-lg font-bold text-green-600">{formatCurrency(relatorio.receitaArrecadada)}</div>
-                          </div>
-                          <div>
-                            <div className="text-sm text-gray-600">Receita Pendente</div>
-                            <div className="text-lg font-bold text-red-600">{formatCurrency(relatorio.receitaPendente)}</div>
-                          </div>
-                          <div>
-                            <div className="text-sm text-gray-600">Receita Potencial</div>
-                            <div className="text-lg font-bold text-blue-600">{formatCurrency(relatorio.receitaPotencial)}</div>
-                          </div>
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          )}
         </TabsContent>
 
         <TabsContent value="detalhado" className="space-y-6">
