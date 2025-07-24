@@ -30,12 +30,13 @@ export const StudentInvoiceDialog: React.FC<StudentInvoiceDialogProps> = ({
   }
 
   const [turmaPairName, setTurmaPairName] = useState<string>('');
+  const [turmaPairSchedule, setTurmaPairSchedule] = useState<string>('');
 
   useEffect(() => {
-    const fetchTurmaPairName = async () => {
+    const fetchTurmaPairData = async () => {
       // Use turma_pair_id instead of par (database field vs interface field)
       const turmaPairId = aluno?.turma_pair_id || aluno?.par;
-      console.log('Buscando nome do par de turma:', { turmaPairId, aluno });
+      console.log('Buscando dados do par de turma:', { turmaPairId, aluno });
       
       if (turmaPairId) {
         try {
@@ -43,23 +44,27 @@ export const StudentInvoiceDialog: React.FC<StudentInvoiceDialogProps> = ({
           console.log('Par de turma encontrado:', turmaPair);
           if (turmaPair) {
             setTurmaPairName(turmaPair.nome);
-            console.log('Nome do par definido:', turmaPair.nome);
+            setTurmaPairSchedule(turmaPair.horario_periodo);
+            console.log('Dados do par definidos:', { nome: turmaPair.nome, horario: turmaPair.horario_periodo });
           } else {
             console.log('Par de turma não encontrado');
             setTurmaPairName('Par não encontrado');
+            setTurmaPairSchedule('');
           }
         } catch (error) {
-          console.error('Erro ao buscar nome do par de turma:', error);
+          console.error('Erro ao buscar dados do par de turma:', error);
           setTurmaPairName('Erro ao carregar par');
+          setTurmaPairSchedule('');
         }
       } else {
         console.log('ID do par de turma não encontrado');
         setTurmaPairName('Par não especificado');
+        setTurmaPairSchedule('');
       }
     };
 
     if (open && aluno) {
-      fetchTurmaPairName();
+      fetchTurmaPairData();
     }
   }, [open, aluno]);
 
@@ -76,6 +81,7 @@ export const StudentInvoiceDialog: React.FC<StudentInvoiceDialogProps> = ({
       studentName: aluno.nome,
       course: aluno.curso || aluno.curso_codigo,
       shift: aluno.turno || '',
+      realSchedule: turmaPairSchedule, // Horário real da base de dados
       email: aluno.email,
       contact: aluno.telefone,
       birthDate: aluno.data_nascimento || aluno.dataNascimento,
