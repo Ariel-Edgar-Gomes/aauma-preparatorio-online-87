@@ -249,7 +249,7 @@ export const InvoiceTemplate: React.FC<InvoiceTemplateProps> = ({ data }) => {
   };
 
   const formatPeriod = (shift: string) => {
-    return shift === 'manha' ? '08h00 - 12h00' : '14h00 - 18h00';
+    return shift === 'manha' ? '08h00 - 12h00' : '13h00 - 17h00';
   };
 
   return (
