@@ -303,12 +303,15 @@ const AdminDashboard = () => {
               </Button>
             </Link>
             
-            <Link to="/admin/financeiro">
-              <Button variant="outline" className="w-full h-20 flex flex-col gap-2">
-                <DollarSign className="w-6 h-6" />
-                <span className="text-sm">Relatórios Financeiros</span>
-              </Button>
-            </Link>
+            {/* Esconder Relatórios Financeiros para inscrição simples */}
+            {!hasRole('inscricao_simples') && (
+              <Link to="/admin/financeiro">
+                <Button variant="outline" className="w-full h-20 flex flex-col gap-2">
+                  <DollarSign className="w-6 h-6" />
+                  <span className="text-sm">Relatórios Financeiros</span>
+                </Button>
+              </Link>
+            )}
             
             <Link to="/inscricao">
               <Button variant="outline" className="w-full h-20 flex flex-col gap-2">
