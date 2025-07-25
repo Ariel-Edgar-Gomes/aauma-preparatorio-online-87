@@ -3,6 +3,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { InvoiceTemplate } from "@/components/invoice/InvoiceTemplate";
 import { Aluno } from "@/types/turma";
 import { turmaPairsService } from "@/services/supabaseService";
+import { disciplinesByDayAndCourse, courseNames } from "@/types/schedule";
 
 interface StudentInvoiceDialogProps {
   aluno: any | null; // Changed to any to handle both Aluno and DBAluno types
@@ -77,11 +78,42 @@ export const StudentInvoiceDialog: React.FC<StudentInvoiceDialogProps> = ({
       curso: aluno.curso || aluno.curso_codigo
     });
 
+    // Obter código do curso
+    const cursoCodigo = aluno.curso_codigo || aluno.curso;
+    
+    // Buscar nome correto do curso
+    const nomeCorreto = courseNames[cursoCodigo] || cursoCodigo;
+    
+    // Buscar horário específico do curso
+    const horarioEspecificoCurso = disciplinesByDayAndCourse[cursoCodigo];
+    let horarioFormatado = turmaPairSchedule; // fallback para horário genérico
+    
+    if (horarioEspecificoCurso) {
+      // Converter o horário específico em uma string formatada
+      const dias = ['segunda', 'terca', 'quarta', 'quinta', 'sexta'];
+      const diasNomes = ['Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta'];
+      
+      horarioFormatado = dias
+        .map((dia, index) => {
+          const disciplina = horarioEspecificoCurso[dia];
+          if (disciplina && disciplina !== '-') {
+            return `${diasNomes[index]}: ${disciplina}`;
+          }
+          return null;
+        })
+        .filter(Boolean)
+        .join(' | ');
+        
+      console.log('Horário específico do curso encontrado:', horarioFormatado);
+    } else {
+      console.log('Horário específico não encontrado, usando horário genérico:', turmaPairSchedule);
+    }
+
     const data = {
       studentName: aluno.nome,
-      course: aluno.curso || aluno.curso_codigo,
+      course: nomeCorreto, // Usar nome correto do curso
       shift: aluno.turno || '',
-      realSchedule: turmaPairSchedule, // Horário real da base de dados
+      realSchedule: horarioFormatado, // Usar horário específico do curso
       email: aluno.email,
       contact: aluno.telefone,
       birthDate: aluno.data_nascimento || aluno.dataNascimento,
@@ -101,7 +133,7 @@ export const StudentInvoiceDialog: React.FC<StudentInvoiceDialogProps> = ({
 
     console.log('Invoice data final:', data);
     return data;
-  }, [aluno, turmaPairName]);
+  }, [aluno, turmaPairName, turmaPairSchedule]);
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
