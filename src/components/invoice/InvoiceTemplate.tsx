@@ -431,11 +431,45 @@ export const InvoiceTemplate: React.FC<InvoiceTemplateProps> = ({ data }) => {
               </thead>
               <tbody>
                 <tr>
-                  <td className="border border-gray-400 p-2 text-center">L.P</td>
-                  <td className="border border-gray-400 p-2 text-center">-</td>
-                  <td className="border border-gray-400 p-2 text-center">L.P/Mat</td>
-                  <td className="border border-gray-400 p-2 text-center">Fís</td>
-                  <td className="border border-gray-400 p-2 text-center">Mat</td>
+                  {/* Usar horário real baseado no realSchedule ou fallback */}
+                  {(() => {
+                    // Se temos horário específico formatado, usar ele
+                    if (data.realSchedule && data.realSchedule.includes('|')) {
+                      // Parse do horário formatado: "Segunda: História, L.P | Quarta: L.P, Matemática | Sexta: Matemática"
+                      const diasMap: Record<string, string> = {};
+                      const horarioItems = data.realSchedule.split(' | ');
+                      
+                      horarioItems.forEach(item => {
+                        const [dia, disciplinas] = item.split(': ');
+                        if (dia && disciplinas) {
+                          const diaKey = dia.toLowerCase()
+                            .replace('segunda', 'segunda')
+                            .replace('terça', 'terca')  
+                            .replace('quarta', 'quarta')
+                            .replace('quinta', 'quinta')
+                            .replace('sexta', 'sexta');
+                          diasMap[diaKey] = disciplinas;
+                        }
+                      });
+                      
+                      return ['segunda', 'terca', 'quarta', 'quinta', 'sexta'].map(dia => (
+                        <td key={dia} className="border border-gray-400 p-2 text-center">
+                          {diasMap[dia] || '-'}
+                        </td>
+                      ));
+                    }
+                    
+                    // Fallback para horário genérico (padrão de engenharia)
+                    return (
+                      <>
+                        <td className="border border-gray-400 p-2 text-center">L.P</td>
+                        <td className="border border-gray-400 p-2 text-center">-</td>
+                        <td className="border border-gray-400 p-2 text-center">L.P/Mat</td>
+                        <td className="border border-gray-400 p-2 text-center">Fís</td>
+                        <td className="border border-gray-400 p-2 text-center">Mat</td>
+                      </>
+                    );
+                  })()}
                 </tr>
               </tbody>
             </table>
