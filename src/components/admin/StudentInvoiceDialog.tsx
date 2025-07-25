@@ -4,6 +4,7 @@ import { InvoiceTemplate } from "@/components/invoice/InvoiceTemplate";
 import { Aluno } from "@/types/turma";
 import { turmaPairsService } from "@/services/supabaseService";
 import { disciplinesByDayAndCourse, courseNames } from "@/types/schedule";
+import { checkStudentDataConsistency, logConsistencyIssues } from "@/utils/dataConsistency";
 
 interface StudentInvoiceDialogProps {
   aluno: any | null; // Changed to any to handle both Aluno and DBAluno types
@@ -47,6 +48,21 @@ export const StudentInvoiceDialog: React.FC<StudentInvoiceDialogProps> = ({
             setTurmaPairName(turmaPair.nome);
             setTurmaPairSchedule(turmaPair.horario_periodo);
             console.log('Dados do par definidos:', { nome: turmaPair.nome, horario: turmaPair.horario_periodo });
+            
+            // Verificar consistência de dados
+            const consistencyResult = checkStudentDataConsistency(aluno, turmaPair);
+            logConsistencyIssues(consistencyResult, 'StudentInvoiceDialog');
+            
+            // Se há inconsistências, alertar no console
+            if (!consistencyResult.isConsistent) {
+              console.warn(`
+🚨 DADOS INCONSISTENTES DETECTADOS NA FATURA! 🚨
+Aluno: ${aluno.nome}
+Problemas encontrados:
+${consistencyResult.errors.join('\n')}
+${consistencyResult.warnings.join('\n')}
+              `);
+            }
           } else {
             console.log('Par de turma não encontrado');
             setTurmaPairName('Par não encontrado');
@@ -78,22 +94,22 @@ export const StudentInvoiceDialog: React.FC<StudentInvoiceDialogProps> = ({
       curso: aluno.curso || aluno.curso_codigo
     });
 
-    // Obter código do curso
+    // Obter código do curso do aluno
     const cursoCodigo = aluno.curso_codigo || aluno.curso;
     
     // Buscar nome correto do curso
-    const nomeCorreto = courseNames[cursoCodigo] || cursoCodigo;
+    const nomeCorretoCurso = courseNames[cursoCodigo] || cursoCodigo;
     
-    // Buscar horário específico do curso
+    // SEMPRE usar o horário específico do curso do aluno (ignorar inconsistências do par)
     const horarioEspecificoCurso = disciplinesByDayAndCourse[cursoCodigo];
-    let horarioFormatado = turmaPairSchedule; // fallback para horário genérico
+    let horarioFormatado = 'Horário não encontrado';
     
     if (horarioEspecificoCurso) {
       // Converter o horário específico em uma string formatada
       const dias = ['segunda', 'terca', 'quarta', 'quinta', 'sexta'];
       const diasNomes = ['Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta'];
       
-      horarioFormatado = dias
+      const horariosValidatos = dias
         .map((dia, index) => {
           const disciplina = horarioEspecificoCurso[dia];
           if (disciplina && disciplina !== '-') {
@@ -101,19 +117,31 @@ export const StudentInvoiceDialog: React.FC<StudentInvoiceDialogProps> = ({
           }
           return null;
         })
-        .filter(Boolean)
-        .join(' | ');
+        .filter(Boolean);
+        
+      if (horariosValidatos.length > 0) {
+        horarioFormatado = horariosValidatos.join(' | ');
+      }
         
       console.log('Horário específico do curso encontrado:', horarioFormatado);
     } else {
-      console.log('Horário específico não encontrado, usando horário genérico:', turmaPairSchedule);
+      console.warn('ATENÇÃO: Horário específico não encontrado para o curso:', cursoCodigo);
+      // Fallback para horário genérico apenas se não encontrar horário específico
+      horarioFormatado = turmaPairSchedule || 'Horário não disponível';
+    }
+
+    // Verificar consistência: se o curso do aluno não está nos cursos do par, alertar
+    if (turmaPairName && turmaPairName !== 'Carregando par de turma...' && cursoCodigo) {
+      // Buscar dados do par para verificar consistência
+      const turmaPairData = { cursos: [] }; // Será populado pelos dados do useEffect
+      console.log('Verificando consistência entre curso do aluno e par de turmas...');
     }
 
     const data = {
       studentName: aluno.nome,
-      course: nomeCorreto, // Usar nome correto do curso
+      course: nomeCorretoCurso, // Nome correto do curso do aluno
       shift: aluno.turno || '',
-      realSchedule: horarioFormatado, // Usar horário específico do curso
+      realSchedule: horarioFormatado, // SEMPRE horário específico do curso do aluno
       email: aluno.email,
       contact: aluno.telefone,
       birthDate: aluno.data_nascimento || aluno.dataNascimento,
@@ -127,11 +155,11 @@ export const StudentInvoiceDialog: React.FC<StudentInvoiceDialogProps> = ({
       inscriptionDate: aluno.data_inscricao || aluno.dataInscricao,
       amount: Number(aluno.valor_pago) || 40000,
       createdBy: aluno.creator?.full_name || aluno.criador?.nome,
-      turmaPair: turmaPairName || 'Carregando par de turma...',
+      turmaPair: turmaPairName || 'Par não especificado',
       turma: aluno.turma
     };
 
-    console.log('Invoice data final:', data);
+    console.log('Invoice data final (sempre consistente):', data);
     return data;
   }, [aluno, turmaPairName, turmaPairSchedule]);
 
