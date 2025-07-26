@@ -32,6 +32,7 @@ export const StudentInvoiceDialog: React.FC<StudentInvoiceDialogProps> = ({
   }
 
   const [turmaPairName, setTurmaPairName] = useState<string>('');
+  const [realPeriod, setRealPeriod] = useState<string>('');
   const [turmaPairSchedule, setTurmaPairSchedule] = useState<string>('');
 
   useEffect(() => {
@@ -47,6 +48,8 @@ export const StudentInvoiceDialog: React.FC<StudentInvoiceDialogProps> = ({
           if (turmaPair) {
             setTurmaPairName(turmaPair.nome);
             setTurmaPairSchedule(turmaPair.horario_periodo);
+            // Definir o período real baseado na base de dados
+            setRealPeriod(turmaPair.horario_periodo || '');
             console.log('Dados do par definidos:', { nome: turmaPair.nome, horario: turmaPair.horario_periodo });
             
             // Verificar consistência de dados
@@ -141,6 +144,7 @@ ${consistencyResult.warnings.join('\n')}
       studentName: aluno.nome,
       course: nomeCorretoCurso, // Nome correto do curso do aluno
       shift: aluno.turno || '',
+      realPeriod: realPeriod, // Período real da base de dados
       realSchedule: horarioFormatado, // SEMPRE horário específico do curso do aluno
       email: aluno.email,
       contact: aluno.telefone,

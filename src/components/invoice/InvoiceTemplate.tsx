@@ -7,6 +7,7 @@ interface InvoiceData {
   studentName: string;
   course: string;
   shift: string;
+  realPeriod?: string; // Horário real do par de turma
   realSchedule?: string; // Horário real da turma pair
   email?: string;
   contact?: string;
@@ -314,7 +315,7 @@ export const InvoiceTemplate: React.FC<InvoiceTemplateProps> = ({ data }) => {
               </div>
                <div className="flex">
                  <span className="font-bold w-28 text-aauma-navy flex-shrink-0">Período:</span>
-                 <span className="text-gray-800">{formatPeriod(data.shift)}</span>
+                 <span className="text-gray-800">{data.realPeriod || formatPeriod(data.shift)}</span>
                </div>
                {data.turmaPair && (
                  <div className="flex">
