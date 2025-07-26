@@ -23,20 +23,6 @@ export const StudentInvoiceDialog: React.FC<StudentInvoiceDialogProps> = ({
   const [turmaPairSchedule, setTurmaPairSchedule] = useState<string>('');
   const [salaInfo, setSalaInfo] = useState<string>('');
 
-  // Early return AFTER hooks are declared
-  if (!aluno) {
-    return (
-      <Dialog open={open} onOpenChange={onOpenChange}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Erro</DialogTitle>
-          </DialogHeader>
-          <div>Nenhum aluno selecionado</div>
-        </DialogContent>
-      </Dialog>
-    );
-  }
-
   useEffect(() => {
     const fetchTurmaPairData = async () => {
       // Use turma_pair_id instead of par (database field vs interface field)
@@ -121,12 +107,14 @@ ${consistencyResult.warnings.join('\n')}
 
   const invoiceData = useMemo(() => {
     console.log('Criando invoice data com:', {
-      nome: aluno.nome,
-      telefone: aluno.telefone,
-      par: aluno.par || aluno.turma_pair_id,
+      nome: aluno?.nome,
+      telefone: aluno?.telefone,
+      par: aluno?.par || aluno?.turma_pair_id,
       turmaPairName,
-      curso: aluno.curso || aluno.curso_codigo
+      curso: aluno?.curso || aluno?.curso_codigo
     });
+
+    if (!aluno) return null;
 
     // Obter código do curso do aluno
     const cursoCodigo = aluno.curso_codigo || aluno.curso;
@@ -198,7 +186,21 @@ ${consistencyResult.warnings.join('\n')}
 
     console.log('Invoice data final (sempre consistente):', data);
     return data;
-  }, [aluno, turmaPairName, turmaPairSchedule]);
+  }, [aluno, turmaPairName, turmaPairSchedule, realPeriod, salaInfo]);
+
+  // Early return AFTER all hooks are declared
+  if (!aluno) {
+    return (
+      <Dialog open={open} onOpenChange={onOpenChange}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Erro</DialogTitle>
+          </DialogHeader>
+          <div>Nenhum aluno selecionado</div>
+        </DialogContent>
+      </Dialog>
+    );
+  }
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
