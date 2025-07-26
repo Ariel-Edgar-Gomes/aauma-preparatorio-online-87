@@ -314,7 +314,7 @@ export const InvoiceTemplate: React.FC<InvoiceTemplateProps> = ({ data }) => {
               </div>
                <div className="flex">
                  <span className="font-bold w-28 text-aauma-navy flex-shrink-0">Período:</span>
-                 <span className="text-gray-800">{data.realSchedule || formatPeriod(data.shift)}</span>
+                 <span className="text-gray-800">{formatPeriod(data.shift)}</span>
                </div>
                {data.turmaPair && (
                  <div className="flex">
