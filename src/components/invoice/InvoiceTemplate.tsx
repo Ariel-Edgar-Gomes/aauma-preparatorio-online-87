@@ -24,6 +24,7 @@ interface InvoiceData {
   createdBy?: string;
   turmaPair?: string;
   turma?: string;
+  sala?: string;
 }
 
 interface InvoiceTemplateProps {
@@ -321,6 +322,12 @@ export const InvoiceTemplate: React.FC<InvoiceTemplateProps> = ({ data }) => {
                  <div className="flex">
                    <span className="font-bold w-28 text-aauma-navy flex-shrink-0">Par de Turma:</span>
                    <span className="text-gray-800">{data.turmaPair}</span>
+                 </div>
+               )}
+               {data.sala && (
+                 <div className="flex">
+                   <span className="font-bold w-28 text-aauma-navy flex-shrink-0">Sala:</span>
+                   <span className="text-gray-800">{data.sala}</span>
                  </div>
                )}
                {data.turma && (

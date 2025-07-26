@@ -31,19 +31,21 @@ const InscricaoSucesso = () => {
     studentName: inscricaoData.nomeCompleto,
     course: inscricaoData.curso,
     shift: inscricaoData.turno,
+    realPeriod: inscricaoData.realPeriod || '',
     email: inscricaoData.email,
     contact: inscricaoData.contacto,
     birthDate: inscricaoData.dataNascimento,
     address: inscricaoData.endereco,
     biNumber: inscricaoData.numeroBI,
     duration: inscricaoData.duracao,
-    startDate: inscricaoData.dataInicio,
+    startDate: inscricaoData.dataInicio || '2025-08-18',
     paymentMethod: inscricaoData.formaPagamento,
     inscriptionNumber: generateSequentialNumber(),
     inscriptionDate: new Date().toISOString(),
     amount: 40000,
     turmaPair: inscricaoData.par,
-    turma: inscricaoData.turma
+    turma: inscricaoData.turma,
+    sala: inscricaoData.sala || 'Sala não definida'
   } : null;
 
   if (!inscricaoData) {

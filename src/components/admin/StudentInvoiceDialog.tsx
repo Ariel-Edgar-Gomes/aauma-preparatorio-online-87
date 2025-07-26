@@ -3,6 +3,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { InvoiceTemplate } from "@/components/invoice/InvoiceTemplate";
 import { Aluno } from "@/types/turma";
 import { turmaPairsService } from "@/services/supabaseService";
+import { supabase } from "@/integrations/supabase/client";
 import { disciplinesByDayAndCourse, courseNames } from "@/types/schedule";
 import { checkStudentDataConsistency, logConsistencyIssues } from "@/utils/dataConsistency";
 
@@ -34,12 +35,14 @@ export const StudentInvoiceDialog: React.FC<StudentInvoiceDialogProps> = ({
   const [turmaPairName, setTurmaPairName] = useState<string>('');
   const [realPeriod, setRealPeriod] = useState<string>('');
   const [turmaPairSchedule, setTurmaPairSchedule] = useState<string>('');
+  const [salaInfo, setSalaInfo] = useState<string>('');
 
   useEffect(() => {
     const fetchTurmaPairData = async () => {
       // Use turma_pair_id instead of par (database field vs interface field)
       const turmaPairId = aluno?.turma_pair_id || aluno?.par;
-      console.log('Buscando dados do par de turma:', { turmaPairId, aluno });
+      const turmaId = aluno?.turma_id;
+      console.log('Buscando dados do par de turma:', { turmaPairId, turmaId, aluno });
       
       if (turmaPairId) {
         try {
@@ -51,6 +54,31 @@ export const StudentInvoiceDialog: React.FC<StudentInvoiceDialogProps> = ({
             // Definir o período real baseado na base de dados
             setRealPeriod(turmaPair.horario_periodo || '');
             console.log('Dados do par definidos:', { nome: turmaPair.nome, horario: turmaPair.horario_periodo });
+            
+            // Buscar informações da sala da turma do aluno
+            if (turmaId) {
+              try {
+                const { data: turmaData, error } = await supabase
+                  .from('turmas')
+                  .select(`
+                    tipo,
+                    salas!inner(codigo)
+                  `)
+                  .eq('id', turmaId)
+                  .single();
+                
+                if (turmaData && !error) {
+                  setSalaInfo(`Turma ${turmaData.tipo} - Sala ${turmaData.salas.codigo}`);
+                  console.log('Sala encontrada:', turmaData);
+                } else {
+                  console.log('Sala não encontrada para turma:', turmaId);
+                  setSalaInfo('Sala não definida');
+                }
+              } catch (salaError) {
+                console.error('Erro ao buscar sala:', salaError);
+                setSalaInfo('Erro ao carregar sala');
+              }
+            }
             
             // Verificar consistência de dados
             const consistencyResult = checkStudentDataConsistency(aluno, turmaPair);
@@ -70,16 +98,19 @@ ${consistencyResult.warnings.join('\n')}
             console.log('Par de turma não encontrado');
             setTurmaPairName('Par não encontrado');
             setTurmaPairSchedule('');
+            setSalaInfo('');
           }
         } catch (error) {
           console.error('Erro ao buscar dados do par de turma:', error);
           setTurmaPairName('Erro ao carregar par');
           setTurmaPairSchedule('');
+          setSalaInfo('');
         }
       } else {
         console.log('ID do par de turma não encontrado');
         setTurmaPairName('Par não especificado');
         setTurmaPairSchedule('');
+        setSalaInfo('');
       }
     };
 
@@ -152,7 +183,7 @@ ${consistencyResult.warnings.join('\n')}
       address: aluno.endereco,
       biNumber: aluno.numero_bi || aluno.numeroBI,
       duration: aluno.duracao,
-      startDate: aluno.data_inicio || aluno.dataInicio || '',
+      
       paymentMethod: aluno.forma_pagamento || aluno.formaPagamento,
       paymentStatus: aluno.status,
       inscriptionNumber: aluno.numero_estudante || aluno.numeroEstudante || 'N/A',
@@ -160,7 +191,9 @@ ${consistencyResult.warnings.join('\n')}
       amount: Number(aluno.valor_pago) || 40000,
       createdBy: aluno.creator?.full_name || aluno.criador?.nome,
       turmaPair: turmaPairName || 'Par não especificado',
-      turma: aluno.turma
+      turma: aluno.turma,
+      sala: salaInfo || 'Sala não definida',
+      startDate: aluno.data_inicio || aluno.dataInicio || '2025-08-18'
     };
 
     console.log('Invoice data final (sempre consistente):', data);
