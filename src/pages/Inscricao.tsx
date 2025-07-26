@@ -36,7 +36,7 @@ const Inscricao = () => {
     turma: "",
     turno: "",
     duracao: "1 Mês",
-    dataInicio: "2025-08-11",
+    dataInicio: "2025-08-18",
     formaPagamento: "Transferencia",
     statusPagamento: "inscrito",
     foto: null as File | null,
