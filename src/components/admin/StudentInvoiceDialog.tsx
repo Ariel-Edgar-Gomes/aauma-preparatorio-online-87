@@ -18,7 +18,12 @@ export const StudentInvoiceDialog: React.FC<StudentInvoiceDialogProps> = ({
   open,
   onOpenChange
 }) => {
-  // Early return BEFORE any hooks are called
+  const [turmaPairName, setTurmaPairName] = useState<string>('');
+  const [realPeriod, setRealPeriod] = useState<string>('');
+  const [turmaPairSchedule, setTurmaPairSchedule] = useState<string>('');
+  const [salaInfo, setSalaInfo] = useState<string>('');
+
+  // Early return AFTER hooks are declared
   if (!aluno) {
     return (
       <Dialog open={open} onOpenChange={onOpenChange}>
@@ -31,11 +36,6 @@ export const StudentInvoiceDialog: React.FC<StudentInvoiceDialogProps> = ({
       </Dialog>
     );
   }
-
-  const [turmaPairName, setTurmaPairName] = useState<string>('');
-  const [realPeriod, setRealPeriod] = useState<string>('');
-  const [turmaPairSchedule, setTurmaPairSchedule] = useState<string>('');
-  const [salaInfo, setSalaInfo] = useState<string>('');
 
   useEffect(() => {
     const fetchTurmaPairData = async () => {
@@ -193,7 +193,7 @@ ${consistencyResult.warnings.join('\n')}
       turmaPair: turmaPairName || 'Par não especificado',
       turma: aluno.turma,
       sala: salaInfo || 'Sala não definida',
-      startDate: aluno.data_inicio || aluno.dataInicio || '2025-08-18'
+      startDate: '2025-08-18' // Data fixa do início do preparatório
     };
 
     console.log('Invoice data final (sempre consistente):', data);
