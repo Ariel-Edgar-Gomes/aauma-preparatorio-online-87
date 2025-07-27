@@ -1,13 +1,22 @@
-import React from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import { useLocation, Link } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { CheckCircle, Home } from "lucide-react";
 import { InvoiceTemplate } from "@/components/invoice/InvoiceTemplate";
+import { turmaPairsService } from "@/services/supabaseService";
+import { supabase } from "@/integrations/supabase/client";
+import { disciplinesByDayAndCourse, courseNames } from "@/types/schedule";
 
 const InscricaoSucesso = () => {
   const location = useLocation();
   const inscricaoData = location.state?.inscricaoData;
+  
+  // Estados para buscar dados reais da base de dados (igual ao StudentInvoiceDialog)
+  const [turmaPairName, setTurmaPairName] = useState<string>('');
+  const [realPeriod, setRealPeriod] = useState<string>('');
+  const [turmaPairSchedule, setTurmaPairSchedule] = useState<string>('');
+  const [salaInfo, setSalaInfo] = useState<string>('');
 
   // Generate sequential inscription number
   const generateSequentialNumber = () => {
@@ -26,35 +35,130 @@ const InscricaoSucesso = () => {
     return `${currentYear}-${counter.padStart(4, '0')}`;
   };
 
-  // Generate invoice data from inscription data (EXATA estrutura do StudentInvoiceDialog)
-  const invoiceData = inscricaoData ? {
-    studentName: inscricaoData.nomeCompleto,
-    course: inscricaoData.curso,
-    shift: inscricaoData.turno || '',
-    realPeriod: inscricaoData.realPeriod || '',
-    realSchedule: inscricaoData.realSchedule || 'Horário não disponível',
-    email: inscricaoData.email,
-    contact: inscricaoData.contacto,
-    birthDate: inscricaoData.dataNascimento,
-    address: inscricaoData.endereco,
-    biNumber: inscricaoData.numeroBI,
-    duration: inscricaoData.duracao,
-    startDate: '2025-08-18', // Data fixa do início do preparatório
-    paymentMethod: inscricaoData.formaPagamento,
-    paymentStatus: inscricaoData.status || 'inscrito',
-    inscriptionNumber: generateSequentialNumber(),
-    inscriptionDate: new Date().toISOString(),
-    amount: Number(inscricaoData.valorPago) || 40000,
-    createdBy: null,
-    // Formatação igual ao StudentInvoiceDialog
-    turmaPair: inscricaoData.par || 'Par não especificado',
-    turma: inscricaoData.turma ? (
-      inscricaoData.turma.includes('_A') ? 'Turma A' : 
-      inscricaoData.turma.includes('_B') ? 'Turma B' : 
-      inscricaoData.turma
-    ) : 'Turma não especificada',
-    sala: inscricaoData.sala || 'Sala não definida'
-  } : null;
+  // Buscar dados reais da base de dados (igual ao StudentInvoiceDialog)
+  useEffect(() => {
+    const fetchTurmaPairData = async () => {
+      const turmaPairId = inscricaoData?.par;
+      const turmaId = inscricaoData?.turma;
+      
+      if (turmaPairId) {
+        try {
+          const turmaPair = await turmaPairsService.getById(turmaPairId);
+          if (turmaPair) {
+            setTurmaPairName(turmaPair.nome);
+            setTurmaPairSchedule(turmaPair.horario_periodo);
+            setRealPeriod(turmaPair.horario_periodo || '');
+            
+            // Buscar informações da sala da turma
+            if (turmaId) {
+              try {
+                const { data: turmaData, error } = await supabase
+                  .from('turmas')
+                  .select(`
+                    tipo,
+                    salas!inner(codigo)
+                  `)
+                  .eq('id', turmaId)
+                  .single();
+                
+                if (turmaData && !error) {
+                  setSalaInfo(`Turma ${turmaData.tipo} - Sala ${turmaData.salas.codigo}`);
+                } else {
+                  setSalaInfo('Sala não definida');
+                }
+              } catch (salaError) {
+                console.error('Erro ao buscar sala:', salaError);
+                setSalaInfo('Erro ao carregar sala');
+              }
+            }
+          } else {
+            setTurmaPairName('Par não encontrado');
+            setTurmaPairSchedule('');
+            setSalaInfo('');
+          }
+        } catch (error) {
+          console.error('Erro ao buscar dados do par de turma:', error);
+          setTurmaPairName('Erro ao carregar par');
+          setTurmaPairSchedule('');
+          setSalaInfo('');
+        }
+      } else {
+        setTurmaPairName('Par não especificado');
+        setTurmaPairSchedule('');
+        setSalaInfo('');
+      }
+    };
+
+    if (inscricaoData) {
+      fetchTurmaPairData();
+    }
+  }, [inscricaoData]);
+
+  // Generate invoice data usando EXATA estrutura do StudentInvoiceDialog
+  const invoiceData = useMemo(() => {
+    if (!inscricaoData) return null;
+
+    // Obter código do curso do aluno
+    const cursoCodigo = inscricaoData.curso;
+    
+    // Buscar nome correto do curso
+    const nomeCorretoCurso = courseNames[cursoCodigo] || cursoCodigo;
+    
+    // SEMPRE usar o horário específico do curso do aluno (igual ao StudentInvoiceDialog)
+    const horarioEspecificoCurso = disciplinesByDayAndCourse[cursoCodigo];
+    let horarioFormatado = 'Horário não encontrado';
+    
+    if (horarioEspecificoCurso) {
+      // Converter o horário específico em uma string formatada
+      const dias = ['segunda', 'terca', 'quarta', 'quinta', 'sexta'];
+      const diasNomes = ['Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta'];
+      
+      const horariosValidatos = dias
+        .map((dia, index) => {
+          const disciplina = horarioEspecificoCurso[dia];
+          if (disciplina && disciplina !== '-') {
+            return `${diasNomes[index]}: ${disciplina}`;
+          }
+          return null;
+        })
+        .filter(Boolean);
+        
+      if (horariosValidatos.length > 0) {
+        horarioFormatado = horariosValidatos.join(' | ');
+      }
+    } else {
+      // Fallback para horário genérico apenas se não encontrar horário específico
+      horarioFormatado = turmaPairSchedule || 'Horário não disponível';
+    }
+
+    return {
+      studentName: inscricaoData.nomeCompleto,
+      course: nomeCorretoCurso, // Nome correto do curso
+      shift: inscricaoData.turno || '',
+      realPeriod: realPeriod, // Período real da base de dados
+      realSchedule: horarioFormatado, // SEMPRE horário específico do curso
+      email: inscricaoData.email,
+      contact: inscricaoData.contacto,
+      birthDate: inscricaoData.dataNascimento,
+      address: inscricaoData.endereco,
+      biNumber: inscricaoData.numeroBI,
+      duration: inscricaoData.duracao,
+      startDate: '2025-08-18', // Data fixa do início do preparatório
+      paymentMethod: inscricaoData.formaPagamento,
+      paymentStatus: inscricaoData.status || 'inscrito',
+      inscriptionNumber: generateSequentialNumber(),
+      inscriptionDate: new Date().toISOString(),
+      amount: Number(inscricaoData.valorPago) || 40000,
+      createdBy: null,
+      turmaPair: turmaPairName || 'Par não especificado',
+      turma: inscricaoData.turma ? (
+        inscricaoData.turma.includes('_A') ? 'Turma A' : 
+        inscricaoData.turma.includes('_B') ? 'Turma B' : 
+        inscricaoData.turma
+      ) : 'Turma não especificada',
+      sala: salaInfo || 'Sala não definida'
+    };
+  }, [inscricaoData, turmaPairName, turmaPairSchedule, realPeriod, salaInfo]);
 
   if (!inscricaoData) {
     return (
