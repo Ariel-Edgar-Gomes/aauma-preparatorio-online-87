@@ -26,11 +26,11 @@ const InscricaoSucesso = () => {
     return `${currentYear}-${counter.padStart(4, '0')}`;
   };
 
-  // Generate invoice data from inscription data (usando mesma estrutura do StudentInvoiceDialog)
+  // Generate invoice data from inscription data (EXATA estrutura do StudentInvoiceDialog)
   const invoiceData = inscricaoData ? {
     studentName: inscricaoData.nomeCompleto,
     course: inscricaoData.curso,
-    shift: inscricaoData.turno,
+    shift: inscricaoData.turno || '',
     realPeriod: inscricaoData.realPeriod || '',
     realSchedule: inscricaoData.realSchedule || 'Horário não disponível',
     email: inscricaoData.email,
@@ -41,12 +41,12 @@ const InscricaoSucesso = () => {
     duration: inscricaoData.duracao,
     startDate: '2025-08-18', // Data fixa do início do preparatório
     paymentMethod: inscricaoData.formaPagamento,
-    paymentStatus: 'inscrito',
+    paymentStatus: inscricaoData.status || 'inscrito',
     inscriptionNumber: generateSequentialNumber(),
     inscriptionDate: new Date().toISOString(),
-    amount: 40000,
+    amount: Number(inscricaoData.valorPago) || 40000,
     createdBy: null,
-    turmaPair: inscricaoData.par,
+    turmaPair: inscricaoData.par || 'Par não especificado',
     turma: inscricaoData.turma,
     sala: inscricaoData.sala || 'Sala não definida'
   } : null;
