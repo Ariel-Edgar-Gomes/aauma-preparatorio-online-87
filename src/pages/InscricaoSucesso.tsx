@@ -46,8 +46,13 @@ const InscricaoSucesso = () => {
     inscriptionDate: new Date().toISOString(),
     amount: Number(inscricaoData.valorPago) || 40000,
     createdBy: null,
+    // Formatação igual ao StudentInvoiceDialog
     turmaPair: inscricaoData.par || 'Par não especificado',
-    turma: inscricaoData.turma,
+    turma: inscricaoData.turma ? (
+      inscricaoData.turma.includes('_A') ? 'Turma A' : 
+      inscricaoData.turma.includes('_B') ? 'Turma B' : 
+      inscricaoData.turma
+    ) : 'Turma não especificada',
     sala: inscricaoData.sala || 'Sala não definida'
   } : null;
 
