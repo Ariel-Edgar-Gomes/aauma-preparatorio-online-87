@@ -38,8 +38,12 @@ const InscricaoSucesso = () => {
   // Buscar dados reais da base de dados (igual ao StudentInvoiceDialog)
   useEffect(() => {
     const fetchTurmaPairData = async () => {
+      console.log('🔍 [InscricaoSucesso] Dados recebidos:', inscricaoData);
+      
       const turmaPairId = inscricaoData?.par;
       const turmaId = inscricaoData?.turma;
+      
+      console.log('🔍 [InscricaoSucesso] IDs para busca:', { turmaPairId, turmaId });
       
       if (turmaPairId) {
         try {
@@ -135,7 +139,7 @@ const InscricaoSucesso = () => {
       studentName: inscricaoData.nomeCompleto,
       course: nomeCorretoCurso, // Nome correto do curso
       shift: inscricaoData.turno || '',
-      realPeriod: realPeriod, // Período real da base de dados
+      realPeriod: inscricaoData.realPeriod || realPeriod, // Usar dados passados ou buscados
       realSchedule: horarioFormatado, // SEMPRE horário específico do curso
       email: inscricaoData.email,
       contact: inscricaoData.contacto,
@@ -150,13 +154,15 @@ const InscricaoSucesso = () => {
       inscriptionDate: new Date().toISOString(),
       amount: Number(inscricaoData.valorPago) || 40000,
       createdBy: null,
-      turmaPair: turmaPairName || 'Par não especificado',
-      turma: inscricaoData.turma ? (
-        inscricaoData.turma.includes('_A') ? 'Turma A' : 
-        inscricaoData.turma.includes('_B') ? 'Turma B' : 
-        inscricaoData.turma
-      ) : 'Turma não especificada',
-      sala: salaInfo || 'Sala não definida'
+      turmaPair: inscricaoData.parNome || turmaPairName || 'Par não especificado',
+      turma: inscricaoData.turmaTipo ? `Turma ${inscricaoData.turmaTipo}` : (
+        inscricaoData.turma ? (
+          inscricaoData.turma.includes('_A') ? 'Turma A' : 
+          inscricaoData.turma.includes('_B') ? 'Turma B' : 
+          inscricaoData.turma
+        ) : 'Turma não especificada'
+      ),
+      sala: inscricaoData.sala || salaInfo || 'Sala não definida'
     };
   }, [inscricaoData, turmaPairName, turmaPairSchedule, realPeriod, salaInfo]);
 

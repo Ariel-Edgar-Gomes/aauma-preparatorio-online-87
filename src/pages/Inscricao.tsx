@@ -14,6 +14,8 @@ import { useToast } from "@/hooks/use-toast";
 import { courseNames, disciplinesByDayAndCourse } from "@/types/schedule";
 import { useTurmaData } from "@/hooks/useTurmaData";
 import { useSupabaseInscricao } from "@/hooks/useSupabaseInscricao";
+import { turmaPairsService } from "@/services/supabaseService";
+import { supabase } from "@/integrations/supabase/client";
 import { useNumeroBI } from "@/hooks/useNumeroBI";
 import { UploadProgress } from "@/components/ui/upload-progress";
 
@@ -343,8 +345,49 @@ const Inscricao = () => {
       if (success) {
         console.log('[Inscricao] Form submission successful');
         
-        // Redirect to success page with inscription data
-        navigate("/inscricao-sucesso", { state: { inscricaoData: formData } });
+        // Buscar dados completos antes de navegar para a página de sucesso
+        let enrichedData: any = { ...formData };
+        
+        // Buscar dados do par de turma
+        if (formData.par) {
+          try {
+            const turmaPair = await turmaPairsService.getById(formData.par);
+            if (turmaPair) {
+              enrichedData.parNome = turmaPair.nome;
+              enrichedData.realPeriod = turmaPair.horario_periodo;
+              enrichedData.realSchedule = turmaPair.horario_periodo;
+            }
+          } catch (error) {
+            console.error('Erro ao buscar dados do par:', error);
+          }
+        }
+        
+        // Buscar dados da turma
+        if (formData.turma) {
+          try {
+            const { data: turmaData, error } = await supabase
+              .from('turmas')
+              .select(`
+                tipo,
+                salas!inner(codigo)
+              `)
+              .eq('id', formData.turma)
+              .single();
+            
+            if (turmaData && !error) {
+              enrichedData.turmaTipo = turmaData.tipo;
+              enrichedData.salaCodigo = turmaData.salas.codigo;
+              enrichedData.sala = `Turma ${turmaData.tipo} - Sala ${turmaData.salas.codigo}`;
+            }
+          } catch (error) {
+            console.error('Erro ao buscar dados da turma:', error);
+          }
+        }
+        
+        console.log('📋 [Inscricao] Dados enriquecidos:', enrichedData);
+        
+        // Redirect to success page with enriched inscription data
+        navigate("/inscricao-sucesso", { state: { inscricaoData: enrichedData } });
       }
 
     } catch (error) {
