@@ -179,7 +179,11 @@ ${consistencyResult.warnings.join('\n')}
       amount: Number(aluno.valor_pago) || 40000,
       createdBy: aluno.creator?.full_name || aluno.criador?.nome,
       turmaPair: turmaPairName || 'Par não especificado',
-      turma: aluno.turma,
+      turma: aluno.turma ? (
+        aluno.turma.includes('_A') ? 'Turma A' : 
+        aluno.turma.includes('_B') ? 'Turma B' : 
+        aluno.turma
+      ) : 'Turma não especificada',
       sala: salaInfo || 'Sala não definida',
       startDate: '2025-08-18' // Data fixa do início do preparatório
     };
