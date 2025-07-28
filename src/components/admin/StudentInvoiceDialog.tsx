@@ -22,6 +22,7 @@ export const StudentInvoiceDialog: React.FC<StudentInvoiceDialogProps> = ({
   const [realPeriod, setRealPeriod] = useState<string>('');
   const [turmaPairSchedule, setTurmaPairSchedule] = useState<string>('');
   const [salaInfo, setSalaInfo] = useState<string>('');
+  const [turmaTipo, setTurmaTipo] = useState<string>('');
 
   useEffect(() => {
     const fetchTurmaPairData = async () => {
@@ -54,8 +55,13 @@ export const StudentInvoiceDialog: React.FC<StudentInvoiceDialogProps> = ({
                   .single();
                 
                 if (turmaData && !error) {
+                  setTurmaTipo(turmaData.tipo);
                   setSalaInfo(`Turma ${turmaData.tipo} - Sala ${turmaData.salas.codigo}`);
-                  console.log('Sala encontrada:', turmaData);
+                  console.log('✅ [StudentInvoiceDialog] Turma encontrada:', {
+                    tipo: turmaData.tipo,
+                    sala: turmaData.salas.codigo,
+                    turmaId
+                  });
                 } else {
                   console.log('Sala não encontrada para turma:', turmaId);
                   setSalaInfo('Sala não definida');
@@ -179,18 +185,20 @@ ${consistencyResult.warnings.join('\n')}
       amount: Number(aluno.valor_pago) || 40000,
       createdBy: aluno.creator?.full_name || aluno.criador?.nome,
       turmaPair: turmaPairName || 'Par não especificado',
-      turma: aluno.turma ? (
-        aluno.turma.includes('_A') ? 'Turma A' : 
-        aluno.turma.includes('_B') ? 'Turma B' : 
-        aluno.turma
-      ) : 'Turma não especificada',
+      turma: turmaTipo ? `Turma ${turmaTipo}` : (
+        aluno.turma ? (
+          aluno.turma.includes('_A') ? 'Turma A' : 
+          aluno.turma.includes('_B') ? 'Turma B' : 
+          aluno.turma
+        ) : 'Turma não especificada'
+      ),
       sala: salaInfo || 'Sala não definida',
       startDate: '2025-08-18' // Data fixa do início do preparatório
     };
 
     console.log('Invoice data final (sempre consistente):', data);
     return data;
-  }, [aluno, turmaPairName, turmaPairSchedule, realPeriod, salaInfo]);
+  }, [aluno, turmaPairName, turmaPairSchedule, realPeriod, salaInfo, turmaTipo]);
 
   // Early return AFTER all hooks are declared
   if (!aluno) {
