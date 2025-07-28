@@ -197,26 +197,7 @@ const InscricaoSucesso = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-aauma-light-gray via-white to-aauma-light-gray">
-      {/* Header */}
-      <header className="bg-white shadow-lg border-b-4 border-aauma-red">
-        <div className="container mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
-            <Link to="/" className="flex items-center gap-3 hover:opacity-80 transition-opacity">
-              <img 
-                src="/lovable-uploads/9e56fb52-9dc2-4075-8e3e-8b20fd589107.png" 
-                alt="AAUMA Logo" 
-                className="w-12 h-12 object-contain"
-              />
-              <div>
-                <h1 className="text-xl font-bold text-aauma-navy">Preparatório AAUMA</h1>
-                <p className="text-sm text-aauma-dark-gray">Inscrição Concluída</p>
-              </div>
-            </Link>
-          </div>
-        </div>
-      </header>
-
+    <div className="bg-gradient-to-br from-aauma-light-gray via-white to-aauma-light-gray p-6">
       <div className="container mx-auto px-4 py-8">
         {/* Success Message */}
         <Card className="max-w-2xl mx-auto mb-8 animate-fade-in">

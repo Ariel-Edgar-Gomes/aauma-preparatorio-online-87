@@ -488,42 +488,6 @@ const Inscricao = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-50">
-      {/* Header - Matching PDF colors */}
-      <header className="bg-white shadow-lg border-b-4 border-[#d32f2f]">
-        <div className="container mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
-            <Link to="/" className="flex items-center gap-3 hover:opacity-80 transition-opacity">
-              <img 
-                src="/lovable-uploads/9e56fb52-9dc2-4075-8e3e-8b20fd589107.png" 
-                alt="AAUMA Logo" 
-                className="w-12 h-12 object-contain"
-              />
-              <div>
-                <h1 className="text-xl font-bold text-[#003366]">Preparatório AAUMA</h1>
-                <p className="text-sm text-gray-600">Formulário de Inscrição</p>
-              </div>
-            </Link>
-            
-            {/* Navigation */}
-            <nav className="hidden md:flex items-center gap-6">
-              <Link to="/" className="text-[#003366] hover:text-[#d32f2f] transition-colors">
-                Início
-              </Link>
-              <Link to="/admin" className="text-[#003366] hover:text-[#d32f2f] transition-colors">
-                Admin
-              </Link>
-            </nav>
-            
-            {/* Price Badge */}
-            <div className="text-right">
-              <div className="text-2xl font-bold text-[#003366]">
-                {price.toLocaleString()} Kz
-              </div>
-            </div>
-          </div>
-        </div>
-      </header>
-
       <div className="container mx-auto px-4 py-8">
         <div className="max-w-4xl mx-auto">
           <form onSubmit={handleSubmit} className="space-y-8">
