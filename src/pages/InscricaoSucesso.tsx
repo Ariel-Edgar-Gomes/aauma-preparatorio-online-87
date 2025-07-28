@@ -102,6 +102,13 @@ const InscricaoSucesso = () => {
   const invoiceData = useMemo(() => {
     if (!inscricaoData) return null;
 
+    console.log('🔍 [InscricaoSucesso] Dados para invoice:', {
+      turmaTipo: inscricaoData.turmaTipo,
+      sala: inscricaoData.sala,
+      parNome: inscricaoData.parNome,
+      turma: inscricaoData.turma
+    });
+
     // Obter código do curso do aluno
     const cursoCodigo = inscricaoData.curso;
     

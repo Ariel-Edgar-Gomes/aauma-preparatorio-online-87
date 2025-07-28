@@ -365,6 +365,7 @@ const Inscricao = () => {
         // Buscar dados da turma
         if (formData.turma) {
           try {
+            console.log('🔍 [Inscricao] Buscando dados da turma:', formData.turma);
             const { data: turmaData, error } = await supabase
               .from('turmas')
               .select(`
@@ -372,15 +373,26 @@ const Inscricao = () => {
                 salas!inner(codigo)
               `)
               .eq('id', formData.turma)
-              .single();
+              .maybeSingle();
+            
+            console.log('📋 [Inscricao] Dados da turma encontrados:', turmaData);
+            if (error) {
+              console.error('❌ [Inscricao] Erro na busca da turma:', error);
+            }
             
             if (turmaData && !error) {
               enrichedData.turmaTipo = turmaData.tipo;
               enrichedData.salaCodigo = turmaData.salas.codigo;
               enrichedData.sala = `Turma ${turmaData.tipo} - Sala ${turmaData.salas.codigo}`;
+              console.log('✅ [Inscricao] Dados da turma definidos:', {
+                tipo: turmaData.tipo,
+                codigo: turmaData.salas.codigo
+              });
+            } else {
+              console.warn('⚠️ [Inscricao] Turma não encontrada ou erro na consulta');
             }
           } catch (error) {
-            console.error('Erro ao buscar dados da turma:', error);
+            console.error('❌ [Inscricao] Erro ao buscar dados da turma:', error);
           }
         }
         
