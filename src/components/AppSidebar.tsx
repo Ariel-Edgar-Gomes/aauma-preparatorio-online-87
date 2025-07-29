@@ -69,7 +69,9 @@ export function AppSidebar() {
   };
 
   const getNavCls = ({ isActive }: { isActive: boolean }) =>
-    isActive ? "bg-aauma-navy text-white font-medium" : "text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground";
+    isActive 
+      ? "bg-aauma-navy text-white font-semibold shadow-lg border-l-4 border-aauma-red" 
+      : "text-aauma-navy hover:bg-aauma-light-gray hover:text-aauma-navy hover:font-medium transition-all duration-200 hover-scale";
 
   const handleBack = () => {
     if (window.history.length > 1) {
@@ -80,24 +82,24 @@ export function AppSidebar() {
   };
 
   return (
-    <Sidebar className={collapsed ? "w-14" : "w-64"} collapsible="icon">
-      <SidebarHeader>
-        <div className="flex items-center gap-2 p-2">
+    <Sidebar className={`${collapsed ? "w-14" : "w-64"} bg-white border-r-2 border-aauma-light-gray shadow-lg`} collapsible="icon">
+      <SidebarHeader className="bg-gradient-to-r from-aauma-navy to-aauma-red p-4">
+        <div className="flex items-center gap-3">
           <img 
             src="/lovable-uploads/9e56fb52-9dc2-4075-8e3e-8b20fd589107.png" 
             alt="AAUMA Logo" 
-            className="w-8 h-8 object-contain"
+            className="w-10 h-10 object-contain rounded-lg bg-white p-1"
           />
           {!collapsed && (
-            <div>
-              <h2 className="text-sm font-bold text-aauma-navy">AAUMA</h2>
-              <p className="text-xs text-aauma-dark-gray">Preparatório</p>
+            <div className="text-white">
+              <h2 className="text-lg font-bold">AAUMA</h2>
+              <p className="text-sm opacity-90">Sistema Preparatório</p>
             </div>
           )}
         </div>
       </SidebarHeader>
 
-      <SidebarContent>
+      <SidebarContent className="bg-white p-2">
         {/* Botão de Voltar */}
         <SidebarGroup>
           <SidebarGroupContent>
@@ -105,12 +107,12 @@ export function AppSidebar() {
               <SidebarMenuItem>
                 <SidebarMenuButton asChild>
                   <Button 
-                    variant="ghost" 
+                    variant="outline" 
                     onClick={handleBack}
-                    className="w-full justify-start gap-2"
+                    className="w-full justify-start gap-3 text-aauma-navy border-aauma-light-gray hover:bg-aauma-light-gray transition-all duration-200 mb-4"
                   >
-                    <ChevronLeft className="h-4 w-4" />
-                    {!collapsed && <span>Voltar</span>}
+                    <ChevronLeft className="h-5 w-5" />
+                    {!collapsed && <span className="font-medium">Voltar</span>}
                   </Button>
                 </SidebarMenuButton>
               </SidebarMenuItem>
@@ -119,16 +121,16 @@ export function AppSidebar() {
         </SidebarGroup>
 
         {/* Navegação Principal */}
-        <SidebarGroup>
-          <SidebarGroupLabel>Principal</SidebarGroupLabel>
+        <SidebarGroup className="mb-4">
+          <SidebarGroupLabel className="text-aauma-navy font-bold text-sm uppercase tracking-wide mb-2">Principal</SidebarGroupLabel>
           <SidebarGroupContent>
-            <SidebarMenu>
+            <SidebarMenu className="space-y-1">
               {mainItems.map((item) => (
                 <SidebarMenuItem key={item.title}>
                   <SidebarMenuButton asChild>
                     <NavLink to={item.url} end className={getNavCls}>
-                      <item.icon className="h-4 w-4" />
-                      {!collapsed && <span>{item.title}</span>}
+                      <item.icon className="h-5 w-5" />
+                      {!collapsed && <span className="ml-3 font-medium">{item.title}</span>}
                     </NavLink>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
@@ -138,16 +140,16 @@ export function AppSidebar() {
         </SidebarGroup>
 
         {/* Inscrições */}
-        <SidebarGroup>
-          <SidebarGroupLabel>Inscrições</SidebarGroupLabel>
+        <SidebarGroup className="mb-4">
+          <SidebarGroupLabel className="text-aauma-navy font-bold text-sm uppercase tracking-wide mb-2">Inscrições</SidebarGroupLabel>
           <SidebarGroupContent>
-            <SidebarMenu>
+            <SidebarMenu className="space-y-1">
               {inscricaoItems.map((item) => (
                 <SidebarMenuItem key={item.title}>
                   <SidebarMenuButton asChild>
                     <NavLink to={item.url} className={getNavCls}>
-                      <item.icon className="h-4 w-4" />
-                      {!collapsed && <span>{item.title}</span>}
+                      <item.icon className="h-5 w-5" />
+                      {!collapsed && <span className="ml-3 font-medium">{item.title}</span>}
                     </NavLink>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
@@ -157,16 +159,16 @@ export function AppSidebar() {
         </SidebarGroup>
 
         {/* Administração */}
-        <SidebarGroup>
-          <SidebarGroupLabel>Administração</SidebarGroupLabel>
+        <SidebarGroup className="mb-4">
+          <SidebarGroupLabel className="text-aauma-navy font-bold text-sm uppercase tracking-wide mb-2">Administração</SidebarGroupLabel>
           <SidebarGroupContent>
-            <SidebarMenu>
+            <SidebarMenu className="space-y-1">
               {adminItems.map((item) => (
                 <SidebarMenuItem key={item.title}>
                   <SidebarMenuButton asChild>
                     <NavLink to={item.url} className={getNavCls}>
-                      <item.icon className="h-4 w-4" />
-                      {!collapsed && <span>{item.title}</span>}
+                      <item.icon className="h-5 w-5" />
+                      {!collapsed && <span className="ml-3 font-medium">{item.title}</span>}
                     </NavLink>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
@@ -176,11 +178,13 @@ export function AppSidebar() {
         </SidebarGroup>
       </SidebarContent>
 
-      <SidebarFooter>
+      <SidebarFooter className="bg-aauma-light-gray border-t-2 border-aauma-navy">
         {!collapsed && user && (
-          <div className="p-2 border-t">
-            <p className="text-xs text-muted-foreground">Logado como:</p>
-            <p className="text-sm font-medium truncate">{user.email}</p>
+          <div className="p-4">
+            <div className="bg-white rounded-lg p-3 shadow-sm">
+              <p className="text-xs font-medium text-aauma-dark-gray uppercase tracking-wide">Logado como:</p>
+              <p className="text-sm font-bold text-aauma-navy truncate mt-1">{user.email}</p>
+            </div>
           </div>
         )}
       </SidebarFooter>
