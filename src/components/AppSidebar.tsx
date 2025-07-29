@@ -130,7 +130,7 @@ export function AppSidebar() {
                   <SidebarMenuButton asChild>
                     <NavLink to={item.url} end className={getNavCls}>
                       <item.icon className="h-5 w-5" />
-                      {!collapsed && <span className="ml-3 font-medium">{item.title}</span>}
+                      <span className="ml-3 font-medium">{item.title}</span>
                     </NavLink>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
@@ -149,7 +149,7 @@ export function AppSidebar() {
                   <SidebarMenuButton asChild>
                     <NavLink to={item.url} className={getNavCls}>
                       <item.icon className="h-5 w-5" />
-                      {!collapsed && <span className="ml-3 font-medium">{item.title}</span>}
+                      <span className="ml-3 font-medium">{item.title}</span>
                     </NavLink>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
@@ -168,7 +168,7 @@ export function AppSidebar() {
                   <SidebarMenuButton asChild>
                     <NavLink to={item.url} className={getNavCls}>
                       <item.icon className="h-5 w-5" />
-                      {!collapsed && <span className="ml-3 font-medium">{item.title}</span>}
+                      <span className="ml-3 font-medium">{item.title}</span>
                     </NavLink>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
