@@ -71,7 +71,7 @@ export function AppSidebar() {
   const getNavCls = ({ isActive }: { isActive: boolean }) =>
     isActive 
       ? "bg-aauma-navy text-white font-semibold shadow-lg border-l-4 border-aauma-red" 
-      : "text-black hover:bg-aauma-light-gray hover:text-black hover:font-medium transition-all duration-200 hover-scale";
+      : "text-black font-medium hover:bg-aauma-light-gray hover:text-black transition-all duration-200 hover-scale";
 
   const handleBack = () => {
     if (window.history.length > 1) {
