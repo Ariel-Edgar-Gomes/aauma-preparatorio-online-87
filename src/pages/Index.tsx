@@ -44,9 +44,7 @@ const Index = () => {
         {/* Hero Section Moderno */}
         <section className="py-16 text-center">
           <div className="max-w-4xl mx-auto">
-            <Badge variant="secondary" className="mb-6 bg-aauma-navy/10 text-aauma-navy border-aauma-navy/20">
-              Preparatório 2025 - Inscrições Abertas
-            </Badge>
+            <Badge variant="secondary" className="mb-6 bg-aauma-navy/10 text-aauma-navy border-aauma-navy/20">Preparatório 2025-2026 - Inscrições Abertas</Badge>
             
             <h2 className="text-4xl md:text-5xl font-bold mb-6 text-aauma-navy leading-tight">
               Preparatório 
