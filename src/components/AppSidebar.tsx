@@ -8,7 +8,8 @@ import {
   User,
   Search,
   FileBarChart,
-  DollarSign
+  DollarSign,
+  LogOut
 } from "lucide-react";
 import { NavLink, useLocation } from "react-router-dom";
 
@@ -20,6 +21,7 @@ import {
 } from "@/components/ui/sidebar";
 import { useAuth } from "@/components/AuthProvider";
 import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
 
 const navigationItems = [
   { title: "Início", url: "/", icon: Home, section: "main" },
@@ -40,7 +42,7 @@ const adminItems = navigationItems.filter(item => item.section === "admin");
 
 export function AppSidebar() {
   const location = useLocation();
-  const { user } = useAuth();
+  const { user, signOut } = useAuth();
   const currentPath = location.pathname;
 
   const isActive = (path: string) => {
@@ -104,16 +106,27 @@ export function AppSidebar() {
         ))}
       </SidebarContent>
 
-      <SidebarFooter className="p-4 border-t border-border mt-auto">
+      <SidebarFooter className="p-4 border-t border-border mt-auto space-y-3">
         {user && (
-          <div className="bg-muted rounded-lg p-3">
-            <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
-              Logado como:
-            </p>
-            <p className="text-sm font-semibold text-foreground truncate mt-1">
-              {user.email}
-            </p>
-          </div>
+          <>
+            <div className="bg-muted rounded-lg p-3">
+              <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+                Logado como:
+              </p>
+              <p className="text-sm font-semibold text-foreground truncate mt-1">
+                {user.email}
+              </p>
+            </div>
+            
+            <Button 
+              variant="outline" 
+              onClick={signOut}
+              className="w-full border-aauma-red text-aauma-red hover:bg-aauma-red hover:text-white"
+            >
+              <LogOut className="w-4 h-4 mr-2" />
+              Sair
+            </Button>
+          </>
         )}
       </SidebarFooter>
     </Sidebar>
