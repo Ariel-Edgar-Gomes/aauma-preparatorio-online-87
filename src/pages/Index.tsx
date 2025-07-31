@@ -47,10 +47,6 @@ const Index = () => {
                 </Link>
               )}
             </nav>
-
-            <div className="md:hidden">
-              <MobileNav />
-            </div>
           </div>
         </div>
       </header>
