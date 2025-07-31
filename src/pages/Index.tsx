@@ -1,32 +1,20 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Calendar, Clock, Users, FileText, CreditCard, BookOpen, LogIn, ArrowRight } from "lucide-react";
+import { Calendar, Clock, Users, FileText, CreditCard, BookOpen, LogIn, ArrowRight, LogOut } from "lucide-react";
 import { Link } from "react-router-dom";
 import { MobileNav } from "@/components/MobileNav";
 import { useAuth } from "@/components/AuthProvider";
 
 const Index = () => {
-  const { user } = useAuth();
+  const { user, signOut } = useAuth();
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-white to-aauma-light-gray/30">
-      {/* Header Elegante */}
+      {/* Header Simples */}
       <header className="bg-white/80 backdrop-blur border-b border-aauma-light-gray/50 sticky top-0 z-50">
         <div className="container mx-auto px-6 py-4">
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <img 
-                src="/lovable-uploads/9e56fb52-9dc2-4075-8e3e-8b20fd589107.png" 
-                alt="AAUMA Logo" 
-                className="w-10 h-10 object-contain"
-              />
-              <div>
-                <h1 className="text-xl font-bold text-aauma-navy">AAUMA</h1>
-                <p className="text-xs text-aauma-dark-gray">Preparatório 2025</p>
-              </div>
-            </div>
-
             <nav className="hidden md:flex items-center gap-3">
               <Link to="/inscricao">
                 <Button className="bg-aauma-navy hover:bg-aauma-navy/90 text-white shadow-md">
@@ -35,11 +23,21 @@ const Index = () => {
                 </Button>
               </Link>
               {user ? (
-                <Link to="/admin">
-                  <Button variant="outline" className="border-aauma-navy text-aauma-navy hover:bg-aauma-navy hover:text-white">
-                    Admin
+                <>
+                  <Link to="/admin">
+                    <Button variant="outline" className="border-aauma-navy text-aauma-navy hover:bg-aauma-navy hover:text-white">
+                      Admin
+                    </Button>
+                  </Link>
+                  <Button 
+                    variant="outline" 
+                    onClick={signOut}
+                    className="border-aauma-red text-aauma-red hover:bg-aauma-red hover:text-white"
+                  >
+                    <LogOut className="w-4 h-4 mr-1" />
+                    Sair
                   </Button>
-                </Link>
+                </>
               ) : (
                 <Link to="/auth">
                   <Button variant="outline" className="border-aauma-dark-gray">
@@ -58,6 +56,47 @@ const Index = () => {
       </header>
 
       <main className="container mx-auto px-6">
+        {/* Hero Section Moderno */}
+        <section className="py-16 text-center">
+          <div className="max-w-4xl mx-auto">
+            <Badge variant="secondary" className="mb-6 bg-aauma-navy/10 text-aauma-navy border-aauma-navy/20">
+              Preparatório 2025 - Inscrições Abertas
+            </Badge>
+            
+            <h2 className="text-4xl md:text-5xl font-bold mb-6 text-aauma-navy leading-tight">
+              Preparatório 
+              <span className="block text-aauma-red">Universitário</span>
+            </h2>
+            
+            <p className="text-lg text-aauma-dark-gray mb-8 max-w-2xl mx-auto leading-relaxed">
+              Prepare-se para o exame de acesso universitário com os melhores professores de Angola. 
+              Programa completo da Associação Acadêmica da Universidade Metodista.
+            </p>
+
+            {/* Destaque do Preço */}
+            <div className="bg-white rounded-2xl shadow-lg border border-aauma-light-gray/50 p-8 mb-8 max-w-md mx-auto">
+              <div className="text-center">
+                <p className="text-sm text-aauma-dark-gray mb-2">Taxa de Inscrição</p>
+                <p className="text-4xl font-bold text-aauma-navy mb-2">40.000 Kz</p>
+                <p className="text-sm text-aauma-dark-gray">Pagamento único • 3 meses de curso</p>
+              </div>
+            </div>
+
+            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+              <Link to="/inscricao">
+                <Button size="lg" className="bg-aauma-navy hover:bg-aauma-navy/90 text-white px-8 py-3 shadow-lg">
+                  Inscrever-se Agora
+                  <ArrowRight className="w-5 h-5 ml-2" />
+                </Button>
+              </Link>
+              <Link to="/inscricoes">
+                <Button size="lg" variant="outline" className="border-aauma-navy text-aauma-navy hover:bg-aauma-navy hover:text-white px-8 py-3">
+                  Ver Inscrições
+                </Button>
+              </Link>
+            </div>
+          </div>
+        </section>
 
         {/* Features Section Melhorado */}
         <section className="py-16">
