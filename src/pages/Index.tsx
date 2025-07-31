@@ -7,7 +7,7 @@ import { MobileNav } from "@/components/MobileNav";
 import { useAuth } from "@/components/AuthProvider";
 
 const Index = () => {
-  const { user, signOut } = useAuth();
+  const { user, signOut, canAccess, isAdmin } = useAuth();
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-white to-aauma-light-gray/30">
@@ -16,19 +16,23 @@ const Index = () => {
         <div className="container mx-auto px-6 py-4">
           <div className="flex items-center justify-between">
             <nav className="hidden md:flex items-center gap-3">
-              <Link to="/inscricao">
-                <Button className="bg-aauma-navy hover:bg-aauma-navy/90 text-white shadow-md">
-                  Fazer Inscrição
-                  <ArrowRight className="w-4 h-4 ml-1" />
-                </Button>
-              </Link>
+              {canAccess("inscricao") && (
+                <Link to="/inscricao">
+                  <Button className="bg-aauma-navy hover:bg-aauma-navy/90 text-white shadow-md">
+                    Fazer Inscrição
+                    <ArrowRight className="w-4 h-4 ml-1" />
+                  </Button>
+                </Link>
+              )}
               {user ? (
                 <>
-                  <Link to="/admin">
-                    <Button variant="outline" className="border-aauma-navy text-aauma-navy hover:bg-aauma-navy hover:text-white">
-                      Admin
-                    </Button>
-                  </Link>
+                  {(isAdmin() || canAccess("view_data")) && (
+                    <Link to="/admin">
+                      <Button variant="outline" className="border-aauma-navy text-aauma-navy hover:bg-aauma-navy hover:text-white">
+                        Admin
+                      </Button>
+                    </Link>
+                  )}
                   <Button 
                     variant="outline" 
                     onClick={signOut}
@@ -79,17 +83,21 @@ const Index = () => {
             </div>
 
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Link to="/inscricao">
-                <Button size="lg" className="bg-aauma-navy hover:bg-aauma-navy/90 text-white px-8 py-3 shadow-lg">
-                  Inscrever-se Agora
-                  <ArrowRight className="w-5 h-5 ml-2" />
-                </Button>
-              </Link>
-              <Link to="/inscricoes">
-                <Button size="lg" variant="outline" className="border-aauma-navy text-aauma-navy hover:bg-aauma-navy hover:text-white px-8 py-3">
-                  Ver Inscrições
-                </Button>
-              </Link>
+              {canAccess("inscricao") && (
+                <Link to="/inscricao">
+                  <Button size="lg" className="bg-aauma-navy hover:bg-aauma-navy/90 text-white px-8 py-3 shadow-lg">
+                    Inscrever-se Agora
+                    <ArrowRight className="w-5 h-5 ml-2" />
+                  </Button>
+                </Link>
+              )}
+              {canAccess("view_data") && (
+                <Link to="/inscricoes">
+                  <Button size="lg" variant="outline" className="border-aauma-navy text-aauma-navy hover:bg-aauma-navy hover:text-white px-8 py-3">
+                    Ver Inscrições
+                  </Button>
+                </Link>
+              )}
             </div>
           </div>
         </section>

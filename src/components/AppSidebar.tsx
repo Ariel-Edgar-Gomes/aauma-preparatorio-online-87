@@ -24,26 +24,44 @@ import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 
 const navigationItems = [
-  { title: "Início", url: "/", icon: Home, section: "main" },
-  { title: "Inscrições", url: "/inscricoes", icon: FileText, section: "main" },
-  { title: "Nova Inscrição", url: "/inscricao", icon: UserPlus, section: "main" },
-  { title: "Dashboard", url: "/admin/dashboard", icon: Home, section: "admin" },
-  { title: "Financeiro", url: "/admin/financeiro", icon: DollarSign, section: "admin" },
-  { title: "Horários", url: "/admin/horarios", icon: Calendar, section: "admin" },
-  { title: "Turmas", url: "/admin/turmas", icon: GraduationCap, section: "admin" },
-  { title: "Gestão Individual", url: "/admin/gestao-individual", icon: User, section: "admin" },
-  { title: "Pesquisa Global", url: "/admin/pesquisa-global", icon: Search, section: "admin" },
-  { title: "Usuários", url: "/admin/usuarios", icon: Users, section: "admin" },
-  { title: "Auditoria", url: "/admin/auditoria", icon: FileBarChart, section: "admin" },
+  { title: "Início", url: "/", icon: Home, section: "main", permission: null },
+  { title: "Inscrições", url: "/inscricoes", icon: FileText, section: "main", permission: "view_data" },
+  { title: "Nova Inscrição", url: "/inscricao", icon: UserPlus, section: "main", permission: "inscricao" },
+  { title: "Dashboard", url: "/admin/dashboard", icon: Home, section: "admin", permission: "view_data" },
+  { title: "Financeiro", url: "/admin/financeiro", icon: DollarSign, section: "admin", permission: "view_financeiro" },
+  { title: "Horários", url: "/admin/horarios", icon: Calendar, section: "admin", permission: "admin" },
+  { title: "Turmas", url: "/admin/turmas", icon: GraduationCap, section: "admin", permission: "manage_turmas" },
+  { title: "Gestão Individual", url: "/admin/gestao-individual", icon: User, section: "admin", permission: "edit_alunos" },
+  { title: "Pesquisa Global", url: "/admin/pesquisa-global", icon: Search, section: "admin", permission: "view_data" },
+  { title: "Usuários", url: "/admin/usuarios", icon: Users, section: "admin", permission: "admin" },
+  { title: "Auditoria", url: "/admin/auditoria", icon: FileBarChart, section: "admin", permission: "admin" },
 ];
+
+// Função para filtrar itens baseado nas permissões do usuário
+const getFilteredItems = (items: typeof navigationItems, canAccess: (permission: string) => boolean, isAdmin: () => boolean) => {
+  return items.filter(item => {
+    // Se não tem permissão definida, é acessível a todos
+    if (item.permission === null) return true;
+    
+    // Se a permissão é "admin", só admins podem ver
+    if (item.permission === "admin") return isAdmin();
+    
+    // Caso contrário, verifica se tem a permissão específica
+    return canAccess(item.permission);
+  });
+};
 
 const mainItems = navigationItems.filter(item => item.section === "main");
 const adminItems = navigationItems.filter(item => item.section === "admin");
 
 export function AppSidebar() {
   const location = useLocation();
-  const { user, signOut } = useAuth();
+  const { user, signOut, canAccess, isAdmin } = useAuth();
   const currentPath = location.pathname;
+
+  // Filtrar itens baseado nas permissões do usuário
+  const filteredMainItems = getFilteredItems(mainItems, canAccess, isAdmin);
+  const filteredAdminItems = getFilteredItems(adminItems, canAccess, isAdmin);
 
   const isActive = (path: string) => {
     if (path === "/") {
@@ -95,15 +113,23 @@ export function AppSidebar() {
       </SidebarHeader>
 
       <SidebarContent className="p-4 space-y-1">
-        <SectionTitle title="Principal" />
-        {mainItems.map((item) => (
-          <NavItem key={item.url} item={item} />
-        ))}
+        {filteredMainItems.length > 0 && (
+          <>
+            <SectionTitle title="Principal" />
+            {filteredMainItems.map((item) => (
+              <NavItem key={item.url} item={item} />
+            ))}
+          </>
+        )}
 
-        <SectionTitle title="Administração" />
-        {adminItems.map((item) => (
-          <NavItem key={item.url} item={item} />
-        ))}
+        {filteredAdminItems.length > 0 && (
+          <>
+            <SectionTitle title="Administração" />
+            {filteredAdminItems.map((item) => (
+              <NavItem key={item.url} item={item} />
+            ))}
+          </>
+        )}
       </SidebarContent>
 
       <SidebarFooter className="p-4 border-t border-border mt-auto space-y-3">
