@@ -5,51 +5,41 @@ import { Calendar, Clock, Users, FileText, CreditCard, BookOpen, LogIn, ArrowRig
 import { Link } from "react-router-dom";
 import { MobileNav } from "@/components/MobileNav";
 import { useAuth } from "@/components/AuthProvider";
-
 const Index = () => {
-  const { user, signOut, canAccess, isAdmin } = useAuth();
-
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-white to-aauma-light-gray/30">
+  const {
+    user,
+    signOut,
+    canAccess,
+    isAdmin
+  } = useAuth();
+  return <div className="min-h-screen bg-gradient-to-br from-white to-aauma-light-gray/30">
       {/* Header Simples */}
       <header className="bg-white/80 backdrop-blur border-b border-aauma-light-gray/50 sticky top-0 z-50">
         <div className="container mx-auto px-6 py-4">
           <div className="flex items-center justify-between">
             <nav className="hidden md:flex items-center gap-3">
-              {canAccess("inscricao") && (
-                <Link to="/inscricao">
+              {canAccess("inscricao") && <Link to="/inscricao">
                   <Button className="bg-aauma-navy hover:bg-aauma-navy/90 text-white shadow-md">
                     Fazer Inscrição
                     <ArrowRight className="w-4 h-4 ml-1" />
                   </Button>
-                </Link>
-              )}
-              {user ? (
-                <>
-                  {(isAdmin() || canAccess("view_data")) && (
-                    <Link to="/admin">
+                </Link>}
+              {user ? <>
+                  {(isAdmin() || canAccess("view_data")) && <Link to="/admin">
                       <Button variant="outline" className="border-aauma-navy text-aauma-navy hover:bg-aauma-navy hover:text-white">
                         Admin
                       </Button>
-                    </Link>
-                  )}
-                  <Button 
-                    variant="outline" 
-                    onClick={signOut}
-                    className="border-aauma-red text-aauma-red hover:bg-aauma-red hover:text-white"
-                  >
+                    </Link>}
+                  <Button variant="outline" onClick={signOut} className="border-aauma-red text-aauma-red hover:bg-aauma-red hover:text-white">
                     <LogOut className="w-4 h-4 mr-1" />
                     Sair
                   </Button>
-                </>
-              ) : (
-                <Link to="/auth">
+                </> : <Link to="/auth">
                   <Button variant="outline" className="border-aauma-dark-gray">
                     <LogIn className="w-4 h-4 mr-1" />
                     Entrar
                   </Button>
-                </Link>
-              )}
+                </Link>}
             </nav>
           </div>
         </div>
@@ -78,26 +68,22 @@ const Index = () => {
               <div className="text-center">
                 <p className="text-sm text-aauma-dark-gray mb-2">Taxa de Inscrição</p>
                 <p className="text-4xl font-bold text-aauma-navy mb-2">40.000 Kz</p>
-                <p className="text-sm text-aauma-dark-gray">Pagamento único • 3 meses de curso</p>
+                <p className="text-sm text-aauma-dark-gray">Pagamento único • 1 meses de curso</p>
               </div>
             </div>
 
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              {canAccess("inscricao") && (
-                <Link to="/inscricao">
+              {canAccess("inscricao") && <Link to="/inscricao">
                   <Button size="lg" className="bg-aauma-navy hover:bg-aauma-navy/90 text-white px-8 py-3 shadow-lg">
                     Inscrever-se Agora
                     <ArrowRight className="w-5 h-5 ml-2" />
                   </Button>
-                </Link>
-              )}
-              {canAccess("view_data") && (
-                <Link to="/inscricoes">
+                </Link>}
+              {canAccess("view_data") && <Link to="/inscricoes">
                   <Button size="lg" variant="outline" className="border-aauma-navy text-aauma-navy hover:bg-aauma-navy hover:text-white px-8 py-3">
                     Ver Inscrições
                   </Button>
-                </Link>
-              )}
+                </Link>}
             </div>
           </div>
         </section>
@@ -205,11 +191,7 @@ const Index = () => {
       <footer className="bg-gradient-to-r from-aauma-navy to-aauma-navy/90 text-white py-8 mt-16">
         <div className="container mx-auto px-6 text-center">
           <div className="flex items-center justify-center gap-3 mb-4">
-            <img 
-              src="/lovable-uploads/9e56fb52-9dc2-4075-8e3e-8b20fd589107.png" 
-              alt="AAUMA Logo" 
-              className="w-8 h-8 object-contain bg-white rounded-lg p-1"
-            />
+            <img src="/lovable-uploads/9e56fb52-9dc2-4075-8e3e-8b20fd589107.png" alt="AAUMA Logo" className="w-8 h-8 object-contain bg-white rounded-lg p-1" />
             <div className="text-left">
               <h4 className="font-bold text-white">AAUMA</h4>
               <p className="text-white/80 text-sm">Preparatório 2025</p>
@@ -220,8 +202,6 @@ const Index = () => {
           </p>
         </div>
       </footer>
-    </div>
-  );
+    </div>;
 };
-
 export default Index;
