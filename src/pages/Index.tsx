@@ -58,47 +58,6 @@ const Index = () => {
       </header>
 
       <main className="container mx-auto px-6">
-        {/* Hero Section Moderno */}
-        <section className="py-16 text-center">
-          <div className="max-w-4xl mx-auto">
-            <Badge variant="secondary" className="mb-6 bg-aauma-navy/10 text-aauma-navy border-aauma-navy/20">
-              Preparatório 2025 - Inscrições Abertas
-            </Badge>
-            
-            <h2 className="text-4xl md:text-5xl font-bold mb-6 text-aauma-navy leading-tight">
-              Preparatório 
-              <span className="block text-aauma-red">Universitário</span>
-            </h2>
-            
-            <p className="text-lg text-aauma-dark-gray mb-8 max-w-2xl mx-auto leading-relaxed">
-              Prepare-se para o exame de acesso universitário com os melhores professores de Angola. 
-              Programa completo da Associação Acadêmica da Universidade Metodista.
-            </p>
-
-            {/* Destaque do Preço */}
-            <div className="bg-white rounded-2xl shadow-lg border border-aauma-light-gray/50 p-8 mb-8 max-w-md mx-auto">
-              <div className="text-center">
-                <p className="text-sm text-aauma-dark-gray mb-2">Taxa de Inscrição</p>
-                <p className="text-4xl font-bold text-aauma-navy mb-2">40.000 Kz</p>
-                <p className="text-sm text-aauma-dark-gray">Pagamento único • 3 meses de curso</p>
-              </div>
-            </div>
-
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Link to="/inscricao">
-                <Button size="lg" className="bg-aauma-navy hover:bg-aauma-navy/90 text-white px-8 py-3 shadow-lg">
-                  Inscrever-se Agora
-                  <ArrowRight className="w-5 h-5 ml-2" />
-                </Button>
-              </Link>
-              <Link to="/inscricoes">
-                <Button size="lg" variant="outline" className="border-aauma-navy text-aauma-navy hover:bg-aauma-navy hover:text-white px-8 py-3">
-                  Ver Inscrições
-                </Button>
-              </Link>
-            </div>
-          </div>
-        </section>
 
         {/* Features Section Melhorado */}
         <section className="py-16">
