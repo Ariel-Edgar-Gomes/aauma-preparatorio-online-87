@@ -95,9 +95,8 @@ const Index = () => {
               <p className="text-white/80 text-sm">Preparatório 2025</p>
             </div>
           </div>
-          <p className="text-white/70 text-sm">
-            © 2025 Associação Acadêmica da Universidade Metodista de Angola. Todos os direitos reservados.
-          </p>
+          <p className="text-white/70 text-sm">© 2025 Associação Acadêmica da Universidade Metodista de Angola. Todos os direitos reservados. Desenvolvido por 
+"Argom Tech"</p>
         </div>
       </footer>
     </div>;
