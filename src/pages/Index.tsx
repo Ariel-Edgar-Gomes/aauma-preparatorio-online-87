@@ -19,16 +19,11 @@ const Index = () => {
           <div className="flex items-center justify-between">
             <nav className="hidden md:flex items-center gap-3">
               {canAccess("inscricao") && <Link to="/inscricao">
-                  <Button className="bg-aauma-navy hover:bg-aauma-navy/90 text-white shadow-md">
-                    Fazer Inscrição
-                    <ArrowRight className="w-4 h-4 ml-1" />
-                  </Button>
+                  
                 </Link>}
               {user ? <>
                   {(isAdmin() || canAccess("view_data")) && <Link to="/admin">
-                      <Button variant="outline" className="border-aauma-navy text-aauma-navy hover:bg-aauma-navy hover:text-white">
-                        Admin
-                      </Button>
+                      
                     </Link>}
                   <Button variant="outline" onClick={signOut} className="border-aauma-red text-aauma-red hover:bg-aauma-red hover:text-white">
                     <LogOut className="w-4 h-4 mr-1" />
