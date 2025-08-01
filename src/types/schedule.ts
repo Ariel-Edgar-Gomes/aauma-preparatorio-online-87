@@ -22,6 +22,7 @@ export const courseNames: Record<string, string> = {
   "engenharia-mecatronica": "Engenharia Mecatrónica",
   "engenharia-industrial-sistemas-electricos": "Eng. Industrial e Sist. Eléctricos",
   "engenharia-agropecuaria": "Engenharia Agropecuária",
+  "engenharia-ambiente": "Engenharia do Ambiente",
   "arquitectura-urbanismo": "Arquitectura e Urbanismo",
   
   // Cursos da Área da Saúde
@@ -81,6 +82,13 @@ export const disciplinesByDayAndCourse: Record<string, Record<string, string>> =
     "sexta": "Matemática"
   },
   "engenharia-agropecuaria": {
+    "segunda": "L.P",
+    "terca": "-",
+    "quarta": "L.P, Mat",
+    "quinta": "Física",
+    "sexta": "Matemática"
+  },
+  "engenharia-ambiente": {
     "segunda": "L.P",
     "terca": "-",
     "quarta": "L.P, Mat",
@@ -190,6 +198,7 @@ export const disciplinesByCourse: Record<string, string[]> = {
   "engenharia-mecatronica": ["L.P", "L.P, Mat", "Física", "Matemática"],
   "engenharia-industrial-sistemas-electricos": ["L.P", "L.P, Mat", "Física", "Matemática"],
   "engenharia-agropecuaria": ["L.P", "L.P, Mat", "Física", "Matemática"],
+  "engenharia-ambiente": ["L.P", "L.P, Mat", "Física", "Matemática"],
   "arquitectura-urbanismo": ["L.P", "L.P, Mat", "Física, Desenho", "Matemática"],
   
   // Cursos da Área da Saúde

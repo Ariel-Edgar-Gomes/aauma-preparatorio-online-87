@@ -24,7 +24,7 @@ export const ScheduleGrid = ({ schedules, onEditSchedule, onDeleteSchedule }: Sc
     {
       name: "Engenharias",
       icon: <BookOpen className="w-4 h-4" />,
-      courses: ["engenharia-civil", "engenharia-informatica", "engenharia-mecatronica", "engenharia-industrial-sistemas-electricos", "engenharia-agropecuaria", "arquitectura-urbanismo"],
+      courses: ["engenharia-civil", "engenharia-informatica", "engenharia-mecatronica", "engenharia-industrial-sistemas-electricos", "engenharia-agropecuaria", "engenharia-ambiente", "arquitectura-urbanismo"],
       color: "bg-blue-100 border-blue-300"
     },
     {
