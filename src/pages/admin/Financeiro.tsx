@@ -97,6 +97,8 @@ const FinanceiroPage = () => {
   const [receitaAjuste, setReceitaAjuste] = useState(0);
   const [isDeleting, setIsDeleting] = useState(false);
   const [valorAjuste, setValorAjuste] = useState("");
+  const [valorAjustePar, setValorAjustePar] = useState("");
+  const [parSelecionadoAjuste, setParSelecionadoAjuste] = useState("");
 
   // Carregar ajustes financeiros da base de dados
   useEffect(() => {
@@ -179,6 +181,61 @@ const FinanceiroPage = () => {
       });
     } catch (error) {
       console.error('Erro ao salvar ajuste financeiro:', error);
+      toast({
+        title: "Erro",
+        description: "Erro ao salvar ajuste na base de dados",
+        variant: "destructive"
+      });
+    }
+  };
+
+  const handleAjustarReceitaPorPar = async (tipo: 'aumentar' | 'diminuir') => {
+    const valor = parseFloat(valorAjustePar);
+    if (isNaN(valor) || valor <= 0) {
+      toast({
+        title: "Erro",
+        description: "Por favor, insira um valor válido",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    if (!parSelecionadoAjuste) {
+      toast({
+        title: "Erro",
+        description: "Por favor, selecione um par de turma",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    try {
+      // Converter o valor para centavos (formato interno do sistema)
+      const valorEmCentavos = valor * 100;
+      
+      // Salvar na base de dados
+      const { error } = await supabase
+        .from('ajustes_financeiros')
+        .insert({
+          valor: valorEmCentavos,
+          tipo: tipo,
+          descricao: `Ajuste por par de turma: ${parSelecionadoAjuste} - ${tipo} ${formatCurrency(valorEmCentavos)}`
+        });
+
+      if (error) throw error;
+
+      // Atualizar estado local
+      const ajuste = tipo === 'aumentar' ? valorEmCentavos : -valorEmCentavos;
+      setReceitaAjuste(prev => prev + ajuste);
+      setValorAjustePar("");
+      setParSelecionadoAjuste("");
+      
+      toast({
+        title: tipo === 'aumentar' ? "Receita aumentada" : "Receita diminuída",
+        description: `Ajuste de ${formatCurrency(valorEmCentavos)} para ${parSelecionadoAjuste} salvo na base de dados`,
+      });
+    } catch (error) {
+      console.error('Erro ao salvar ajuste financeiro por par:', error);
       toast({
         title: "Erro",
         description: "Erro ao salvar ajuste na base de dados",
@@ -560,6 +617,65 @@ const FinanceiroPage = () => {
           </CardContent>
         </Card>
       </div>
+
+      {/* Ajustes por Par de Turma - Apenas para Admin */}
+      {isAdmin() && (
+        <Card className="mb-6">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Calculator className="h-5 w-5" />
+              Ajustes Financeiros por Par de Turma
+            </CardTitle>
+            <CardDescription>
+              Faça ajustes específicos na receita de cada par de turma
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <Select value={parSelecionadoAjuste} onValueChange={setParSelecionadoAjuste}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Selecionar par de turma" />
+                </SelectTrigger>
+                <SelectContent>
+                  {turmaPairs.map(pair => (
+                    <SelectItem key={pair.id} value={pair.nome}>
+                      {pair.nome} ({pair.periodo === 'manha' ? 'Manhã' : 'Tarde'})
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              
+              <Input
+                type="number"
+                value={valorAjustePar}
+                onChange={(e) => setValorAjustePar(e.target.value)}
+                placeholder="Valor em AOA"
+              />
+              
+              <div className="flex gap-2">
+                <Button 
+                  variant="outline"
+                  onClick={() => handleAjustarReceitaPorPar('aumentar')}
+                  className="flex-1 text-green-600 hover:bg-green-50"
+                  disabled={!valorAjustePar || !parSelecionadoAjuste}
+                >
+                  <Plus className="w-4 h-4 mr-2" />
+                  Aumentar
+                </Button>
+                <Button 
+                  variant="outline"
+                  onClick={() => handleAjustarReceitaPorPar('diminuir')}
+                  className="flex-1 text-red-600 hover:bg-red-50"
+                  disabled={!valorAjustePar || !parSelecionadoAjuste}
+                >
+                  <Minus className="w-4 h-4 mr-2" />
+                  Diminuir
+                </Button>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Área de Administração */}
       {isAdmin() && (
