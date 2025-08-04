@@ -98,6 +98,33 @@ const FinanceiroPage = () => {
   const [isDeleting, setIsDeleting] = useState(false);
   const [valorAjuste, setValorAjuste] = useState("");
 
+  // Carregar ajustes financeiros da base de dados
+  useEffect(() => {
+    const carregarAjustesFinanceiros = async () => {
+      if (!isAdmin()) return;
+      
+      try {
+        const { data, error } = await supabase
+          .from('ajustes_financeiros')
+          .select('*')
+          .order('created_at', { ascending: false });
+
+        if (error) throw error;
+
+        // Calcular o total dos ajustes
+        const totalAjustes = data?.reduce((sum, ajuste) => {
+          return sum + (ajuste.tipo === 'aumentar' ? ajuste.valor : -ajuste.valor);
+        }, 0) || 0;
+
+        setReceitaAjuste(totalAjustes);
+      } catch (error) {
+        console.error('Erro ao carregar ajustes financeiros:', error);
+      }
+    };
+
+    carregarAjustesFinanceiros();
+  }, [isAdmin, updateTrigger]);
+
   const handleEditPayment = (aluno: AlunoFinanceiro) => {
     setEditingAluno(aluno);
     setIsEditDialogOpen(true);
@@ -115,7 +142,7 @@ const FinanceiroPage = () => {
     window.location.reload();
   };
 
-  const handleAjustarReceita = (tipo: 'aumentar' | 'diminuir') => {
+  const handleAjustarReceita = async (tipo: 'aumentar' | 'diminuir') => {
     const valor = parseFloat(valorAjuste);
     if (isNaN(valor) || valor <= 0) {
       toast({
@@ -126,16 +153,38 @@ const FinanceiroPage = () => {
       return;
     }
 
-    // Converter o valor para centavos (formato interno do sistema)
-    const valorEmCentavos = valor * 100;
-    const ajuste = tipo === 'aumentar' ? valorEmCentavos : -valorEmCentavos;
-    setReceitaAjuste(prev => prev + ajuste);
-    setValorAjuste("");
-    
-    toast({
-      title: tipo === 'aumentar' ? "Receita aumentada" : "Receita diminuída",
-      description: `Ajuste de ${formatCurrency(valorEmCentavos)} aplicado`,
-    });
+    try {
+      // Converter o valor para centavos (formato interno do sistema)
+      const valorEmCentavos = valor * 100;
+      
+      // Salvar na base de dados
+      const { error } = await supabase
+        .from('ajustes_financeiros')
+        .insert({
+          valor: valorEmCentavos,
+          tipo: tipo,
+          descricao: `Ajuste manual de receita - ${tipo} ${formatCurrency(valorEmCentavos)}`
+        });
+
+      if (error) throw error;
+
+      // Atualizar estado local
+      const ajuste = tipo === 'aumentar' ? valorEmCentavos : -valorEmCentavos;
+      setReceitaAjuste(prev => prev + ajuste);
+      setValorAjuste("");
+      
+      toast({
+        title: tipo === 'aumentar' ? "Receita aumentada" : "Receita diminuída",
+        description: `Ajuste de ${formatCurrency(valorEmCentavos)} salvo na base de dados`,
+      });
+    } catch (error) {
+      console.error('Erro ao salvar ajuste financeiro:', error);
+      toast({
+        title: "Erro",
+        description: "Erro ao salvar ajuste na base de dados",
+        variant: "destructive"
+      });
+    }
   };
 
   const handleDeleteAllAlunos = async () => {
