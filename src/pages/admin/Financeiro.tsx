@@ -126,13 +126,15 @@ const FinanceiroPage = () => {
       return;
     }
 
-    const ajuste = tipo === 'aumentar' ? valor : -valor;
+    // Converter o valor para centavos (formato interno do sistema)
+    const valorEmCentavos = valor * 100;
+    const ajuste = tipo === 'aumentar' ? valorEmCentavos : -valorEmCentavos;
     setReceitaAjuste(prev => prev + ajuste);
     setValorAjuste("");
     
     toast({
       title: tipo === 'aumentar' ? "Receita aumentada" : "Receita diminuída",
-      description: `Ajuste de ${formatCurrency(valor)} aplicado`,
+      description: `Ajuste de ${formatCurrency(valorEmCentavos)} aplicado`,
     });
   };
 
