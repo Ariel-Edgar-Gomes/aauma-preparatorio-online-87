@@ -95,6 +95,7 @@ const FinanceiroPage = () => {
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [updateTrigger, setUpdateTrigger] = useState(0);
   const [receitaAjuste, setReceitaAjuste] = useState(0);
+  const [ajustesPorPar, setAjustesPorPar] = useState<Record<string, number>>({});
   const [isDeleting, setIsDeleting] = useState(false);
   const [valorAjuste, setValorAjuste] = useState("");
   const [valorAjustePar, setValorAjustePar] = useState("");
@@ -113,12 +114,27 @@ const FinanceiroPage = () => {
 
         if (error) throw error;
 
-        // Calcular o total dos ajustes
-        const totalAjustes = data?.reduce((sum, ajuste) => {
-          return sum + (ajuste.tipo === 'aumentar' ? ajuste.valor : -ajuste.valor);
-        }, 0) || 0;
+        // Calcular ajustes gerais (sem turma_pair_id) e por par
+        const ajustesGerais = data?.filter(ajuste => !ajuste.turma_pair_id) || [];
+        const ajustesPorPar = data?.filter(ajuste => ajuste.turma_pair_id) || [];
 
-        setReceitaAjuste(totalAjustes);
+        // Total dos ajustes gerais
+        const totalAjustesGerais = ajustesGerais.reduce((sum, ajuste) => {
+          return sum + (ajuste.tipo === 'aumentar' ? ajuste.valor : -ajuste.valor);
+        }, 0);
+
+        // Ajustes agrupados por par de turma
+        const ajustesPorParMap: Record<string, number> = {};
+        ajustesPorPar.forEach(ajuste => {
+          const parNome = ajuste.descricao?.split(': ')[1]?.split(' - ')[0] || '';
+          if (parNome) {
+            ajustesPorParMap[parNome] = (ajustesPorParMap[parNome] || 0) + 
+              (ajuste.tipo === 'aumentar' ? ajuste.valor : -ajuste.valor);
+          }
+        });
+
+        setReceitaAjuste(totalAjustesGerais);
+        setAjustesPorPar(ajustesPorParMap);
       } catch (error) {
         console.error('Erro ao carregar ajustes financeiros:', error);
       }
@@ -210,23 +226,34 @@ const FinanceiroPage = () => {
     }
 
     try {
+      // Encontrar o ID do par selecionado
+      const parSelecionado = turmaPairs.find(pair => pair.nome === parSelecionadoAjuste);
+      if (!parSelecionado) {
+        throw new Error('Par de turma não encontrado');
+      }
+
       // Converter o valor para centavos (formato interno do sistema)
       const valorEmCentavos = valor * 100;
       
-      // Salvar na base de dados
+      // Salvar na base de dados com turma_pair_id
       const { error } = await supabase
         .from('ajustes_financeiros')
         .insert({
           valor: valorEmCentavos,
           tipo: tipo,
+          turma_pair_id: parSelecionado.id,
           descricao: `Ajuste por par de turma: ${parSelecionadoAjuste} - ${tipo} ${formatCurrency(valorEmCentavos)}`
         });
 
       if (error) throw error;
 
-      // Atualizar estado local
+      // Atualizar estado local dos ajustes por par
       const ajuste = tipo === 'aumentar' ? valorEmCentavos : -valorEmCentavos;
-      setReceitaAjuste(prev => prev + ajuste);
+      setAjustesPorPar(prev => ({
+        ...prev,
+        [parSelecionadoAjuste]: (prev[parSelecionadoAjuste] || 0) + ajuste
+      }));
+      
       setValorAjustePar("");
       setParSelecionadoAjuste("");
       
@@ -357,6 +384,9 @@ const FinanceiroPage = () => {
     const receitaPendente = todosAlunosPar.reduce((sum, a) => sum + a.valorPendente, 0);
     const receitaPotencial = todosAlunosPar.length * VALOR_MENSALIDADE;
 
+    // Adicionar ajustes específicos para este par
+    const ajustePar = ajustesPorPar[pair.nome] || 0;
+
     return {
       parId: pair.id,
       nomePar: pair.nome,
@@ -366,9 +396,9 @@ const FinanceiroPage = () => {
       alunosPagos,
       alunosPendentes,
       alunosAtrasados,
-      receitaArrecadada,
+      receitaArrecadada: receitaArrecadada + ajustePar,
       receitaPendente,
-      receitaPotencial,
+      receitaPotencial: receitaPotencial + ajustePar,
       taxaPagamento: todosAlunosPar.length > 0 ? (alunosPagos / todosAlunosPar.length) * 100 : 0,
       turmaA: {
         sala: pair.turmaA.sala,
@@ -402,9 +432,12 @@ const FinanceiroPage = () => {
   });
 
   // Calcular estatísticas gerais
-  const totalRecebido = todosAlunosFinanceiros.reduce((sum, aluno) => sum + aluno.valorPago, 0) + receitaAjuste;
+  const receitaBaseAlunos = todosAlunosFinanceiros.reduce((sum, aluno) => sum + aluno.valorPago, 0);
+  const ajustesGeraisTotal = receitaAjuste;
+  const ajustesPorParTotal = Object.values(ajustesPorPar).reduce((sum, ajuste) => sum + ajuste, 0);
+  const totalRecebido = receitaBaseAlunos + ajustesGeraisTotal + ajustesPorParTotal;
   const totalPendente = todosAlunosFinanceiros.reduce((sum, aluno) => sum + aluno.valorPendente, 0);
-  const totalPotencial = todosAlunosFinanceiros.length * VALOR_MENSALIDADE;
+  const totalPotencial = totalRecebido; // Receita Total = Receita Arrecadada
   const alunosPagos = todosAlunosFinanceiros.filter(a => a.statusPagamento === 'pago').length;
   const alunosPendentes = todosAlunosFinanceiros.filter(a => a.statusPagamento === 'pendente').length;
   const alunosAtrasados = todosAlunosFinanceiros.filter(a => a.statusPagamento === 'atrasado').length;
@@ -606,13 +639,13 @@ const FinanceiroPage = () => {
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Receita Potencial</CardTitle>
+            <CardTitle className="text-sm font-medium">Receita Total</CardTitle>
             <TrendingUp className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-blue-600">{formatCurrency(totalPotencial)}</div>
             <p className="text-xs text-muted-foreground">
-              Se todos pagarem
+              Receita Total Consolidada
             </p>
           </CardContent>
         </Card>
@@ -861,13 +894,18 @@ const FinanceiroPage = () => {
                             <div>
                               <div className="text-sm text-gray-600">Receita Arrecadada</div>
                               <div className="text-lg font-bold text-green-600">{formatCurrency(relatorio.receitaArrecadada)}</div>
+                              {ajustesPorPar[relatorio.nomePar] && (
+                                <div className="text-xs text-blue-600 mt-1">
+                                  Inclui ajuste: {formatCurrency(ajustesPorPar[relatorio.nomePar])}
+                                </div>
+                              )}
                             </div>
                             <div>
                               <div className="text-sm text-gray-600">Receita Pendente</div>
                               <div className="text-lg font-bold text-red-600">{formatCurrency(relatorio.receitaPendente)}</div>
                             </div>
                             <div>
-                              <div className="text-sm text-gray-600">Receita Potencial</div>
+                              <div className="text-sm text-gray-600">Receita Total</div>
                               <div className="text-lg font-bold text-blue-600">{formatCurrency(relatorio.receitaPotencial)}</div>
                             </div>
                           </div>

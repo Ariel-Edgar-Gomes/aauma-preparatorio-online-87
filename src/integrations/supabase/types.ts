@@ -21,6 +21,7 @@ export type Database = {
           descricao: string | null
           id: string
           tipo: string
+          turma_pair_id: string | null
           updated_at: string
           valor: number
         }
@@ -30,6 +31,7 @@ export type Database = {
           descricao?: string | null
           id?: string
           tipo: string
+          turma_pair_id?: string | null
           updated_at?: string
           valor: number
         }
@@ -39,10 +41,19 @@ export type Database = {
           descricao?: string | null
           id?: string
           tipo?: string
+          turma_pair_id?: string | null
           updated_at?: string
           valor?: number
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "ajustes_financeiros_turma_pair_id_fkey"
+            columns: ["turma_pair_id"]
+            isOneToOne: false
+            referencedRelation: "turma_pairs"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       alunos: {
         Row: {
