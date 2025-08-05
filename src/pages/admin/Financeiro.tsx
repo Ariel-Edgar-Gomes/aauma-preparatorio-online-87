@@ -747,10 +747,7 @@ const FinanceiroPage = () => {
                                 <span>Inscritos:</span>
                                 <span className="font-medium">{relatorio.turmaA.alunosInscritos}</span>
                               </div>
-                              <div className="flex justify-between">
-                                <span>Receita:</span>
-                                <span className="font-medium text-green-600">{formatCurrency(relatorio.turmaA.receita)}</span>
-                              </div>
+                              
                               <div className="flex justify-between">
                                 <span>Pendente:</span>
                                 <span className="font-medium text-red-600">{formatCurrency(relatorio.turmaA.pendente)}</span>
@@ -770,10 +767,7 @@ const FinanceiroPage = () => {
                                 <span>Inscritos:</span>
                                 <span className="font-medium">{relatorio.turmaB.alunosInscritos}</span>
                               </div>
-                              <div className="flex justify-between">
-                                <span>Receita:</span>
-                                <span className="font-medium text-green-600">{formatCurrency(relatorio.turmaB.receita)}</span>
-                              </div>
+                              
                               <div className="flex justify-between">
                                 <span>Pendente:</span>
                                 <span className="font-medium text-red-600">{formatCurrency(relatorio.turmaB.pendente)}</span>
