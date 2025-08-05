@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Users, GraduationCap, BookOpen, TrendingUp, Clock, MapPin, DollarSign, RefreshCw } from "lucide-react";
 import { Link } from "react-router-dom";
 import { alunosService, turmaPairsService, cursosService, salasService } from "@/services/supabaseService";
+import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/components/AuthProvider";
 import { UserEnrollmentStats } from "@/components/admin/UserEnrollmentStats";
@@ -53,15 +54,21 @@ const AdminDashboard = () => {
         alunosStats,
         turmaPairs,
         cursos,
-        salas
+        salas,
+        { data: ajustes }
       ] = await Promise.all([
         alunosService.getStatistics(),
         turmaPairsService.getAll(),
         cursosService.getAll(),
-        salasService.getAll()
+        salasService.getAll(),
+        supabase.from('ajustes_financeiros').select('*')
       ]);
 
       const paresAtivos = turmaPairs.filter(p => p.ativo).length;
+      
+      // Calcular receita total incluindo ajustes financeiros
+      const totalAjustes = ajustes?.reduce((sum, ajuste) => sum + Number(ajuste.valor), 0) || 0;
+      const receitaTotalComAjustes = alunosStats.totalRecebido + totalAjustes;
 
       setStats({
         totalAlunos: alunosStats.total,
@@ -72,7 +79,7 @@ const AdminDashboard = () => {
         paresAtivos,
         totalCursos: cursos.length,
         totalSalas: salas.length,
-        receitaTotal: alunosStats.totalRecebido,
+        receitaTotal: receitaTotalComAjustes,
         pagamentoCash: alunosStats.pagamentoCash,
         pagamentoTransferencia: alunosStats.pagamentoTransferencia,
         pagamentoCartao: alunosStats.pagamentoCartao
