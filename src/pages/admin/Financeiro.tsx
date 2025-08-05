@@ -796,10 +796,7 @@ const FinanceiroPage = () => {
                               <div className="text-sm text-gray-600">Receita Pendente</div>
                               <div className="text-lg font-bold text-red-600">{formatCurrency(relatorio.receitaPendente)}</div>
                             </div>
-                            <div>
-                              <div className="text-sm text-gray-600">Receita Total</div>
-                              <div className="text-lg font-bold text-blue-600">{formatCurrency(relatorio.receitaPotencial)}</div>
-                            </div>
+                            
                           </div>
                         </div>
                       </CardContent>
