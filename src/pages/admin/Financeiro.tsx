@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -7,31 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { 
-  DollarSign, 
-  Users, 
-  TrendingUp, 
-  Calendar,
-  Search,
-  Filter,
-  Download,
-  Eye,
-  CreditCard,
-  Banknote,
-  Receipt,
-  GraduationCap,
-  Building2,
-  CheckCircle,
-  AlertCircle,
-  XCircle,
-  FileText,
-  Calculator,
-  Edit,
-  Printer,
-  Plus,
-  Minus,
-  Trash2
-} from "lucide-react";
+import { DollarSign, Users, TrendingUp, Calendar, Search, Filter, Download, Eye, CreditCard, Banknote, Receipt, GraduationCap, Building2, CheckCircle, AlertCircle, XCircle, FileText, Calculator, Edit, Printer, Plus, Minus, Trash2 } from "lucide-react";
 import jsPDF from "jspdf";
 import { Link } from "react-router-dom";
 import { useTurmaData } from "@/hooks/useTurmaData";
@@ -41,7 +16,6 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/components/AuthProvider";
 import { useToast } from "@/hooks/use-toast";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
-
 interface AlunoFinanceiro extends Aluno {
   valorMensalidade: number;
   valorPago: number;
@@ -54,7 +28,6 @@ interface AlunoFinanceiro extends Aluno {
   mesReferencia: string;
   diasDesdeInscricao: number;
 }
-
 interface RelatorioFinanceiroPorPar {
   parId: string;
   nomePar: string;
@@ -82,11 +55,18 @@ interface RelatorioFinanceiroPorPar {
     pendente: number;
   };
 }
-
 const FinanceiroPage = () => {
-  const { turmaPairs, loading } = useTurmaData();
-  const { isAdmin, hasRole } = useAuth();
-  const { toast } = useToast();
+  const {
+    turmaPairs,
+    loading
+  } = useTurmaData();
+  const {
+    isAdmin,
+    hasRole
+  } = useAuth();
+  const {
+    toast
+  } = useToast();
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("todos");
   const [formaPagamentoFilter, setFormaPagamentoFilter] = useState<string>("todos");
@@ -105,13 +85,13 @@ const FinanceiroPage = () => {
   useEffect(() => {
     const carregarAjustesFinanceiros = async () => {
       if (!isAdmin()) return;
-      
       try {
-        const { data, error } = await supabase
-          .from('ajustes_financeiros')
-          .select('*')
-          .order('created_at', { ascending: false });
-
+        const {
+          data,
+          error
+        } = await supabase.from('ajustes_financeiros').select('*').order('created_at', {
+          ascending: false
+        });
         if (error) throw error;
 
         // Calcular ajustes gerais (sem turma_pair_id) e por par
@@ -128,38 +108,31 @@ const FinanceiroPage = () => {
         ajustesPorPar.forEach(ajuste => {
           const parNome = ajuste.descricao?.split(': ')[1]?.split(' - ')[0] || '';
           if (parNome) {
-            ajustesPorParMap[parNome] = (ajustesPorParMap[parNome] || 0) + 
-              (ajuste.tipo === 'aumentar' ? ajuste.valor : -ajuste.valor);
+            ajustesPorParMap[parNome] = (ajustesPorParMap[parNome] || 0) + (ajuste.tipo === 'aumentar' ? ajuste.valor : -ajuste.valor);
           }
         });
-
         setReceitaAjuste(totalAjustesGerais);
         setAjustesPorPar(ajustesPorParMap);
       } catch (error) {
         console.error('Erro ao carregar ajustes financeiros:', error);
       }
     };
-
     carregarAjustesFinanceiros();
   }, [isAdmin, updateTrigger]);
-
   const handleEditPayment = (aluno: AlunoFinanceiro) => {
     setEditingAluno(aluno);
     setIsEditDialogOpen(true);
   };
-
   const handleCloseEditDialog = () => {
     setEditingAluno(null);
     setIsEditDialogOpen(false);
   };
-
   const handleUpdatePayment = () => {
     setUpdateTrigger(prev => prev + 1);
     handleCloseEditDialog();
     // Força re-render dos dados
     window.location.reload();
   };
-
   const handleAjustarReceita = async (tipo: 'aumentar' | 'diminuir') => {
     const valor = parseFloat(valorAjuste);
     if (isNaN(valor) || valor <= 0) {
@@ -170,30 +143,27 @@ const FinanceiroPage = () => {
       });
       return;
     }
-
     try {
       // Converter o valor para centavos (formato interno do sistema)
       const valorEmCentavos = valor * 100;
-      
-      // Salvar na base de dados
-      const { error } = await supabase
-        .from('ajustes_financeiros')
-        .insert({
-          valor: valorEmCentavos,
-          tipo: tipo,
-          descricao: `Ajuste manual de receita - ${tipo} ${formatCurrency(valorEmCentavos)}`
-        });
 
+      // Salvar na base de dados
+      const {
+        error
+      } = await supabase.from('ajustes_financeiros').insert({
+        valor: valorEmCentavos,
+        tipo: tipo,
+        descricao: `Ajuste manual de receita - ${tipo} ${formatCurrency(valorEmCentavos)}`
+      });
       if (error) throw error;
 
       // Atualizar estado local
       const ajuste = tipo === 'aumentar' ? valorEmCentavos : -valorEmCentavos;
       setReceitaAjuste(prev => prev + ajuste);
       setValorAjuste("");
-      
       toast({
         title: tipo === 'aumentar' ? "Receita aumentada" : "Receita diminuída",
-        description: `Ajuste de ${formatCurrency(valorEmCentavos)} salvo na base de dados`,
+        description: `Ajuste de ${formatCurrency(valorEmCentavos)} salvo na base de dados`
       });
     } catch (error) {
       console.error('Erro ao salvar ajuste financeiro:', error);
@@ -204,7 +174,6 @@ const FinanceiroPage = () => {
       });
     }
   };
-
   const handleAjustarReceitaPorPar = async (tipo: 'aumentar' | 'diminuir') => {
     const valor = parseFloat(valorAjustePar);
     if (isNaN(valor) || valor <= 0) {
@@ -215,7 +184,6 @@ const FinanceiroPage = () => {
       });
       return;
     }
-
     if (!parSelecionadoAjuste) {
       toast({
         title: "Erro",
@@ -224,7 +192,6 @@ const FinanceiroPage = () => {
       });
       return;
     }
-
     try {
       // Encontrar o ID do par selecionado
       const parSelecionado = turmaPairs.find(pair => pair.nome === parSelecionadoAjuste);
@@ -234,17 +201,16 @@ const FinanceiroPage = () => {
 
       // Converter o valor para centavos (formato interno do sistema)
       const valorEmCentavos = valor * 100;
-      
-      // Salvar na base de dados com turma_pair_id
-      const { error } = await supabase
-        .from('ajustes_financeiros')
-        .insert({
-          valor: valorEmCentavos,
-          tipo: tipo,
-          turma_pair_id: parSelecionado.id,
-          descricao: `Ajuste por par de turma: ${parSelecionadoAjuste} - ${tipo} ${formatCurrency(valorEmCentavos)}`
-        });
 
+      // Salvar na base de dados com turma_pair_id
+      const {
+        error
+      } = await supabase.from('ajustes_financeiros').insert({
+        valor: valorEmCentavos,
+        tipo: tipo,
+        turma_pair_id: parSelecionado.id,
+        descricao: `Ajuste por par de turma: ${parSelecionadoAjuste} - ${tipo} ${formatCurrency(valorEmCentavos)}`
+      });
       if (error) throw error;
 
       // Atualizar estado local dos ajustes por par
@@ -253,13 +219,11 @@ const FinanceiroPage = () => {
         ...prev,
         [parSelecionadoAjuste]: (prev[parSelecionadoAjuste] || 0) + ajuste
       }));
-      
       setValorAjustePar("");
       setParSelecionadoAjuste("");
-      
       toast({
         title: tipo === 'aumentar' ? "Receita aumentada" : "Receita diminuída",
-        description: `Ajuste de ${formatCurrency(valorEmCentavos)} para ${parSelecionadoAjuste} salvo na base de dados`,
+        description: `Ajuste de ${formatCurrency(valorEmCentavos)} para ${parSelecionadoAjuste} salvo na base de dados`
       });
     } catch (error) {
       console.error('Erro ao salvar ajuste financeiro por par:', error);
@@ -270,7 +234,6 @@ const FinanceiroPage = () => {
       });
     }
   };
-
   const handleDeleteAllAlunos = async () => {
     if (!isAdmin()) {
       toast({
@@ -280,21 +243,18 @@ const FinanceiroPage = () => {
       });
       return;
     }
-
     setIsDeleting(true);
     try {
-      const { error } = await supabase
-        .from('alunos')
-        .delete()
-        .gte('created_at', '1900-01-01'); // Condição que sempre será verdadeira
+      const {
+        error
+      } = await supabase.from('alunos').delete().gte('created_at', '1900-01-01'); // Condição que sempre será verdadeira
 
       if (error) throw error;
-
       toast({
         title: "Sucesso",
-        description: "Todos os alunos foram removidos da base de dados",
+        description: "Todos os alunos foram removidos da base de dados"
       });
-      
+
       // Força re-render dos dados
       window.location.reload();
     } catch (error) {
@@ -313,13 +273,17 @@ const FinanceiroPage = () => {
   const VALOR_MENSALIDADE = 40000; // 400.00 AOA
 
   // Gerar dados financeiros baseados nos alunos reais
-  const gerarDadosFinanceiros = (alunos: Aluno[], parNome: string, turmaInfo: { sala: string, tipo: 'A' | 'B' }): AlunoFinanceiro[] => {
-    const mesAtual = new Date().toLocaleDateString('pt-AO', { month: 'long', year: 'numeric' });
-    
+  const gerarDadosFinanceiros = (alunos: Aluno[], parNome: string, turmaInfo: {
+    sala: string;
+    tipo: 'A' | 'B';
+  }): AlunoFinanceiro[] => {
+    const mesAtual = new Date().toLocaleDateString('pt-AO', {
+      month: 'long',
+      year: 'numeric'
+    });
     return alunos.map(aluno => {
       const dataInscricao = new Date(aluno.dataInscricao);
       const diasDesdeInscricao = Math.floor((Date.now() - dataInscricao.getTime()) / (1000 * 60 * 60 * 24));
-      
       let valorPago = 0;
       let valorPendente = VALOR_MENSALIDADE;
       let statusPagamento: 'pago' | 'pendente' | 'atrasado' = 'pendente';
@@ -348,7 +312,6 @@ const FinanceiroPage = () => {
         valorPendente = 0;
         statusPagamento = 'pendente';
       }
-
       return {
         ...aluno,
         valorMensalidade: VALOR_MENSALIDADE,
@@ -366,17 +329,25 @@ const FinanceiroPage = () => {
   };
 
   // Consolidar todos os dados financeiros dos alunos reais
-  const todosAlunosFinanceiros: AlunoFinanceiro[] = turmaPairs.flatMap(pair => [
-    ...gerarDadosFinanceiros(pair.turmaA.alunos, pair.nome, { sala: pair.turmaA.sala, tipo: 'A' }),
-    ...gerarDadosFinanceiros(pair.turmaB.alunos, pair.nome, { sala: pair.turmaB.sala, tipo: 'B' })
-  ]);
+  const todosAlunosFinanceiros: AlunoFinanceiro[] = turmaPairs.flatMap(pair => [...gerarDadosFinanceiros(pair.turmaA.alunos, pair.nome, {
+    sala: pair.turmaA.sala,
+    tipo: 'A'
+  }), ...gerarDadosFinanceiros(pair.turmaB.alunos, pair.nome, {
+    sala: pair.turmaB.sala,
+    tipo: 'B'
+  })]);
 
   // Gerar relatório por par de turmas
   const relatoriosPorPar: RelatorioFinanceiroPorPar[] = turmaPairs.map(pair => {
-    const alunosTurmaA = gerarDadosFinanceiros(pair.turmaA.alunos, pair.nome, { sala: pair.turmaA.sala, tipo: 'A' });
-    const alunosTurmaB = gerarDadosFinanceiros(pair.turmaB.alunos, pair.nome, { sala: pair.turmaB.sala, tipo: 'B' });
+    const alunosTurmaA = gerarDadosFinanceiros(pair.turmaA.alunos, pair.nome, {
+      sala: pair.turmaA.sala,
+      tipo: 'A'
+    });
+    const alunosTurmaB = gerarDadosFinanceiros(pair.turmaB.alunos, pair.nome, {
+      sala: pair.turmaB.sala,
+      tipo: 'B'
+    });
     const todosAlunosPar = [...alunosTurmaA, ...alunosTurmaB];
-
     const alunosPagos = todosAlunosPar.filter(a => a.statusPagamento === 'pago').length;
     const alunosPendentes = todosAlunosPar.filter(a => a.statusPagamento === 'pendente').length;
     const alunosAtrasados = todosAlunosPar.filter(a => a.statusPagamento === 'atrasado').length;
@@ -386,12 +357,10 @@ const FinanceiroPage = () => {
 
     // Adicionar ajustes específicos para este par
     const ajustePar = ajustesPorPar[pair.nome] || 0;
-
     return {
       parId: pair.id,
       nomePar: pair.nome,
       periodo: pair.periodo === 'manha' ? 'Manhã' : 'Tarde',
-      
       totalAlunos: todosAlunosPar.length,
       alunosPagos,
       alunosPendentes,
@@ -399,7 +368,7 @@ const FinanceiroPage = () => {
       receitaArrecadada: receitaArrecadada + ajustePar,
       receitaPendente,
       receitaPotencial: receitaPotencial + ajustePar,
-      taxaPagamento: todosAlunosPar.length > 0 ? (alunosPagos / todosAlunosPar.length) * 100 : 0,
+      taxaPagamento: todosAlunosPar.length > 0 ? alunosPagos / todosAlunosPar.length * 100 : 0,
       turmaA: {
         sala: pair.turmaA.sala,
         capacidade: pair.turmaA.capacidade,
@@ -419,15 +388,10 @@ const FinanceiroPage = () => {
 
   // Filtrar alunos
   const alunosFiltrados = todosAlunosFinanceiros.filter(aluno => {
-    const matchesSearch = searchTerm === "" || 
-      aluno.nome.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      aluno.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      aluno.numeroEstudante?.toLowerCase().includes(searchTerm.toLowerCase());
-    
+    const matchesSearch = searchTerm === "" || aluno.nome.toLowerCase().includes(searchTerm.toLowerCase()) || aluno.email.toLowerCase().includes(searchTerm.toLowerCase()) || aluno.numeroEstudante?.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesStatus = statusFilter === "todos" || aluno.statusPagamento === statusFilter;
     const matchesFormaPagamento = formaPagamentoFilter === "todos" || aluno.formaPagamento === formaPagamentoFilter;
     const matchesPair = selectedPair === "todos" || aluno.nomeParTurma.includes(selectedPair);
-
     return matchesSearch && matchesStatus && matchesFormaPagamento && matchesPair;
   });
 
@@ -441,8 +405,7 @@ const FinanceiroPage = () => {
   const alunosPagos = todosAlunosFinanceiros.filter(a => a.statusPagamento === 'pago').length;
   const alunosPendentes = todosAlunosFinanceiros.filter(a => a.statusPagamento === 'pendente').length;
   const alunosAtrasados = todosAlunosFinanceiros.filter(a => a.statusPagamento === 'atrasado').length;
-  const taxaPagamento = todosAlunosFinanceiros.length > 0 ? ((alunosPagos / todosAlunosFinanceiros.length) * 100).toFixed(1) : '0.0';
-
+  const taxaPagamento = todosAlunosFinanceiros.length > 0 ? (alunosPagos / todosAlunosFinanceiros.length * 100).toFixed(1) : '0.0';
   const formatCurrency = (value: number) => {
     return new Intl.NumberFormat('pt-AO', {
       style: 'currency',
@@ -450,49 +413,54 @@ const FinanceiroPage = () => {
       minimumFractionDigits: 2
     }).format(value);
   };
-
   const getStatusIcon = (status: string) => {
     switch (status) {
-      case 'pago': return <CheckCircle className="w-4 h-4 text-green-600" />;
-      case 'atrasado': return <XCircle className="w-4 h-4 text-red-600" />;
-      default: return <AlertCircle className="w-4 h-4 text-yellow-600" />;
+      case 'pago':
+        return <CheckCircle className="w-4 h-4 text-green-600" />;
+      case 'atrasado':
+        return <XCircle className="w-4 h-4 text-red-600" />;
+      default:
+        return <AlertCircle className="w-4 h-4 text-yellow-600" />;
     }
   };
-
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'pago': return 'bg-green-100 text-green-800';
-      case 'atrasado': return 'bg-red-100 text-red-800';
-      default: return 'bg-yellow-100 text-yellow-800';
+      case 'pago':
+        return 'bg-green-100 text-green-800';
+      case 'atrasado':
+        return 'bg-red-100 text-red-800';
+      default:
+        return 'bg-yellow-100 text-yellow-800';
     }
   };
-
   const getGrupoCursosLabel = (grupo: string) => {
     switch (grupo) {
-      case 'engenharias': return 'Engenharias';
-      case 'saude': return 'Saúde';
-      case 'ciencias-sociais-humanas': return 'Ciências Sociais e Humanas';
-      default: return grupo;
+      case 'engenharias':
+        return 'Engenharias';
+      case 'saude':
+        return 'Saúde';
+      case 'ciencias-sociais-humanas':
+        return 'Ciências Sociais e Humanas';
+      default:
+        return grupo;
     }
   };
-
   const handleExportFinanceiroPDF = async () => {
     const pdf = new jsPDF();
-    
+
     // Título
     pdf.setFontSize(16);
     pdf.text('Relatório Financeiro - Preparatório AAUMA', 20, 20);
-    
+
     // Data
     pdf.setFontSize(10);
     pdf.text(`Gerado em: ${new Date().toLocaleDateString('pt-AO')}`, 20, 30);
-    
+
     // Estatísticas gerais
     pdf.setFontSize(12);
     let yPos = 50;
     pdf.text('=== RESUMO GERAL ===', 20, yPos);
     yPos += 15;
-    
     pdf.setFontSize(10);
     pdf.text(`Total de Alunos: ${todosAlunosFinanceiros.length}`, 20, yPos);
     yPos += 10;
@@ -502,18 +470,16 @@ const FinanceiroPage = () => {
     yPos += 10;
     pdf.text(`Taxa de Pagamento: ${taxaPagamento}%`, 20, yPos);
     yPos += 20;
-    
+
     // Relatórios por par
     pdf.setFontSize(12);
     pdf.text('=== RELATÓRIOS POR PAR DE TURMAS ===', 20, yPos);
     yPos += 15;
-    
     relatoriosPorPar.forEach((relatorio, index) => {
       if (yPos > 250) {
         pdf.addPage();
         yPos = 20;
       }
-      
       pdf.setFontSize(10);
       pdf.text(`${index + 1}. ${relatorio.nomePar} (${relatorio.periodo})`, 20, yPos);
       yPos += 10;
@@ -526,27 +492,20 @@ const FinanceiroPage = () => {
       pdf.text(`   Taxa Pagamento: ${relatorio.taxaPagamento.toFixed(1)}%`, 20, yPos);
       yPos += 15;
     });
-    
     pdf.save('relatorio-financeiro-aauma.pdf');
   };
-
   const handlePrintFinanceiro = () => {
     window.print();
   };
-
   if (loading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
+    return <div className="flex items-center justify-center min-h-screen">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
           <p>Carregando dados financeiros...</p>
         </div>
-      </div>
-    );
+      </div>;
   }
-
-  return (
-    <div className="p-6">
+  return <div className="p-6">
       <div className="flex justify-between items-center mb-6">
         <div>
           <h2 className="text-2xl font-bold text-foreground">Relatório Financeiro</h2>
@@ -567,8 +526,7 @@ const FinanceiroPage = () => {
       {/* Estatísticas Gerais */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
         {/* Esconder receita total para inscrição simples */}
-        {!hasRole('inscricao_simples') && (
-          <Card>
+        {!hasRole('inscricao_simples') && <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">Receita Arrecadada</CardTitle>
               <DollarSign className="h-4 w-4 text-muted-foreground" />
@@ -578,38 +536,17 @@ const FinanceiroPage = () => {
               <p className="text-xs text-muted-foreground">
                 Taxa: {taxaPagamento}%
               </p>
-              {isAdmin() && (
-                <div className="flex gap-2 mt-2">
-                  <Input
-                    type="number"
-                    placeholder="Valor AOA"
-                    value={valorAjuste}
-                    onChange={(e) => setValorAjuste(e.target.value)}
-                    className="h-6 text-xs flex-1"
-                  />
-                  <Button 
-                    size="sm" 
-                    variant="outline" 
-                    onClick={() => handleAjustarReceita('aumentar')}
-                    className="h-6 px-2 text-xs"
-                    disabled={!valorAjuste}
-                  >
+              {isAdmin() && <div className="flex gap-2 mt-2">
+                  <Input type="number" placeholder="Valor AOA" value={valorAjuste} onChange={e => setValorAjuste(e.target.value)} className="h-6 text-xs flex-1" />
+                  <Button size="sm" variant="outline" onClick={() => handleAjustarReceita('aumentar')} className="h-6 px-2 text-xs" disabled={!valorAjuste}>
                     <Plus className="w-3 h-3" />
                   </Button>
-                  <Button 
-                    size="sm" 
-                    variant="outline" 
-                    onClick={() => handleAjustarReceita('diminuir')}
-                    className="h-6 px-2 text-xs"
-                    disabled={!valorAjuste}
-                  >
+                  <Button size="sm" variant="outline" onClick={() => handleAjustarReceita('diminuir')} className="h-6 px-2 text-xs" disabled={!valorAjuste}>
                     <Minus className="w-3 h-3" />
                   </Button>
-                </div>
-              )}
+                </div>}
             </CardContent>
-          </Card>
-        )}
+          </Card>}
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -637,23 +574,11 @@ const FinanceiroPage = () => {
           </CardContent>
         </Card>
 
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Receita Total</CardTitle>
-            <TrendingUp className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-blue-600">{formatCurrency(totalPotencial)}</div>
-            <p className="text-xs text-muted-foreground">
-              Receita Total Consolidada
-            </p>
-          </CardContent>
-        </Card>
+        
       </div>
 
       {/* Ajustes por Par de Turma - Apenas para Admin */}
-      {isAdmin() && (
-        <Card className="mb-6">
+      {isAdmin() && <Card className="mb-6">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Calculator className="h-5 w-5" />
@@ -670,49 +595,30 @@ const FinanceiroPage = () => {
                   <SelectValue placeholder="Selecionar par de turma" />
                 </SelectTrigger>
                 <SelectContent>
-                  {turmaPairs.map(pair => (
-                    <SelectItem key={pair.id} value={pair.nome}>
+                  {turmaPairs.map(pair => <SelectItem key={pair.id} value={pair.nome}>
                       {pair.nome} ({pair.periodo === 'manha' ? 'Manhã' : 'Tarde'})
-                    </SelectItem>
-                  ))}
+                    </SelectItem>)}
                 </SelectContent>
               </Select>
               
-              <Input
-                type="number"
-                value={valorAjustePar}
-                onChange={(e) => setValorAjustePar(e.target.value)}
-                placeholder="Valor em AOA"
-              />
+              <Input type="number" value={valorAjustePar} onChange={e => setValorAjustePar(e.target.value)} placeholder="Valor em AOA" />
               
               <div className="flex gap-2">
-                <Button 
-                  variant="outline"
-                  onClick={() => handleAjustarReceitaPorPar('aumentar')}
-                  className="flex-1 text-green-600 hover:bg-green-50"
-                  disabled={!valorAjustePar || !parSelecionadoAjuste}
-                >
+                <Button variant="outline" onClick={() => handleAjustarReceitaPorPar('aumentar')} className="flex-1 text-green-600 hover:bg-green-50" disabled={!valorAjustePar || !parSelecionadoAjuste}>
                   <Plus className="w-4 h-4 mr-2" />
                   Aumentar
                 </Button>
-                <Button 
-                  variant="outline"
-                  onClick={() => handleAjustarReceitaPorPar('diminuir')}
-                  className="flex-1 text-red-600 hover:bg-red-50"
-                  disabled={!valorAjustePar || !parSelecionadoAjuste}
-                >
+                <Button variant="outline" onClick={() => handleAjustarReceitaPorPar('diminuir')} className="flex-1 text-red-600 hover:bg-red-50" disabled={!valorAjustePar || !parSelecionadoAjuste}>
                   <Minus className="w-4 h-4 mr-2" />
                   Diminuir
                 </Button>
               </div>
             </div>
           </CardContent>
-        </Card>
-      )}
+        </Card>}
 
       {/* Área de Administração */}
-      {isAdmin() && (
-        <Card className="mb-6 border-red-200 bg-red-50/50">
+      {isAdmin() && <Card className="mb-6 border-red-200 bg-red-50/50">
           <CardHeader>
             <CardTitle className="text-red-700 flex items-center gap-2">
               <Trash2 className="w-5 h-5" />
@@ -726,11 +632,7 @@ const FinanceiroPage = () => {
             <div className="flex gap-4">
               <AlertDialog>
                 <AlertDialogTrigger asChild>
-                  <Button 
-                    variant="destructive" 
-                    size="sm"
-                    disabled={isDeleting}
-                  >
+                  <Button variant="destructive" size="sm" disabled={isDeleting}>
                     <Trash2 className="w-4 h-4 mr-2" />
                     {isDeleting ? "Removendo..." : "Apagar Todos os Alunos"}
                   </Button>
@@ -745,10 +647,7 @@ const FinanceiroPage = () => {
                   </AlertDialogHeader>
                   <AlertDialogFooter>
                     <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                    <AlertDialogAction 
-                      onClick={handleDeleteAllAlunos}
-                      className="bg-red-600 hover:bg-red-700"
-                    >
+                    <AlertDialogAction onClick={handleDeleteAllAlunos} className="bg-red-600 hover:bg-red-700">
                       Sim, Apagar Todos
                     </AlertDialogAction>
                   </AlertDialogFooter>
@@ -756,8 +655,7 @@ const FinanceiroPage = () => {
               </AlertDialog>
             </div>
           </CardContent>
-        </Card>
-      )}
+        </Card>}
 
       <Tabs defaultValue="resumo" className="w-full">
         <TabsList className="grid w-full grid-cols-3">
@@ -768,8 +666,7 @@ const FinanceiroPage = () => {
 
         <TabsContent value="resumo" className="space-y-6">
           {/* Esconder relatórios financeiros detalhados para inscrição simples */}
-          {hasRole('inscricao_simples') ? (
-            <Card>
+          {hasRole('inscricao_simples') ? <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <Eye className="w-5 h-5" />
@@ -785,9 +682,7 @@ const FinanceiroPage = () => {
                   <p>Entre em contacto com o administrador para obter acesso aos relatórios financeiros.</p>
                 </div>
               </CardContent>
-            </Card>
-          ) : (
-            <Card>
+            </Card> : <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <Calculator className="w-5 h-5" />
@@ -799,8 +694,7 @@ const FinanceiroPage = () => {
               </CardHeader>
               <CardContent>
                 <div className="space-y-6">
-                  {relatoriosPorPar.map(relatorio => (
-                    <Card key={relatorio.parId} className="border-l-4 border-l-blue-500">
+                  {relatoriosPorPar.map(relatorio => <Card key={relatorio.parId} className="border-l-4 border-l-blue-500">
                       <CardHeader className="pb-3">
                         <div className="flex justify-between items-start">
                           <div>
@@ -894,11 +788,9 @@ const FinanceiroPage = () => {
                             <div>
                               <div className="text-sm text-gray-600">Receita Arrecadada</div>
                               <div className="text-lg font-bold text-green-600">{formatCurrency(relatorio.receitaArrecadada)}</div>
-                              {ajustesPorPar[relatorio.nomePar] && (
-                                <div className="text-xs text-blue-600 mt-1">
+                              {ajustesPorPar[relatorio.nomePar] && <div className="text-xs text-blue-600 mt-1">
                                   Inclui ajuste: {formatCurrency(ajustesPorPar[relatorio.nomePar])}
-                                </div>
-                              )}
+                                </div>}
                             </div>
                             <div>
                               <div className="text-sm text-gray-600">Receita Pendente</div>
@@ -911,12 +803,10 @@ const FinanceiroPage = () => {
                           </div>
                         </div>
                       </CardContent>
-                    </Card>
-                  ))}
+                    </Card>)}
                 </div>
               </CardContent>
-            </Card>
-          )}
+            </Card>}
         </TabsContent>
 
         <TabsContent value="detalhado" className="space-y-6">
@@ -929,11 +819,7 @@ const FinanceiroPage = () => {
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                 <div className="flex items-center gap-2">
                   <Search className="w-4 h-4 text-gray-500" />
-                  <Input
-                    placeholder="Buscar alunos..."
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                  />
+                  <Input placeholder="Buscar alunos..." value={searchTerm} onChange={e => setSearchTerm(e.target.value)} />
                 </div>
                 
                 <Select value={statusFilter} onValueChange={setStatusFilter}>
@@ -966,11 +852,9 @@ const FinanceiroPage = () => {
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="todos">Todos os Pares</SelectItem>
-                    {turmaPairs.map(pair => (
-                      <SelectItem key={pair.id} value={pair.nome.split(' - ')[1]}>
+                    {turmaPairs.map(pair => <SelectItem key={pair.id} value={pair.nome.split(' - ')[1]}>
                         {pair.nome}
-                      </SelectItem>
-                    ))}
+                      </SelectItem>)}
                   </SelectContent>
                 </Select>
               </div>
@@ -1008,8 +892,7 @@ const FinanceiroPage = () => {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {alunosFiltrados.map(aluno => (
-                      <TableRow key={aluno.id}>
+                    {alunosFiltrados.map(aluno => <TableRow key={aluno.id}>
                         <TableCell>
                           <div className="space-y-1">
                             <div className="font-medium">{aluno.nome}</div>
@@ -1060,44 +943,30 @@ const FinanceiroPage = () => {
                           </Badge>
                         </TableCell>
                         <TableCell>
-                          {aluno.dataUltimoPagamento ? (
-                            <div className="text-sm">
+                          {aluno.dataUltimoPagamento ? <div className="text-sm">
                               {new Date(aluno.dataUltimoPagamento).toLocaleDateString('pt-PT')}
-                            </div>
-                          ) : (
-                            <span className="text-gray-400 text-sm">Não pago</span>
-                          )}
+                            </div> : <span className="text-gray-400 text-sm">Não pago</span>}
                         </TableCell>
                         <TableCell>
                           <div className="text-sm">
                             {aluno.diasDesdeInscricao} dias
-                            {aluno.diasDesdeInscricao > 5 && aluno.statusPagamento !== 'pago' && (
-                              <div className="text-xs text-red-600">⚠️ Atraso</div>
-                            )}
+                            {aluno.diasDesdeInscricao > 5 && aluno.statusPagamento !== 'pago' && <div className="text-xs text-red-600">⚠️ Atraso</div>}
                           </div>
                         </TableCell>
                         <TableCell>
-                          <Button 
-                            variant="outline" 
-                            size="sm"
-                            onClick={() => handleEditPayment(aluno)}
-                            className="h-8"
-                          >
+                          <Button variant="outline" size="sm" onClick={() => handleEditPayment(aluno)} className="h-8">
                             <Edit className="w-3 h-3 mr-1" />
                             Editar
                           </Button>
                         </TableCell>
-                      </TableRow>
-                    ))}
+                      </TableRow>)}
                   </TableBody>
                 </Table>
 
-                {alunosFiltrados.length === 0 && (
-                  <div className="text-center py-8 text-gray-500">
+                {alunosFiltrados.length === 0 && <div className="text-center py-8 text-gray-500">
                     <Receipt className="w-12 h-12 mx-auto mb-4 text-gray-400" />
                     <p>Nenhum aluno encontrado com os filtros aplicados.</p>
-                  </div>
-                )}
+                  </div>}
               </div>
             </CardContent>
           </Card>
@@ -1113,17 +982,14 @@ const FinanceiroPage = () => {
               <CardContent>
                 <div className="space-y-4">
                   {['engenharias', 'saude', 'ciencias-sociais-humanas'].map(grupo => {
-                    const alunosGrupo = todosAlunosFinanceiros.filter(aluno => {
-                      // Simular grupo baseado no nome do par
-                      return grupo === 'engenharias'; // Temporário até reorganizar dados
-                    });
-                    
-                    const pagosGrupo = alunosGrupo.filter(a => a.statusPagamento === 'pago').length;
-                    const receitaGrupo = alunosGrupo.reduce((sum, a) => sum + a.valorPago, 0);
-                    const taxaGrupo = alunosGrupo.length > 0 ? (pagosGrupo / alunosGrupo.length) * 100 : 0;
-
-                    return (
-                      <div key={grupo} className="border rounded-lg p-4">
+                  const alunosGrupo = todosAlunosFinanceiros.filter(aluno => {
+                    // Simular grupo baseado no nome do par
+                    return grupo === 'engenharias'; // Temporário até reorganizar dados
+                  });
+                  const pagosGrupo = alunosGrupo.filter(a => a.statusPagamento === 'pago').length;
+                  const receitaGrupo = alunosGrupo.reduce((sum, a) => sum + a.valorPago, 0);
+                  const taxaGrupo = alunosGrupo.length > 0 ? pagosGrupo / alunosGrupo.length * 100 : 0;
+                  return <div key={grupo} className="border rounded-lg p-4">
                         <h4 className="font-medium mb-2">{getGrupoCursosLabel(grupo)}</h4>
                         <div className="grid grid-cols-2 gap-4 text-sm">
                           <div>
@@ -1143,9 +1009,8 @@ const FinanceiroPage = () => {
                             <div className="font-bold">{taxaGrupo.toFixed(1)}%</div>
                           </div>
                         </div>
-                      </div>
-                    );
-                  })}
+                      </div>;
+                })}
                 </div>
               </CardContent>
             </Card>
@@ -1158,19 +1023,14 @@ const FinanceiroPage = () => {
               <CardContent>
                 <div className="space-y-4">
                   {['manha', 'tarde'].map(periodo => {
-                    const alunosPeriodo = todosAlunosFinanceiros.filter(aluno => {
-                      const parCorrespondente = turmaPairs.find(pair => 
-                        pair.nome === aluno.nomeParTurma
-                      );
-                      return parCorrespondente?.periodo === periodo;
-                    });
-                    
-                    const pagosPeriodo = alunosPeriodo.filter(a => a.statusPagamento === 'pago').length;
-                    const receitaPeriodo = alunosPeriodo.reduce((sum, a) => sum + a.valorPago, 0);
-                    const taxaPeriodo = alunosPeriodo.length > 0 ? (pagosPeriodo / alunosPeriodo.length) * 100 : 0;
-
-                    return (
-                      <div key={periodo} className="border rounded-lg p-4">
+                  const alunosPeriodo = todosAlunosFinanceiros.filter(aluno => {
+                    const parCorrespondente = turmaPairs.find(pair => pair.nome === aluno.nomeParTurma);
+                    return parCorrespondente?.periodo === periodo;
+                  });
+                  const pagosPeriodo = alunosPeriodo.filter(a => a.statusPagamento === 'pago').length;
+                  const receitaPeriodo = alunosPeriodo.reduce((sum, a) => sum + a.valorPago, 0);
+                  const taxaPeriodo = alunosPeriodo.length > 0 ? pagosPeriodo / alunosPeriodo.length * 100 : 0;
+                  return <div key={periodo} className="border rounded-lg p-4">
                         <h4 className="font-medium mb-2">{periodo === 'manha' ? 'Manhã' : 'Tarde'}</h4>
                         <div className="grid grid-cols-2 gap-4 text-sm">
                           <div>
@@ -1190,9 +1050,8 @@ const FinanceiroPage = () => {
                             <div className="font-bold">{taxaPeriodo.toFixed(1)}%</div>
                           </div>
                         </div>
-                      </div>
-                    );
-                  })}
+                      </div>;
+                })}
                 </div>
               </CardContent>
             </Card>
@@ -1233,14 +1092,7 @@ const FinanceiroPage = () => {
       </Tabs>
 
       {/* Diálogo de Edição de Pagamento */}
-      <EditPaymentDialog
-        aluno={editingAluno}
-        isOpen={isEditDialogOpen}
-        onClose={handleCloseEditDialog}
-        onUpdate={handleUpdatePayment}
-      />
-    </div>
-  );
+      <EditPaymentDialog aluno={editingAluno} isOpen={isEditDialogOpen} onClose={handleCloseEditDialog} onUpdate={handleUpdatePayment} />
+    </div>;
 };
-
 export default FinanceiroPage;
