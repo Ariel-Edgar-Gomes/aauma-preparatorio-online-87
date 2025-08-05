@@ -66,9 +66,11 @@ const AdminDashboard = () => {
 
       const paresAtivos = turmaPairs.filter(p => p.ativo).length;
       
-      // Calcular receita total incluindo ajustes financeiros
+      // Calcular receita total igual à página financeira
+      // Para o dashboard, vamos usar o valor simples de alunosStats.totalRecebido 
+      // mais os ajustes financeiros para ser igual à receita arrecadada
       const totalAjustes = ajustes?.reduce((sum, ajuste) => sum + Number(ajuste.valor), 0) || 0;
-      const receitaTotalComAjustes = alunosStats.totalRecebido + totalAjustes;
+      const receitaTotalFinal = alunosStats.totalRecebido + totalAjustes;
 
       setStats({
         totalAlunos: alunosStats.total,
@@ -79,7 +81,7 @@ const AdminDashboard = () => {
         paresAtivos,
         totalCursos: cursos.length,
         totalSalas: salas.length,
-        receitaTotal: receitaTotalComAjustes,
+        receitaTotal: receitaTotalFinal,
         pagamentoCash: alunosStats.pagamentoCash,
         pagamentoTransferencia: alunosStats.pagamentoTransferencia,
         pagamentoCartao: alunosStats.pagamentoCartao
