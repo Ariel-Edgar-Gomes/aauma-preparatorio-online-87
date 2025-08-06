@@ -14,47 +14,6 @@ export type Database = {
   }
   public: {
     Tables: {
-      ajustes_financeiros: {
-        Row: {
-          created_at: string
-          created_by: string | null
-          descricao: string | null
-          id: string
-          tipo: string
-          turma_pair_id: string | null
-          updated_at: string
-          valor: number
-        }
-        Insert: {
-          created_at?: string
-          created_by?: string | null
-          descricao?: string | null
-          id?: string
-          tipo: string
-          turma_pair_id?: string | null
-          updated_at?: string
-          valor: number
-        }
-        Update: {
-          created_at?: string
-          created_by?: string | null
-          descricao?: string | null
-          id?: string
-          tipo?: string
-          turma_pair_id?: string | null
-          updated_at?: string
-          valor?: number
-        }
-        Relationships: [
-          {
-            foreignKeyName: "ajustes_financeiros_turma_pair_id_fkey"
-            columns: ["turma_pair_id"]
-            isOneToOne: false
-            referencedRelation: "turma_pairs"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       alunos: {
         Row: {
           comprovativo_pagamento_url: string | null

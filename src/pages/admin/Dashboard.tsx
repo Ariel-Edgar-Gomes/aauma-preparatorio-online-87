@@ -5,10 +5,10 @@ import { Button } from "@/components/ui/button";
 import { Users, GraduationCap, BookOpen, TrendingUp, Clock, MapPin, DollarSign, RefreshCw } from "lucide-react";
 import { Link } from "react-router-dom";
 import { alunosService, turmaPairsService, cursosService, salasService } from "@/services/supabaseService";
-import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/components/AuthProvider";
 import { UserEnrollmentStats } from "@/components/admin/UserEnrollmentStats";
+
 interface DashboardStats {
   totalAlunos: number;
   alunosInscritos: number;
@@ -23,13 +23,10 @@ interface DashboardStats {
   pagamentoTransferencia: number;
   pagamentoCartao: number;
 }
+
 const AdminDashboard = () => {
-  const {
-    toast
-  } = useToast();
-  const {
-    hasRole
-  } = useAuth();
+  const { toast } = useToast();
+  const { hasRole } = useAuth();
   const [stats, setStats] = useState<DashboardStats>({
     totalAlunos: 0,
     alunosInscritos: 0,
@@ -45,22 +42,27 @@ const AdminDashboard = () => {
     pagamentoCartao: 0
   });
   const [loading, setLoading] = useState(true);
+
   const loadDashboardStats = async () => {
     try {
       setLoading(true);
       console.log('[Dashboard] Carregando estatísticas...');
 
       // Carregar dados em paralelo
-      const [alunosStats, turmaPairs, cursos, salas, {
-        data: ajustes
-      }] = await Promise.all([alunosService.getStatistics(), turmaPairsService.getAll(), cursosService.getAll(), salasService.getAll(), supabase.from('ajustes_financeiros').select('*')]);
+      const [
+        alunosStats,
+        turmaPairs,
+        cursos,
+        salas
+      ] = await Promise.all([
+        alunosService.getStatistics(),
+        turmaPairsService.getAll(),
+        cursosService.getAll(),
+        salasService.getAll()
+      ]);
+
       const paresAtivos = turmaPairs.filter(p => p.ativo).length;
 
-      // Calcular receita total igual à página financeira
-      // Para o dashboard, vamos usar o valor simples de alunosStats.totalRecebido 
-      // mais os ajustes financeiros para ser igual à receita arrecadada
-      const totalAjustes = ajustes?.reduce((sum, ajuste) => sum + Number(ajuste.valor), 0) || 0;
-      const receitaTotalFinal = alunosStats.totalRecebido + totalAjustes;
       setStats({
         totalAlunos: alunosStats.total,
         alunosInscritos: alunosStats.inscritos,
@@ -70,11 +72,12 @@ const AdminDashboard = () => {
         paresAtivos,
         totalCursos: cursos.length,
         totalSalas: salas.length,
-        receitaTotal: receitaTotalFinal,
+        receitaTotal: alunosStats.totalRecebido,
         pagamentoCash: alunosStats.pagamentoCash,
         pagamentoTransferencia: alunosStats.pagamentoTransferencia,
         pagamentoCartao: alunosStats.pagamentoCartao
       });
+
       console.log('[Dashboard] Estatísticas carregadas:', alunosStats);
     } catch (error) {
       console.error('[Dashboard] Erro ao carregar estatísticas:', error);
@@ -87,18 +90,24 @@ const AdminDashboard = () => {
       setLoading(false);
     }
   };
+
   useEffect(() => {
     loadDashboardStats();
   }, []);
+
   if (loading) {
-    return <div className="p-6 flex items-center justify-center">
+    return (
+      <div className="p-6 flex items-center justify-center">
         <div className="text-center">
           <RefreshCw className="w-8 h-8 animate-spin text-aauma-navy mx-auto mb-4" />
           <p className="text-aauma-dark-gray">Carregando dashboard...</p>
         </div>
-      </div>;
+      </div>
+    );
   }
-  return <div className="p-6">
+
+  return (
+    <div className="p-6">
       {/* Title Section */}
       <div className="mb-6">
         <h2 className="text-2xl font-bold text-aauma-navy mb-2">Visão Geral do Sistema</h2>
@@ -168,18 +177,22 @@ const AdminDashboard = () => {
         </Card>
 
         {/* Receita - Esconder para usuários inscrição simples */}
-        {!hasRole('inscricao_simples') && <Card className="border-l-4 border-l-yellow-500">
+        {!hasRole('inscricao_simples') && (
+          <Card className="border-l-4 border-l-yellow-500">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              
-              
+              <CardTitle className="text-sm font-medium">Receita Total</CardTitle>
+              <DollarSign className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              
+              <div className="text-2xl font-bold text-yellow-600">
+                {stats.receitaTotal.toLocaleString()} Kz
+              </div>
               <p className="text-xs text-muted-foreground mt-2">
                 De {stats.totalAlunos - stats.alunosCancelados} alunos ativos
               </p>
             </CardContent>
-          </Card>}
+          </Card>
+        )}
       </div>
 
       {/* Secondary Stats */}
@@ -291,12 +304,14 @@ const AdminDashboard = () => {
             </Link>
             
             {/* Esconder Relatórios Financeiros para inscrição simples */}
-            {!hasRole('inscricao_simples') && <Link to="/admin/financeiro">
+            {!hasRole('inscricao_simples') && (
+              <Link to="/admin/financeiro">
                 <Button variant="outline" className="w-full h-20 flex flex-col gap-2">
                   <DollarSign className="w-6 h-6" />
                   <span className="text-sm">Relatórios Financeiros</span>
                 </Button>
-              </Link>}
+              </Link>
+            )}
             
             <Link to="/inscricao">
               <Button variant="outline" className="w-full h-20 flex flex-col gap-2">
@@ -307,6 +322,8 @@ const AdminDashboard = () => {
           </div>
         </CardContent>
       </Card>
-    </div>;
+    </div>
+  );
 };
+
 export default AdminDashboard;
