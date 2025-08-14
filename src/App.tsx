@@ -11,6 +11,7 @@ import Auth from "./pages/Auth";
 import AdminDashboard from "./pages/admin/Dashboard";
 import AdminFinanceiro from "./pages/admin/Financeiro";
 import AdminHorarios from "./pages/admin/Horarios";
+import HorariosProfessores from "./pages/admin/HorariosProfessores";
 import AdminTurmas from "./pages/admin/Turmas";
 import GestaoIndividual from "./pages/admin/GestaoIndividual";
 import GestaoUsuarios from "./pages/admin/GestaoUsuarios";
@@ -84,6 +85,13 @@ const App = () => (
               <ProtectedRoute>
                 <MainLayout>
                   <AdminHorarios />
+                </MainLayout>
+              </ProtectedRoute>
+            } />
+            <Route path="/admin/horarios-professores" element={
+              <ProtectedRoute requiredPermission="admin">
+                <MainLayout>
+                  <HorariosProfessores />
                 </MainLayout>
               </ProtectedRoute>
             } />

@@ -30,6 +30,7 @@ const navigationItems = [
   { title: "Dashboard", url: "/admin/dashboard", icon: Home, section: "admin", permission: "view_data" },
   { title: "Financeiro", url: "/admin/financeiro", icon: DollarSign, section: "admin", permission: "view_financeiro" },
   { title: "Horários", url: "/admin/horarios", icon: Calendar, section: "admin", permission: "admin" },
+  { title: "Professores", url: "/admin/horarios-professores", icon: Users, section: "admin", permission: "admin" },
   { title: "Turmas", url: "/admin/turmas", icon: GraduationCap, section: "admin", permission: "manage_turmas" },
   { title: "Gestão Individual", url: "/admin/gestao-individual", icon: User, section: "admin", permission: "edit_alunos" },
   { title: "Pesquisa Global", url: "/admin/pesquisa-global", icon: Search, section: "admin", permission: "view_data" },
