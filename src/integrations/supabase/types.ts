@@ -7,13 +7,54 @@ export type Json =
   | Json[]
 
 export type Database = {
-  // Allows to automatically instanciate createClient with right options
+  // Allows to automatically instantiate createClient with right options
   // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
     PostgrestVersion: "12.2.3 (519615d)"
   }
   public: {
     Tables: {
+      ajustes_financeiros: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          descricao: string | null
+          id: string
+          tipo: string
+          turma_pair_id: string | null
+          updated_at: string
+          valor: number
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          descricao?: string | null
+          id?: string
+          tipo: string
+          turma_pair_id?: string | null
+          updated_at?: string
+          valor: number
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          descricao?: string | null
+          id?: string
+          tipo?: string
+          turma_pair_id?: string | null
+          updated_at?: string
+          valor?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ajustes_financeiros_turma_pair_id_fkey"
+            columns: ["turma_pair_id"]
+            isOneToOne: false
+            referencedRelation: "turma_pairs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       alunos: {
         Row: {
           comprovativo_pagamento_url: string | null
@@ -451,23 +492,23 @@ export type Database = {
       get_user_audit_stats: {
         Args: { target_user_id?: string }
         Returns: {
+          alunos_created: number
+          alunos_deleted: number
+          alunos_updated: number
+          last_activity: string
+          role_changes: number
+          total_actions: number
+          total_views: number
+          user_email: string
           user_id: string
           user_name: string
-          user_email: string
-          total_actions: number
-          alunos_created: number
-          alunos_updated: number
-          alunos_deleted: number
           users_created: number
-          role_changes: number
-          last_activity: string
-          total_views: number
         }[]
       }
       has_role: {
         Args: {
-          _user_id: string
           _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
         }
         Returns: boolean
       }
@@ -477,12 +518,12 @@ export type Database = {
       }
       log_view_audit: {
         Args: {
-          p_view_type: string
+          p_ip_address?: unknown
+          p_metadata?: Json
           p_resource_id?: string
           p_resource_type?: string
-          p_metadata?: Json
-          p_ip_address?: unknown
           p_user_agent?: string
+          p_view_type: string
         }
         Returns: string
       }
