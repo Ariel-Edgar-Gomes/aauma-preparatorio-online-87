@@ -238,6 +238,24 @@ export type Database = {
         }
         Relationships: []
       }
+      bd_ativo: {
+        Row: {
+          created_at: string | null
+          id: number
+          num: number
+        }
+        Insert: {
+          created_at?: string | null
+          id?: number
+          num: number
+        }
+        Update: {
+          created_at?: string | null
+          id?: number
+          num?: number
+        }
+        Relationships: []
+      }
       cursos: {
         Row: {
           ativo: boolean
@@ -526,6 +544,10 @@ export type Database = {
           p_view_type: string
         }
         Returns: string
+      }
+      manter_bd_ativo: {
+        Args: Record<PropertyKey, never>
+        Returns: undefined
       }
     }
     Enums: {
