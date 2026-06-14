@@ -8,9 +8,9 @@ export const useSalasData = () => {
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
 
-  const loadSalas = async () => {
+  const loadSalas = async (silent = false) => {
     try {
-      setLoading(true);
+      if (!silent) setLoading(true);
       console.log('[useSalasData] Carregando salas...');
       const data = await salasService.getAll();
       setSalas(data || []);
@@ -24,7 +24,7 @@ export const useSalasData = () => {
       });
       setSalas([]);
     } finally {
-      setLoading(false);
+      if (!silent) setLoading(false);
     }
   };
 
