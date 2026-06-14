@@ -201,7 +201,7 @@ export const useSupabaseTurmaData = () => {
       });
       
       // Recarregar dados
-      await loadTurmaPairs();
+      await loadTurmaPairs(true);
       
       toast({
         title: "Par de turmas criado",
@@ -317,7 +317,7 @@ export const useSupabaseTurmaData = () => {
     } catch (error) {
       console.error('[useSupabaseTurmaData] Erro ao atualizar par de turmas:', error);
       // Reverter mudanças locais em caso de erro
-      await loadTurmaPairs();
+      await loadTurmaPairs(true);
       toast({
         title: "Erro ao atualizar",
         description: "Erro ao salvar alterações.",
@@ -337,7 +337,7 @@ export const useSupabaseTurmaData = () => {
       await turmaPairsService.delete(id);
       
       // Recarregar dados para garantir sincronização
-      await loadTurmaPairs();
+      await loadTurmaPairs(true);
       
       toast({
         title: "Par de turmas excluído",
@@ -346,7 +346,7 @@ export const useSupabaseTurmaData = () => {
     } catch (error) {
       console.error('[useSupabaseTurmaData] Erro ao excluir par de turmas:', error);
       // Reverter mudanças locais em caso de erro
-      await loadTurmaPairs();
+      await loadTurmaPairs(true);
       toast({
         title: "Erro ao excluir",
         description: "Erro ao remover o par de turmas.",
@@ -381,7 +381,7 @@ export const useSupabaseTurmaData = () => {
     } catch (error) {
       console.error('[useSupabaseTurmaData] Erro ao alterar status:', error);
       // Reverter mudanças locais em caso de erro
-      await loadTurmaPairs();
+      await loadTurmaPairs(true);
       toast({
         title: "Erro ao alterar status",
         description: "Erro ao alterar o status do par de turmas.",
@@ -420,7 +420,7 @@ export const useSupabaseTurmaData = () => {
       });
       
       // Recarregar dados
-      await loadTurmaPairs();
+      await loadTurmaPairs(true);
       
       toast({
         title: "Par de turmas duplicado",
@@ -477,7 +477,7 @@ export const useSupabaseTurmaData = () => {
       console.log('[useSupabaseTurmaData] Aluno criado com sucesso:', novoAluno.nome, 'ID:', novoAluno.id);
       
       // Recarregar dados imediatamente para refletir as mudanças
-      await loadTurmaPairs();
+      await loadTurmaPairs(true);
       
       toast({
         title: "Aluno adicionado",
@@ -520,7 +520,7 @@ export const useSupabaseTurmaData = () => {
       await alunosService.update(alunoId, dbUpdates);
       
       // Recarregar dados para garantir consistência
-      await loadTurmaPairs();
+      await loadTurmaPairs(true);
       
       toast({
         title: "Aluno atualizado",
@@ -547,7 +547,7 @@ export const useSupabaseTurmaData = () => {
       await alunosService.delete(alunoId);
       
       // Recarregar dados para garantir consistência
-      await loadTurmaPairs();
+      await loadTurmaPairs(true);
       
       toast({
         title: "Aluno removido",
@@ -574,7 +574,7 @@ export const useSupabaseTurmaData = () => {
       await alunosService.updateStatus(alunoId, status);
       
       // Recarregar dados para garantir consistência
-      await loadTurmaPairs();
+      await loadTurmaPairs(true);
       
       toast({
         title: "Status atualizado",
