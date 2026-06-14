@@ -349,10 +349,8 @@ export const useScheduleData = () => {
       }
     ];
 
-    setTimeout(() => {
-      setSchedules(mockSchedules);
-      setLoading(false);
-    }, 1000);
+    setSchedules(mockSchedules);
+    setLoading(false);
 
     console.log('[useScheduleData] Mock schedules loaded:', mockSchedules.length);
   }, []);
