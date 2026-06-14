@@ -174,8 +174,24 @@ export const useTurmaData = () => {
   };
 
   const handleUpdateTurmaPair = async (id: string, updates: Partial<TurmaPair>) => {
+    // Atualização otimista: refletir as alterações na tela imediatamente
+    setTurmaPairs(current =>
+      current.map(pair =>
+        pair.id === id
+          ? {
+              ...pair,
+              ...updates,
+              turmaA: updates.turmaA ? { ...pair.turmaA, ...updates.turmaA } : pair.turmaA,
+              turmaB: updates.turmaB ? { ...pair.turmaB, ...updates.turmaB } : pair.turmaB,
+            }
+          : pair
+      )
+    );
+
     try {
       console.log('[useTurmaData] Iniciando atualização do par:', { id, updates });
+      
+
       
       // Buscar as turmas associadas primeiro
       const turmas = await turmasService.getByTurmaPairId(id);
