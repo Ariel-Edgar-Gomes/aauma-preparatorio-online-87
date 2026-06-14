@@ -304,7 +304,7 @@ export const useTurmaData = () => {
       });
     } catch (error) {
       console.error('Erro ao atualizar par de turmas:', error);
-      await loadTurmaPairs();
+      await loadTurmaPairs(true);
       toast({
         title: "Erro",
         description: "Não foi possível atualizar o par de turmas.",
@@ -368,7 +368,7 @@ export const useTurmaData = () => {
       });
     } catch (error) {
       console.error('Erro ao remover par de turmas:', error);
-      await loadTurmaPairs();
+      await loadTurmaPairs(true);
       toast({
         title: "Erro",
         description: error instanceof Error ? error.message : "Não foi possível remover o par de turmas.",
@@ -399,7 +399,7 @@ export const useTurmaData = () => {
       });
     } catch (error) {
       console.error('Erro ao alterar status do par de turmas:', error);
-      await loadTurmaPairs();
+      await loadTurmaPairs(true);
       toast({
         title: "Erro",
         description: "Não foi possível alterar o status do par de turmas.",
