@@ -1,45 +1,52 @@
-# Criar a primeira conta de administrador
+## Objetivo
 
-Objetivo: criar a conta **arieledgargomes@gmail.com** (nova, com e‑mail já confirmado) e conceder a função **admin**, desbloqueando todas as áreas de administração (Gestão de Usuários, Auditoria, etc.).
+Tornar o sistema rápido e fazer com que edições apareçam imediatamente, sem precisar atualizar a página — sem alterar comportamento nem visual.
 
-## Contexto
+## Diagnóstico (o que está a causar a lentidão)
 
-- O app usa controle de acesso por papéis (tabela `user_roles`) e o painel só libera as áreas de admin quando o usuário tem o papel `admin`.
-- A tela de login (`/auth`) só faz login — não há cadastro público. Por isso a primeira conta precisa ser criada de forma controlada nos bastidores.
-- O backend não confirma e‑mail automaticamente por padrão; vamos ajustar isso para você entrar sem precisar verificar a caixa de entrada.
+1. **Consultas em excesso ao carregar turmas (causa principal do "Carregando turmas...").**
+   Ao montar a lista de turmas, o sistema processa cada par de turmas individualmente e, para *cada* par, faz várias idas à base de dados. Pior: carrega a lista **completa** de todos os alunos e de todos os criadores **duas vezes por par**. Com vários pares, isto multiplica-se em dezenas de consultas pesadas e repetidas.
 
-## O que vou precisar de você
+2. **Recarregamento total a cada pequena mudança.**
+   Existem dois "ouvintes" de tempo real a recarregar tudo (um deles duplicado para a tabela de salas). Cada alteração dispara uma recarga completa e pesada, e volta a mostrar o ecrã "Carregando", causando o piscar/lentidão.
 
-- Uma **senha inicial** para a conta de administrador. Vou solicitá‑la de forma segura (campo protegido), não por mensagem no chat. Você poderá trocá‑la depois.
+3. **Edições só aparecem após atualizar a página.**
+   Ao guardar uma edição, a tela não é atualizada de imediato — depende do recarregamento de tempo real, que por ser lento (ponto 1) dá a sensação de que "não aconteceu nada".
 
-## Passos
+4. **Atraso artificial nos horários.**
+   A tela de horários tem uma espera fixa de 1 segundo programada de propósito antes de mostrar os dados.
 
-1. **Ajustar autenticação**
-   - Habilitar confirmação automática de e‑mail para que a conta já entre direto.
-   - Manter o cadastro público desativado (apenas o admin cria novos usuários depois).
+## O que vai ser feito
 
-2. **Receber a senha inicial com segurança**
-   - Solicitar a senha do admin através do formulário seguro de segredos (`ADMIN_INITIAL_PASSWORD`).
+### 1. Carregar dados das turmas em bloco (a maior melhoria)
+Reescrever a função de carregamento para buscar tudo em poucas consultas em vez de dezenas:
+- Buscar todos os pares de turmas, todas as turmas (já com a sala associada) e todos os alunos/criadores **uma única vez cada**.
+- Montar a estrutura em memória, associando alunos e salas a cada par, sem repetir consultas.
 
-3. **Criar a conta de administrador**
-   - Criar uma função temporária no backend que, com privilégios administrativos, cria o usuário `arieledgargomes@gmail.com` (com e‑mail já confirmado) e concede o papel `admin` na tabela `user_roles`.
-   - Essa função fica protegida por um segredo de uso único e será **removida logo após a execução**.
+Resultado: o que hoje são dezenas de consultas passa a ser cerca de 3 consultas — carregamento muito mais rápido.
 
-4. **Executar e validar**
-   - Rodar a função uma vez para criar a conta e atribuir o papel admin.
-   - Confirmar que a conta existe e que o papel `admin` foi gravado em `user_roles`.
-   - Remover a função temporária e o segredo de uso único.
+### 2. Refresh silencioso e sem duplicação
+- As recargas em segundo plano (tempo real) deixam de mostrar o ecrã "Carregando"; os dados na tela permanecem visíveis e são atualizados sem piscar. O "Carregando" aparece apenas no primeiro carregamento.
+- Agrupar mudanças rápidas (debounce curto) para não recarregar várias vezes seguidas.
+- Remover a duplicação de ouvintes da tabela de salas (unificar para evitar recargas em dobro).
 
-5. **Limpeza**
-   - Remover o segredo temporário usado para a criação.
+### 3. Edições aparecem na hora
+- Garantir atualização imediata do estado local ao criar/editar/eliminar/ativar pares e alunos (atualização otimista), com reversão automática em caso de erro.
+- Consolidar a camada dupla de gestão de turmas para que a edição feita no diálogo se reflita instantaneamente na lista, complementada pela sincronização de tempo real já existente.
 
-## Resultado
-
-- Você poderá fazer login em `/auth` com `arieledgargomes@gmail.com` e a senha definida.
-- Todas as áreas administrativas ficarão desbloqueadas.
+### 4. Remover o atraso artificial dos horários
+- Eliminar a espera fixa de 1 segundo na tela de horários para que apareça imediatamente.
 
 ## Detalhes técnicos
 
-- `configure_auth`: `auto_confirm_email = true`, `disable_signup = true`, mantendo proteção contra senhas vazadas se aplicável.
-- Função edge temporária usando `SUPABASE_SERVICE_ROLE_KEY` + `auth.admin.createUser({ email, password, email_confirm: true })`, seguida de `insert` em `public.user_roles` com `role = 'admin'`. Proteção via header com segredo de uso único e checagem de idempotência (não duplicar papel).
-- Após sucesso: `delete_edge_functions` da função temporária e `delete_secret` do segredo de uso único.
+- `src/hooks/useSupabaseTurmaData.ts`: substituir `convertDBTurmaPairToInterface` (chamado em loop com `await` por par e com 2× `alunosService.getAllWithCreator()` por par) por um carregamento em lote — `turmaPairsService.getAll()`, `turmas` com join de `salas`, e um único `getAllWithCreator()` — montando os pares via `Map` em memória. Adicionar um parâmetro `silent` ao `loadTurmaPairs` para não acionar `setLoading(true)` em recargas de tempo real.
+- `src/hooks/useTurmaData.ts`: remover a camada/estado duplicado e o segundo canal realtime redundante; usar `setTurmaPairs` otimista nas operações de update e debounce (~300ms) no handler de realtime. Manter a mesma API pública do hook para não quebrar os componentes que o consomem (`Turmas.tsx`, grids, diálogos).
+- `src/hooks/useSalasData.ts`: tornar a recarga de realtime silenciosa (sem `setLoading(true)`) e evitar o canal duplicado de `salas`.
+- `src/hooks/useScheduleData.ts`: remover o `setTimeout(..., 1000)` artificial.
+- Adicionar índices na base de dados em `alunos(turma_id)`, `alunos(turma_pair_id)` e `turmas(turma_pair_id)` para acelerar as buscas, caso ainda não existam.
+
+## Garantias
+
+- Sem mudanças visuais nem de funcionalidades — apenas desempenho e atualização imediata.
+- A API dos hooks permanece igual, evitando quebrar telas existentes.
+- Em caso de erro numa operação, o estado é revertido e uma mensagem é mostrada (comportamento atual mantido).
