@@ -28,63 +28,30 @@ export const useTurmaData = () => {
   }, [supabaseTurmaPairs, supabaseLoading]);
 
   // Realtime subscriptions para atualizações instantâneas
+  // Recargas silenciosas (sem ecrã "Carregando") e agrupadas com debounce
   useEffect(() => {
+    let debounceTimer: ReturnType<typeof setTimeout> | null = null;
+    const scheduleReload = () => {
+      if (debounceTimer) clearTimeout(debounceTimer);
+      debounceTimer = setTimeout(() => {
+        loadTurmaPairs(true);
+      }, 300);
+    };
+
     const channel = supabase
       .channel('schema-db-changes')
-      .on(
-        'postgres_changes',
-        {
-          event: '*', // Escuta INSERT, UPDATE, DELETE
-          schema: 'public',
-          table: 'turma_pairs'
-        },
-        () => {
-          console.log('Mudança detectada em turma_pairs - recarregando dados...');
-          loadTurmaPairs();
-        }
-      )
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'turmas'
-        },
-        () => {
-          console.log('Mudança detectada em turmas - recarregando dados...');
-          loadTurmaPairs();
-        }
-      )
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'alunos'
-        },
-        () => {
-          console.log('Mudança detectada em alunos - recarregando dados...');
-          loadTurmaPairs();
-        }
-      )
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'salas'
-        },
-        () => {
-          console.log('Mudança detectada em salas - recarregando dados...');
-          loadTurmaPairs();
-        }
-      )
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'turma_pairs' }, scheduleReload)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'turmas' }, scheduleReload)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'alunos' }, scheduleReload)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'salas' }, scheduleReload)
       .subscribe();
 
     return () => {
+      if (debounceTimer) clearTimeout(debounceTimer);
       supabase.removeChannel(channel);
     };
   }, [loadTurmaPairs]);
+
 
   const handleCreateTurmaPair = async (data: CreateTurmaPairData): Promise<boolean> => {
     try {
