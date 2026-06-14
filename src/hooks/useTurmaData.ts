@@ -1,9 +1,10 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { TurmaPair, CreateTurmaPairData, Aluno } from '@/types/turma';
 import { toast } from "@/hooks/use-toast";
 import { useSupabaseTurmaData } from '@/hooks/useSupabaseTurmaData';
 import { turmaPairsService, turmasService, salasService, cursosService } from '@/services/supabaseService';
 import { supabase } from '@/integrations/supabase/client';
+
 
 export const useTurmaData = () => {
   const {
