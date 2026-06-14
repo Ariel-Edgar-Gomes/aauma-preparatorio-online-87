@@ -113,8 +113,9 @@ export const useSalasData = () => {
     loadSalas();
   }, []);
 
-  // Realtime subscription para atualizações instantâneas
+  // Realtime subscription para atualizações instantâneas (recarga silenciosa e agrupada)
   useEffect(() => {
+    let debounceTimer: ReturnType<typeof setTimeout> | null = null;
     const channel = supabase
       .channel('salas-changes')
       .on(
@@ -126,13 +127,14 @@ export const useSalasData = () => {
         },
         (payload) => {
           console.log('[useSalasData] Mudança detectada:', payload);
-          // Recarregar dados quando há mudanças externas
-          loadSalas();
+          if (debounceTimer) clearTimeout(debounceTimer);
+          debounceTimer = setTimeout(() => loadSalas(true), 300);
         }
       )
       .subscribe();
 
     return () => {
+      if (debounceTimer) clearTimeout(debounceTimer);
       supabase.removeChannel(channel);
     };
   }, []);
