@@ -3,141 +3,68 @@ import { useToast } from "@/hooks/use-toast";
 import { turmaPairsService, turmasService, alunosService, cursosService, salasService } from "@/services/supabaseService";
 import type { TurmaPair, TurmaIndividual, Aluno, CreateTurmaPairData } from "@/types/turma";
 
-// Função para converter dados da DB para o formato da interface atual
-const convertDBTurmaPairToInterface = async (dbPair: any): Promise<TurmaPair> => {
-  console.log('[convertDBTurmaPairToInterface] Convertendo par:', dbPair.id, dbPair.nome);
-  
-  try {
-    // Buscar as turmas A e B
-    const turmas = await turmasService.getByTurmaPairId(dbPair.id);
-    const turmaA = turmas.find(t => t.tipo === 'A');
-    const turmaB = turmas.find(t => t.tipo === 'B');
-    
-    console.log('[convertDBTurmaPairToInterface] Turmas encontradas:', {
-      turmaA: turmaA ? { id: turmaA.id, alunos_inscritos: turmaA.alunos_inscritos } : null,
-      turmaB: turmaB ? { id: turmaB.id, alunos_inscritos: turmaB.alunos_inscritos } : null
-    });
-    
-    // Buscar alunos de cada turma com informações do criador
-    const alunosTurmaA = turmaA ? await alunosService.getAllWithCreator().then(all => 
-      all.filter(a => a.turma_id === turmaA.id)
-    ) : [];
-    const alunosTurmaB = turmaB ? await alunosService.getAllWithCreator().then(all => 
-      all.filter(a => a.turma_id === turmaB.id)
-    ) : [];
-    
-    console.log('[convertDBTurmaPairToInterface] Alunos encontrados:', {
-      alunosTurmaA: alunosTurmaA.length,
-      alunosTurmaB: alunosTurmaB.length
-    });
-    
-    // Usar contagem real de alunos (não corrigir automaticamente para evitar conflitos)
-    
-    // Buscar informações das salas separadamente para evitar JOIN complexo
-    let salaAInfo = { codigo: "", capacidade: 0 };
-    let salaBInfo = { codigo: "", capacidade: 0 };
-    
-    if (turmaA?.sala_id) {
-      try {
-        const salaA = await salasService.getById(turmaA.sala_id);
-        salaAInfo = { codigo: salaA.codigo, capacidade: salaA.capacidade };
-      } catch (salaError) {
-        console.error('[convertDBTurmaPairToInterface] Erro ao buscar sala A:', salaError);
-      }
+// Converte um aluno da DB para o formato da interface
+const convertAluno = (a: any): Aluno => ({
+  id: a.id,
+  nome: a.nome,
+  email: a.email || "",
+  telefone: a.telefone,
+  curso: a.curso_codigo,
+  numeroEstudante: a.numero_estudante,
+  dataInscricao: a.data_inscricao ? a.data_inscricao.split('T')[0] : '',
+  status: a.status,
+  observacoes: a.observacoes,
+  numeroBI: a.numero_bi,
+  dataNascimento: a.data_nascimento,
+  endereco: a.endereco,
+  formaPagamento: a.forma_pagamento,
+  duracao: a.duracao,
+  dataInicio: a.data_inicio,
+  turno: a.turno,
+  par: a.turma_pair_id,
+  turma: a.turma_id,
+  criador: a.creator ? {
+    nome: a.creator.full_name || 'Usuário Desconhecido',
+    email: a.creator.email || ''
+  } : null
+});
+
+// Monta um par de turmas (função pura, sem consultas à base de dados)
+const buildTurmaPair = (
+  dbPair: any,
+  turmas: any[],
+  alunosByTurma: Map<string, any[]>
+): TurmaPair => {
+  const turmaA = turmas.find(t => t.tipo === 'A');
+  const turmaB = turmas.find(t => t.tipo === 'B');
+
+  const buildTurma = (turma: any): TurmaIndividual => {
+    if (!turma) {
+      return { sala: "", capacidade: 0, alunosInscritos: 0, horarioSemanal: {}, alunos: [] };
     }
-    
-    if (turmaB?.sala_id) {
-      try {
-        const salaB = await salasService.getById(turmaB.sala_id);
-        salaBInfo = { codigo: salaB.codigo, capacidade: salaB.capacidade };
-      } catch (salaError) {
-        console.error('[convertDBTurmaPairToInterface] Erro ao buscar sala B:', salaError);
-      }
-    }
-    
-    // Converter alunos para o formato da interface, incluindo informações do criador
-    const convertAlunos = (alunosDB: any[]): Aluno[] => {
-      return alunosDB.map(a => ({
-        id: a.id,
-        nome: a.nome,
-        email: a.email || "",
-        telefone: a.telefone,
-        curso: a.curso_codigo,
-        numeroEstudante: a.numero_estudante,
-        dataInscricao: a.data_inscricao.split('T')[0],
-        status: a.status,
-        observacoes: a.observacoes,
-        numeroBI: a.numero_bi,
-        dataNascimento: a.data_nascimento,
-        endereco: a.endereco,
-        formaPagamento: a.forma_pagamento,
-        duracao: a.duracao,
-        dataInicio: a.data_inicio,
-        turno: a.turno,
-        par: a.turma_pair_id,
-        turma: a.turma_id,
-        // Adicionar informações do criador
-        criador: a.creator ? {
-          nome: a.creator.full_name || 'Usuário Desconhecido',
-          email: a.creator.email || ''
-        } : null
-      }));
+    const alunosDB = alunosByTurma.get(turma.id) || [];
+    return {
+      sala: turma.salas?.codigo || "",
+      capacidade: turma.capacidade,
+      alunosInscritos: alunosDB.length,
+      horarioSemanal: turma.horario_semanal || {},
+      alunos: alunosDB.map(convertAluno)
     };
-    
-    const turmaAInterface: TurmaIndividual = turmaA ? {
-      sala: salaAInfo.codigo,
-      capacidade: turmaA.capacidade,
-      alunosInscritos: alunosTurmaA.length, // Usar contagem real dos alunos
-      horarioSemanal: turmaA.horario_semanal || {},
-      alunos: convertAlunos(alunosTurmaA)
-    } : {
-      sala: "",
-      capacidade: 0,
-      alunosInscritos: 0,
-      horarioSemanal: {},
-      alunos: []
-    };
-    
-    const turmaBInterface: TurmaIndividual = turmaB ? {
-      sala: salaBInfo.codigo,
-      capacidade: turmaB.capacidade,
-      alunosInscritos: alunosTurmaB.length, // Usar contagem real dos alunos
-      horarioSemanal: turmaB.horario_semanal || {},
-      alunos: convertAlunos(alunosTurmaB)
-    } : {
-      sala: "",
-      capacidade: 0,
-      alunosInscritos: 0,
-      horarioSemanal: {},
-      alunos: []
-    };
-    
-    const result = {
-      id: dbPair.id,
-      nome: dbPair.nome,
-      periodo: dbPair.periodo,
-      horarioPeriodo: dbPair.horario_periodo,
-      cursos: dbPair.cursos || [],
-      disciplinasComuns: dbPair.disciplinas_comuns || [],
-      horarioSemanal: dbPair.horario_semanal || {},
-      turmaA: turmaAInterface,
-      turmaB: turmaBInterface,
-      ativo: dbPair.ativo,
-      criadoEm: dbPair.created_at.split('T')[0]
-    };
-    
-    console.log('[convertDBTurmaPairToInterface] Par convertido:', {
-      id: result.id,
-      nome: result.nome,
-      turmaA_alunos: result.turmaA.alunosInscritos,
-      turmaB_alunos: result.turmaB.alunosInscritos
-    });
-    
-    return result;
-  } catch (error) {
-    console.error('[convertDBTurmaPairToInterface] Erro na conversão:', error);
-    throw error;
-  }
+  };
+
+  return {
+    id: dbPair.id,
+    nome: dbPair.nome,
+    periodo: dbPair.periodo,
+    horarioPeriodo: dbPair.horario_periodo,
+    cursos: dbPair.cursos || [],
+    disciplinasComuns: dbPair.disciplinas_comuns || [],
+    horarioSemanal: dbPair.horario_semanal || {},
+    turmaA: buildTurma(turmaA),
+    turmaB: buildTurma(turmaB),
+    ativo: dbPair.ativo,
+    criadoEm: dbPair.created_at ? dbPair.created_at.split('T')[0] : ''
+  };
 };
 
 export const useSupabaseTurmaData = () => {
@@ -145,29 +72,41 @@ export const useSupabaseTurmaData = () => {
   const [turmaPairs, setTurmaPairs] = useState<TurmaPair[]>([]);
   const [loading, setLoading] = useState(true);
 
-  // Carregar dados da base de dados
-  const loadTurmaPairs = async () => {
+  // Carregar dados da base de dados em lote (poucas consultas em vez de dezenas)
+  // silent=true: atualiza os dados sem mostrar o ecrã "Carregando" (recargas em segundo plano)
+  const loadTurmaPairs = async (silent = false) => {
     try {
-      setLoading(true);
-      console.log('[useSupabaseTurmaData] Carregando pares de turmas da base de dados...');
-      
-      const dbPairs = await turmaPairsService.getAll();
-      console.log('[useSupabaseTurmaData] Pares encontrados:', dbPairs.length);
-      
-      // Converter cada par de turma com dados consistentes
-      const convertedPairs: TurmaPair[] = [];
-      for (const dbPair of dbPairs) {
-        try {
-          const converted = await convertDBTurmaPairToInterface(dbPair);
-          convertedPairs.push(converted);
-        } catch (conversionError) {
-          console.error('[useSupabaseTurmaData] Erro ao converter par:', dbPair.id, conversionError);
-          // Continua processando outros pares mesmo se um falhar
-        }
+      if (!silent) setLoading(true);
+
+      // Buscar tudo de uma vez, em paralelo
+      const [dbPairs, dbTurmas, dbAlunos] = await Promise.all([
+        turmaPairsService.getAll(),
+        turmasService.getAll(),
+        alunosService.getAllWithCreator(),
+      ]);
+
+      // Agrupar turmas por par
+      const turmasByPair = new Map<string, any[]>();
+      for (const t of dbTurmas) {
+        const arr = turmasByPair.get(t.turma_pair_id) || [];
+        arr.push(t);
+        turmasByPair.set(t.turma_pair_id, arr);
       }
-      
+
+      // Agrupar alunos por turma
+      const alunosByTurma = new Map<string, any[]>();
+      for (const a of dbAlunos) {
+        if (!a.turma_id) continue;
+        const arr = alunosByTurma.get(a.turma_id) || [];
+        arr.push(a);
+        alunosByTurma.set(a.turma_id, arr);
+      }
+
+      const convertedPairs = dbPairs.map(dbPair =>
+        buildTurmaPair(dbPair, turmasByPair.get(dbPair.id) || [], alunosByTurma)
+      );
+
       setTurmaPairs(convertedPairs);
-      console.log('[useSupabaseTurmaData] Pares convertidos com dados consistentes:', convertedPairs.length);
     } catch (error) {
       console.error('[useSupabaseTurmaData] Erro ao carregar dados:', error);
       toast({
@@ -176,13 +115,14 @@ export const useSupabaseTurmaData = () => {
         variant: "destructive"
       });
     } finally {
-      setLoading(false);
+      if (!silent) setLoading(false);
     }
   };
 
   useEffect(() => {
     loadTurmaPairs();
   }, []);
+
 
   // Criar novo par de turmas
   const handleCreateTurmaPair = async (data: CreateTurmaPairData): Promise<boolean> => {
@@ -261,7 +201,7 @@ export const useSupabaseTurmaData = () => {
       });
       
       // Recarregar dados
-      await loadTurmaPairs();
+      await loadTurmaPairs(true);
       
       toast({
         title: "Par de turmas criado",
@@ -377,7 +317,7 @@ export const useSupabaseTurmaData = () => {
     } catch (error) {
       console.error('[useSupabaseTurmaData] Erro ao atualizar par de turmas:', error);
       // Reverter mudanças locais em caso de erro
-      await loadTurmaPairs();
+      await loadTurmaPairs(true);
       toast({
         title: "Erro ao atualizar",
         description: "Erro ao salvar alterações.",
@@ -397,7 +337,7 @@ export const useSupabaseTurmaData = () => {
       await turmaPairsService.delete(id);
       
       // Recarregar dados para garantir sincronização
-      await loadTurmaPairs();
+      await loadTurmaPairs(true);
       
       toast({
         title: "Par de turmas excluído",
@@ -406,7 +346,7 @@ export const useSupabaseTurmaData = () => {
     } catch (error) {
       console.error('[useSupabaseTurmaData] Erro ao excluir par de turmas:', error);
       // Reverter mudanças locais em caso de erro
-      await loadTurmaPairs();
+      await loadTurmaPairs(true);
       toast({
         title: "Erro ao excluir",
         description: "Erro ao remover o par de turmas.",
@@ -441,7 +381,7 @@ export const useSupabaseTurmaData = () => {
     } catch (error) {
       console.error('[useSupabaseTurmaData] Erro ao alterar status:', error);
       // Reverter mudanças locais em caso de erro
-      await loadTurmaPairs();
+      await loadTurmaPairs(true);
       toast({
         title: "Erro ao alterar status",
         description: "Erro ao alterar o status do par de turmas.",
@@ -480,7 +420,7 @@ export const useSupabaseTurmaData = () => {
       });
       
       // Recarregar dados
-      await loadTurmaPairs();
+      await loadTurmaPairs(true);
       
       toast({
         title: "Par de turmas duplicado",
@@ -537,7 +477,7 @@ export const useSupabaseTurmaData = () => {
       console.log('[useSupabaseTurmaData] Aluno criado com sucesso:', novoAluno.nome, 'ID:', novoAluno.id);
       
       // Recarregar dados imediatamente para refletir as mudanças
-      await loadTurmaPairs();
+      await loadTurmaPairs(true);
       
       toast({
         title: "Aluno adicionado",
@@ -580,7 +520,7 @@ export const useSupabaseTurmaData = () => {
       await alunosService.update(alunoId, dbUpdates);
       
       // Recarregar dados para garantir consistência
-      await loadTurmaPairs();
+      await loadTurmaPairs(true);
       
       toast({
         title: "Aluno atualizado",
@@ -607,7 +547,7 @@ export const useSupabaseTurmaData = () => {
       await alunosService.delete(alunoId);
       
       // Recarregar dados para garantir consistência
-      await loadTurmaPairs();
+      await loadTurmaPairs(true);
       
       toast({
         title: "Aluno removido",
@@ -634,7 +574,7 @@ export const useSupabaseTurmaData = () => {
       await alunosService.updateStatus(alunoId, status);
       
       // Recarregar dados para garantir consistência
-      await loadTurmaPairs();
+      await loadTurmaPairs(true);
       
       toast({
         title: "Status atualizado",

@@ -1,9 +1,10 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { TurmaPair, CreateTurmaPairData, Aluno } from '@/types/turma';
 import { toast } from "@/hooks/use-toast";
 import { useSupabaseTurmaData } from '@/hooks/useSupabaseTurmaData';
 import { turmaPairsService, turmasService, salasService, cursosService } from '@/services/supabaseService';
 import { supabase } from '@/integrations/supabase/client';
+
 
 export const useTurmaData = () => {
   const {
@@ -27,64 +28,36 @@ export const useTurmaData = () => {
     }
   }, [supabaseTurmaPairs, supabaseLoading]);
 
+  // Mantém sempre a referência mais recente de loadTurmaPairs sem re-subscrever o canal
+  const loadTurmaPairsRef = useRef(loadTurmaPairs);
+  loadTurmaPairsRef.current = loadTurmaPairs;
+
   // Realtime subscriptions para atualizações instantâneas
+  // Recargas silenciosas (sem ecrã "Carregando") e agrupadas com debounce
   useEffect(() => {
+    let debounceTimer: ReturnType<typeof setTimeout> | null = null;
+    const scheduleReload = () => {
+      if (debounceTimer) clearTimeout(debounceTimer);
+      debounceTimer = setTimeout(() => {
+        loadTurmaPairsRef.current(true);
+      }, 300);
+    };
+
     const channel = supabase
       .channel('schema-db-changes')
-      .on(
-        'postgres_changes',
-        {
-          event: '*', // Escuta INSERT, UPDATE, DELETE
-          schema: 'public',
-          table: 'turma_pairs'
-        },
-        () => {
-          console.log('Mudança detectada em turma_pairs - recarregando dados...');
-          loadTurmaPairs();
-        }
-      )
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'turmas'
-        },
-        () => {
-          console.log('Mudança detectada em turmas - recarregando dados...');
-          loadTurmaPairs();
-        }
-      )
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'alunos'
-        },
-        () => {
-          console.log('Mudança detectada em alunos - recarregando dados...');
-          loadTurmaPairs();
-        }
-      )
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'salas'
-        },
-        () => {
-          console.log('Mudança detectada em salas - recarregando dados...');
-          loadTurmaPairs();
-        }
-      )
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'turma_pairs' }, scheduleReload)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'turmas' }, scheduleReload)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'alunos' }, scheduleReload)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'salas' }, scheduleReload)
       .subscribe();
 
     return () => {
+      if (debounceTimer) clearTimeout(debounceTimer);
       supabase.removeChannel(channel);
     };
-  }, [loadTurmaPairs]);
+  }, []);
+
+
 
   const handleCreateTurmaPair = async (data: CreateTurmaPairData): Promise<boolean> => {
     try {
@@ -201,8 +174,24 @@ export const useTurmaData = () => {
   };
 
   const handleUpdateTurmaPair = async (id: string, updates: Partial<TurmaPair>) => {
+    // Atualização otimista: refletir as alterações na tela imediatamente
+    setTurmaPairs(current =>
+      current.map(pair =>
+        pair.id === id
+          ? {
+              ...pair,
+              ...updates,
+              turmaA: updates.turmaA ? { ...pair.turmaA, ...updates.turmaA } : pair.turmaA,
+              turmaB: updates.turmaB ? { ...pair.turmaB, ...updates.turmaB } : pair.turmaB,
+            }
+          : pair
+      )
+    );
+
     try {
       console.log('[useTurmaData] Iniciando atualização do par:', { id, updates });
+      
+
       
       // Buscar as turmas associadas primeiro
       const turmas = await turmasService.getByTurmaPairId(id);
@@ -315,7 +304,7 @@ export const useTurmaData = () => {
       });
     } catch (error) {
       console.error('Erro ao atualizar par de turmas:', error);
-      await loadTurmaPairs();
+      await loadTurmaPairs(true);
       toast({
         title: "Erro",
         description: "Não foi possível atualizar o par de turmas.",
@@ -379,7 +368,7 @@ export const useTurmaData = () => {
       });
     } catch (error) {
       console.error('Erro ao remover par de turmas:', error);
-      await loadTurmaPairs();
+      await loadTurmaPairs(true);
       toast({
         title: "Erro",
         description: error instanceof Error ? error.message : "Não foi possível remover o par de turmas.",
@@ -410,7 +399,7 @@ export const useTurmaData = () => {
       });
     } catch (error) {
       console.error('Erro ao alterar status do par de turmas:', error);
-      await loadTurmaPairs();
+      await loadTurmaPairs(true);
       toast({
         title: "Erro",
         description: "Não foi possível alterar o status do par de turmas.",
