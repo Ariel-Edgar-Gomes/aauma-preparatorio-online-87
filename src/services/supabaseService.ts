@@ -284,6 +284,24 @@ export const turmaPairsService = {
 
 // Serviços para Turmas Individuais
 export const turmasService = {
+  // Busca em lote de todas as turmas (com sala associada) numa única consulta
+  async getAll() {
+    const { data, error } = await supabase
+      .from('turmas')
+      .select(`
+        *,
+        salas (
+          codigo,
+          capacidade,
+          tipo
+        )
+      `)
+      .order('tipo');
+
+    if (error) throw error;
+    return data as DBTurma[];
+  },
+
   async getByTurmaPairId(turmaPairId: string) {
     const { data, error } = await supabase
       .from('turmas')
