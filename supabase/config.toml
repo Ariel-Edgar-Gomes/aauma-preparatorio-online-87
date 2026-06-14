@@ -1,10 +1,1 @@
-project_id = "huuwyqbqawdtbuvkzoax"
-
-[auth]
-enable_signup = true
-
-[auth.external.anonymous]
-enabled = false
-
-[functions.send-files-email]
-verify_jwt = true
+project_id = "ehrglnztgozdcjkhaith"
