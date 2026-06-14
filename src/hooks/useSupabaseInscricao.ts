@@ -168,10 +168,10 @@ export const useSupabaseInscricao = () => {
               dataInscricao: novoAluno.data_inscricao
             },
             files: {
-              foto: foto_url,
-              copiaBI: copia_bi_url,
-              declaracaoCertificado: declaracao_certificado_url,
-              comprovativoPagamento: comprovativo_pagamento_url
+              foto: fotoAttachment,
+              copiaBI: copiaBIAttachment,
+              declaracaoCertificado: declaracaoAttachment,
+              comprovativoPagamento: comprovativoAttachment
             }
           }
         });
