@@ -10,51 +10,10 @@ export type Database = {
   // Allows to automatically instantiate createClient with right options
   // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
-    PostgrestVersion: "12.2.3 (519615d)"
+    PostgrestVersion: "14.5"
   }
   public: {
     Tables: {
-      ajustes_financeiros: {
-        Row: {
-          created_at: string
-          created_by: string | null
-          descricao: string | null
-          id: string
-          tipo: string
-          turma_pair_id: string | null
-          updated_at: string
-          valor: number
-        }
-        Insert: {
-          created_at?: string
-          created_by?: string | null
-          descricao?: string | null
-          id?: string
-          tipo: string
-          turma_pair_id?: string | null
-          updated_at?: string
-          valor: number
-        }
-        Update: {
-          created_at?: string
-          created_by?: string | null
-          descricao?: string | null
-          id?: string
-          tipo?: string
-          turma_pair_id?: string | null
-          updated_at?: string
-          valor?: number
-        }
-        Relationships: [
-          {
-            foreignKeyName: "ajustes_financeiros_turma_pair_id_fkey"
-            columns: ["turma_pair_id"]
-            isOneToOne: false
-            referencedRelation: "turma_pairs"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       alunos: {
         Row: {
           comprovativo_pagamento_url: string | null
@@ -163,7 +122,7 @@ export type Database = {
           created_at: string
           details: Json | null
           id: string
-          ip_address: unknown | null
+          ip_address: unknown
           new_values: Json | null
           old_values: Json | null
           record_id: string | null
@@ -177,7 +136,7 @@ export type Database = {
           created_at?: string
           details?: Json | null
           id?: string
-          ip_address?: unknown | null
+          ip_address?: unknown
           new_values?: Json | null
           old_values?: Json | null
           record_id?: string | null
@@ -191,7 +150,7 @@ export type Database = {
           created_at?: string
           details?: Json | null
           id?: string
-          ip_address?: unknown | null
+          ip_address?: unknown
           new_values?: Json | null
           old_values?: Json | null
           record_id?: string | null
@@ -206,7 +165,7 @@ export type Database = {
         Row: {
           created_at: string | null
           id: string
-          ip_address: unknown | null
+          ip_address: unknown
           metadata: Json | null
           resource_id: string | null
           resource_type: string | null
@@ -217,7 +176,7 @@ export type Database = {
         Insert: {
           created_at?: string | null
           id?: string
-          ip_address?: unknown | null
+          ip_address?: unknown
           metadata?: Json | null
           resource_id?: string | null
           resource_type?: string | null
@@ -228,7 +187,7 @@ export type Database = {
         Update: {
           created_at?: string | null
           id?: string
-          ip_address?: unknown | null
+          ip_address?: unknown
           metadata?: Json | null
           resource_id?: string | null
           resource_type?: string | null
@@ -530,10 +489,7 @@ export type Database = {
         }
         Returns: boolean
       }
-      is_admin: {
-        Args: { _user_id: string }
-        Returns: boolean
-      }
+      is_admin: { Args: { _user_id: string }; Returns: boolean }
       log_view_audit: {
         Args: {
           p_ip_address?: unknown
@@ -545,10 +501,7 @@ export type Database = {
         }
         Returns: string
       }
-      manter_bd_ativo: {
-        Args: Record<PropertyKey, never>
-        Returns: undefined
-      }
+      manter_bd_ativo: { Args: never; Returns: undefined }
     }
     Enums: {
       app_role:
