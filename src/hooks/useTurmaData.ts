@@ -28,6 +28,10 @@ export const useTurmaData = () => {
     }
   }, [supabaseTurmaPairs, supabaseLoading]);
 
+  // Mantém sempre a referência mais recente de loadTurmaPairs sem re-subscrever o canal
+  const loadTurmaPairsRef = useRef(loadTurmaPairs);
+  loadTurmaPairsRef.current = loadTurmaPairs;
+
   // Realtime subscriptions para atualizações instantâneas
   // Recargas silenciosas (sem ecrã "Carregando") e agrupadas com debounce
   useEffect(() => {
@@ -35,7 +39,7 @@ export const useTurmaData = () => {
     const scheduleReload = () => {
       if (debounceTimer) clearTimeout(debounceTimer);
       debounceTimer = setTimeout(() => {
-        loadTurmaPairs(true);
+        loadTurmaPairsRef.current(true);
       }, 300);
     };
 
@@ -51,7 +55,8 @@ export const useTurmaData = () => {
       if (debounceTimer) clearTimeout(debounceTimer);
       supabase.removeChannel(channel);
     };
-  }, [loadTurmaPairs]);
+  }, []);
+
 
 
   const handleCreateTurmaPair = async (data: CreateTurmaPairData): Promise<boolean> => {
