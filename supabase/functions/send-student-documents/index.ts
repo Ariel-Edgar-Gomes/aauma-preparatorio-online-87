@@ -1,11 +1,16 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.3";
 import { Resend } from "npm:resend@2.0.0";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
+
+interface EmailFile {
+  content: string; // base64 (sem o prefixo data:)
+  filename: string;
+  type: string;
+}
 
 interface StudentDocumentsRequest {
   studentData: {
@@ -23,10 +28,10 @@ interface StudentDocumentsRequest {
     dataInscricao: string;
   };
   files: {
-    foto?: string;
-    copiaBI?: string;
-    declaracaoCertificado?: string;
-    comprovativoPagamento?: string;
+    foto?: EmailFile | null;
+    copiaBI?: EmailFile | null;
+    declaracaoCertificado?: EmailFile | null;
+    comprovativoPagamento?: EmailFile | null;
   };
 }
 
@@ -38,58 +43,30 @@ const handler = async (req: Request): Promise<Response> => {
 
   try {
     console.log("=== Iniciando processamento de documentos do estudante ===");
-    
+
     const { studentData, files }: StudentDocumentsRequest = await req.json();
-    
+
     console.log("Dados do estudante:", studentData);
     console.log("Arquivos recebidos:", Object.keys(files));
-
-    // Initialize Supabase client
-    const supabase = createClient(
-      Deno.env.get("SUPABASE_URL") ?? "",
-      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
-    );
 
     // Initialize Resend
     const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
 
-    // Email destination - using your verified email address
-    const emailDestination = "arieledgargomes02@gmail.com";
+    // Email destination
+    const emailDestination = "arieledgargomes04@gmail.com";
 
-    // Prepare attachments
-    const attachments = [];
-    
-    // Download files from storage and prepare attachments
-    for (const [fileType, filePath] of Object.entries(files)) {
-      if (filePath) {
-        try {
-          console.log(`Baixando arquivo: ${fileType} - ${filePath}`);
-          
-          const { data: fileData, error: downloadError } = await supabase.storage
-            .from('student-documents')
-            .download(filePath);
+    // Prepare attachments a partir dos ficheiros enviados em base64
+    const attachments: Array<{ filename: string; content: string; type: string; disposition: string }> = [];
 
-          if (downloadError) {
-            console.error(`Erro ao baixar ${fileType}:`, downloadError);
-            continue;
-          }
-
-          if (fileData) {
-            const arrayBuffer = await fileData.arrayBuffer();
-            const base64Data = btoa(String.fromCharCode(...new Uint8Array(arrayBuffer)));
-            
-            attachments.push({
-              filename: filePath.split('/').pop() || `${fileType}.file`,
-              content: base64Data,
-              type: fileData.type || 'application/octet-stream',
-              disposition: 'attachment'
-            });
-            
-            console.log(`Arquivo ${fileType} preparado para anexo`);
-          }
-        } catch (error) {
-          console.error(`Erro ao processar arquivo ${fileType}:`, error);
-        }
+    for (const [fileType, file] of Object.entries(files)) {
+      if (file && file.content) {
+        attachments.push({
+          filename: file.filename || `${fileType}.file`,
+          content: file.content,
+          type: file.type || "application/octet-stream",
+          disposition: "attachment",
+        });
+        console.log(`Arquivo ${fileType} preparado para anexo (${file.filename})`);
       }
     }
 
@@ -164,6 +141,7 @@ const handler = async (req: Request): Promise<Response> => {
             ${files.copiaBI ? '<li>📄 Cópia do BI</li>' : ''}
             ${files.declaracaoCertificado ? '<li>📜 Declaração/Certificado</li>' : ''}
             ${files.comprovativoPagamento ? '<li>💰 Comprovativo de Pagamento</li>' : ''}
+            ${attachments.length === 0 ? '<li>Nenhum documento anexado</li>' : ''}
           </ul>
         </div>
 
@@ -189,11 +167,11 @@ const handler = async (req: Request): Promise<Response> => {
     console.log("Email enviado com sucesso:", emailResponse);
 
     return new Response(
-      JSON.stringify({ 
-        success: true, 
+      JSON.stringify({
+        success: true,
         emailId: emailResponse.data?.id,
-        attachmentsCount: attachments.length 
-      }), 
+        attachmentsCount: attachments.length,
+      }),
       {
         status: 200,
         headers: {
@@ -206,15 +184,15 @@ const handler = async (req: Request): Promise<Response> => {
   } catch (error: any) {
     console.error("Erro na edge function send-student-documents:", error);
     return new Response(
-      JSON.stringify({ 
+      JSON.stringify({
         error: error.message,
-        success: false 
+        success: false,
       }),
       {
         status: 500,
-        headers: { 
-          "Content-Type": "application/json", 
-          ...corsHeaders 
+        headers: {
+          "Content-Type": "application/json",
+          ...corsHeaders,
         },
       }
     );

@@ -82,47 +82,43 @@ export const useSupabaseInscricao = () => {
       }
 
       setUploadProgress(20);
-      setUploadStep('Fazendo upload dos documentos...');
-      
-      // Upload real dos arquivos para Supabase Storage
-      console.log('[useSupabaseInscricao] Iniciando upload dos arquivos...');
-      
-      const uploadFile = async (file: File, folder: string): Promise<string | undefined> => {
-        if (!file) return undefined;
-        
-        const fileName = `${folder}/${Date.now()}_${user?.id}_${file.name}`;
-        console.log(`[useSupabaseInscricao] Fazendo upload: ${fileName}`);
-        
-        const { data, error } = await supabase.storage
-          .from('student-documents')
-          .upload(fileName, file);
+      setUploadStep('Preparando documentos...');
 
-        if (error) {
-          console.error(`[useSupabaseInscricao] Erro no upload de ${fileName}:`, error);
-          throw new Error(`Erro no upload do arquivo ${file.name}: ${error.message}`);
-        }
-        
-        console.log(`[useSupabaseInscricao] Upload concluído: ${fileName}`);
-        return fileName;
+      // Converter os ficheiros para Base64 (NÃO são guardados no Cloud — apenas enviados por email)
+      console.log('[useSupabaseInscricao] Convertendo ficheiros para Base64...');
+
+      const fileToEmailAttachment = async (
+        file: File | null | undefined
+      ): Promise<{ content: string; filename: string; type: string } | undefined> => {
+        if (!file) return undefined;
+
+        const base64: string = await new Promise((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onloadend = () => {
+            const result = reader.result as string;
+            // Remover o prefixo data:...;base64,
+            resolve(result.split(',')[1] || '');
+          };
+          reader.onerror = () => reject(new Error(`Erro ao ler o ficheiro ${file.name}`));
+          reader.readAsDataURL(file);
+        });
+
+        return {
+          content: base64,
+          filename: file.name,
+          type: file.type || 'application/octet-stream',
+        };
       };
 
-      // Upload dos arquivos (apenas se existirem)
-      const foto_url = formData.foto ? await uploadFile(formData.foto, 'fotos') : undefined;
-      const copia_bi_url = formData.copiaBI ? await uploadFile(formData.copiaBI, 'bi') : undefined;
-      const declaracao_certificado_url = formData.declaracaoCertificado ? await uploadFile(formData.declaracaoCertificado, 'declaracoes') : undefined;
-      const comprovativo_pagamento_url = formData.comprovativoPagamento ? await uploadFile(formData.comprovativoPagamento, 'comprovativo') : undefined;
-
-      console.log('[useSupabaseInscricao] Arquivos carregados:', {
-        foto_url,
-        copia_bi_url,
-        declaracao_certificado_url,
-        comprovativo_pagamento_url
-      });
+      const fotoAttachment = await fileToEmailAttachment(formData.foto);
+      const copiaBIAttachment = await fileToEmailAttachment(formData.copiaBI);
+      const declaracaoAttachment = await fileToEmailAttachment(formData.declaracaoCertificado);
+      const comprovativoAttachment = await fileToEmailAttachment(formData.comprovativoPagamento);
 
       setUploadProgress(60);
       setUploadStep('Criando registro de inscrição...');
       
-      // Criar o registro do aluno (created_by será definido automaticamente pelo trigger)
+      // Criar o registro do aluno SEM guardar ficheiros (created_by definido automaticamente pelo trigger)
       const novoAluno = await alunosService.create({
         nome: formData.nomeCompleto,
         email: formData.email || undefined,
@@ -140,10 +136,10 @@ export const useSupabaseInscricao = () => {
         valor_pago: formData.statusPagamento === 'confirmado' ? 40000.00 : 0.00,
         status: formData.statusPagamento as 'inscrito' | 'confirmado',
         observacoes: undefined,
-        foto_url,
-        copia_bi_url,
-        declaracao_certificado_url,
-        comprovativo_pagamento_url
+        foto_url: undefined,
+        copia_bi_url: undefined,
+        declaracao_certificado_url: undefined,
+        comprovativo_pagamento_url: undefined
       });
 
       console.log('[useSupabaseInscricao] Inscrição criada com sucesso:', novoAluno);
@@ -172,10 +168,10 @@ export const useSupabaseInscricao = () => {
               dataInscricao: novoAluno.data_inscricao
             },
             files: {
-              foto: foto_url,
-              copiaBI: copia_bi_url,
-              declaracaoCertificado: declaracao_certificado_url,
-              comprovativoPagamento: comprovativo_pagamento_url
+              foto: fotoAttachment,
+              copiaBI: copiaBIAttachment,
+              declaracaoCertificado: declaracaoAttachment,
+              comprovativoPagamento: comprovativoAttachment
             }
           }
         });
